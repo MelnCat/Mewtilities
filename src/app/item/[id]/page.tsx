@@ -20,7 +20,7 @@ const createHistory = (entries: MarketEntry[]) => {
 		const price = lastPrice !== -1 && lowest > lastPrice * 2 ? lastPrice : lowest;
 		lastPrice = price;
 		times.push([new Date(time), price]);
-		const closest = dateSorted.find(x => +x.creationTime <= time);
+		const closest = dateSorted.findLast(x => +x.creationTime <= time);
 		realTimes.push([new Date(time), closest ? closest.priceCount / closest.itemCount : realTimes.at(-1)?.[1] ?? lastPrice]);
 	}
 	return [times, realTimes];
