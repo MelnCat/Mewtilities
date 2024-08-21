@@ -7,7 +7,7 @@ export interface RawMarketEntry {
 	item: { id: number; name: string; count: number };
 	seller: { id: number; name: string };
 	category: string;
-	priceType: "note" | "essence";
+	priceType: "NOTE" | "ESSENCE";
 	priceCount: number;
 	expiryTime: number;
 }
@@ -56,7 +56,7 @@ export const parseMarketPage = (content: string): MarketParseResult => {
 		if (!priceRawType) return { type: "error", message: "Price raw type missing" };
 		const priceCount = sellDetails.childNodes[5]?.textContent;
 		if (!priceCount || isNaN(+priceCount)) return { type: "error", message: "Price count missing" };
-		const priceType = priceRawType === "paper notes" ? "note" : priceRawType === "essence fragments" ? "essence" : null;
+		const priceType = priceRawType === "paper notes" ? "NOTE" : priceRawType === "essence fragments" ? "ESSENCE" : null;
 		if (!priceType) return { type: "error", message: `Invalid price type ${priceRawType}` };
 		builder.priceType = priceType;
 		builder.priceCount = +priceCount;

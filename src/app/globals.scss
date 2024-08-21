@@ -13,14 +13,22 @@ button {
 	width: fit-content;
 	padding: 0.3em 0.7em;
 	font-size: 1em;
-	border: none;
+	border: 1px solid #77777777;
 	cursor: pointer;
-	background-color: #ffffffcc;
+	background-color: #ddddddcc;
 	transition: background-color 0.1s;
 	&:hover {
-		background-color: #eeeeeecc;
+		background-color: #cecececc;
 	}
 	&:active {
+		background-color: #c1c1c1cc;
+	}
+	&:disabled {
+		cursor: not-allowed;
+		border-color: #77777733;
 		background-color: #ddddddcc;
 	}
+}
+input {
+	font-size: 0.91em;
 }

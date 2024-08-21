@@ -29,12 +29,13 @@ model MarketEntry {
     id         Int      @id
     item       Item     @relation(fields: [itemId], references: [id])
     itemId     Int
-    sellerId   String
+    sellerId   Int
     sellerName String
     category   String
     priceType  Currency
     priceCount Int
     expiryTime DateTime
+	creationTime DateTime
 }
 
 enum Currency {
