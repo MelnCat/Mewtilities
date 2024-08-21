@@ -5,7 +5,7 @@ import { MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 
 const createHistory = (entries: MarketEntry[]) => {
-	if (entries.length === 0) return [];
+	if (entries.length === 0) return [[], []];
 	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
 	const end = Math.min(Date.now(), +dateSorted.at(-1)!.expiryTime);
