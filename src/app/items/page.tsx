@@ -8,7 +8,7 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 	const noteMarket = market.filter(x => x.priceType === "NOTE");
 	const essenceMarket = market.filter(x => x.priceType === "ESSENCE");
 	return (
-		<section className={styles.itemBox}>
+		<section className={`${styles.itemBox}${market.length === 0 ? ` ${styles.noDataBox}` : ""}`}>
 			<p className={styles.itemId}>{item.id}</p>
 			<h2>
 				{item.name}
@@ -17,6 +17,9 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 			<div className={styles.lower}>
 				<b>Current Cheapest: </b>
 				<NoteValue>{noteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
+			</div>
+			<div className={styles.recordCount}>
+				{market.length} Records
 			</div>
 		</section>
 	);
