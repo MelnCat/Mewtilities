@@ -5,7 +5,6 @@ import "chartjs-adapter-luxon";
 import { Line } from "react-chartjs-2";
 
 export const PriceGraph = ({ data }: { data: [Date, number][][] }) => {
-	console.log(data[0].length, data[1].length);
 	return <div className={styles.chartContainer}>
 		<Line
 			data={{
