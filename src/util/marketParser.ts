@@ -26,10 +26,17 @@ export const parseMarketPage = (content: string): MarketParseResult => {
 		const builder: Partial<RawMarketEntry> = {};
 
 		const buyButton = line.querySelector("button.craft-button");
-		if (!buyButton) return { type: "error", message: "Buy button missing" };
-		const id = buyButton.getAttribute("onclick")?.match(/buy\[(\d+)\]/)?.[1];
-		if (!id || isNaN(+id)) return { type: "error", message: "Id missing or invalid" };
-		builder.id = +id;
+		if (!buyButton) {
+			const cancelButton = line.querySelector("input.craft-button");
+			if (!cancelButton) return { type: "error", message: "Buy and Cancel button missing" }
+			const id = cancelButton.getAttribute("name")?.match(/buy\[(\d+)\]/)?.[1];
+			if (!id || isNaN(+id)) return { type: "error", message: "Id missing or invalid (cancel edition)" };
+			builder.id = +id;
+		} else {
+			const id = buyButton.getAttribute("onclick")?.match(/buy\[(\d+)\]/)?.[1];
+			if (!id || isNaN(+id)) return { type: "error", message: "Id missing or invalid" };
+			builder.id = +id;
+		}
 
 		const itemDetails = line.querySelector(".shops-itemtitle");
 		if (!itemDetails) return { type: "error", message: "Item details missing" };
