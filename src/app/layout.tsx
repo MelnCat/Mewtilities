@@ -4,6 +4,8 @@ import "./globals.scss";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
 	title: "Not-Stock Market",
 	description: "todo come up with descriptoin",
