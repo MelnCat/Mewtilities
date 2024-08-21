@@ -8,3 +8,19 @@ a {
 	color: inherit;
 	text-decoration: none;
 }
+
+button {
+	width: fit-content;
+	padding: 0.3em 0.7em;
+	font-size: 1em;
+	border: none;
+	cursor: pointer;
+	background-color: #ffffffcc;
+	transition: background-color 0.1s;
+	&:hover {
+		background-color: #eeeeeecc;
+	}
+	&:active {
+		background-color: #ddddddcc;
+	}
+}

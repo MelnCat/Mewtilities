@@ -1,10 +1,11 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { test } from "@/db/db";
+import styles from "./page.module.scss";
 
-export default function Home() {
+export default async function Home() {
+	const number = await test();
 	return (
 		<main className={styles.main}>
-			empty
+			empty {number}
 		</main>
 	);
 }
