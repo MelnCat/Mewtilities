@@ -42,12 +42,17 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 				</h1>
 				<img src={data.image} className={styles.itemImage} />
 				<section>
+					<div>{data.key}</div>
+					<div>{data.category}</div>
+					{data.extraText.length ? <div>{data.extraText.join("\n")}</div> : null}
 					<div>{market.length} Records</div>
 					<div>
-						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{currentEssenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
+						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0]?.unitPrice ?? "?"}</NoteValue> /{" "}
+						<EssenceValue>{currentEssenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 					<div>
-						<b>Current High</b>: <NoteValue>{currentNoteMarket.at(-1)?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{currentEssenceMarket.at(-1)?.unitPrice ?? "?"}</EssenceValue>
+						<b>Current High</b>: <NoteValue>{currentNoteMarket.at(-1)?.unitPrice ?? "?"}</NoteValue> /{" "}
+						<EssenceValue>{currentEssenceMarket.at(-1)?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 					<div>
 						<b>Historical Low</b>: <NoteValue>{noteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
