@@ -19,6 +19,7 @@ export const parseMarketPage = (content: string): MarketParseResult => {
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return { type: "error", message: "Invalid page layout" };
+	if (!form.getAttribute("action")?.includes("/market")) return { type: "error", message: "Not a marketplace page" };
 	const lines = [...form.querySelectorAll(".forum-line-wrapless")];
 	const entries: RawMarketEntry[] = [];
 	for (const line of lines) {
@@ -36,7 +37,7 @@ export const parseMarketPage = (content: string): MarketParseResult => {
 		if (itemId === undefined || itemId === null || isNaN(+itemId)) return { type: "error", message: "Item ID matching failed" };
 		const itemName = itemDetails.childNodes[0]?.textContent;
 		if (!itemName) return { type: "error", message: "Item name matching failed" };
-		const itemCount = itemDetails.childNodes[5]?.textContent?.match(/: (\d)+/)?.[1];
+		const itemCount = itemDetails.childNodes[5]?.textContent?.match(/: (\d+)/)?.[1];
 		if (!itemCount || isNaN(+itemCount)) return { type: "error", message: "Item count matching failed" };
 		builder.item = { id: +itemId, name: itemName, count: +itemCount };
 

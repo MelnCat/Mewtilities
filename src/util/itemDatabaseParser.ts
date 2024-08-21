@@ -19,6 +19,7 @@ export const parseItemDatabasePage = (content: string): ItemDatabaseParseResult 
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return { type: "error", message: "Invalid page layout" };
+	if (!form.getAttribute("action")?.includes("/items")) return { type: "error", message: "Not an item database page" };
 	const cubes = [...form.querySelectorAll(".itemcube")];
 	const entries: RawItemDatabaseEntry[] = [];
 	for (const cube of cubes) {

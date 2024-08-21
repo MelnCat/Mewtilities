@@ -24,6 +24,7 @@ export const processMarketFiles = async (data: FormData): Promise<{ success: boo
 					category: x.category,
 					expiryTime: new Date(x.expiryTime),
 					itemId: x.item.id,
+					itemCount: x.item.count,
 					priceCount: x.priceCount,
 					priceType: x.priceType,
 					sellerId: x.seller.id,
@@ -38,7 +39,7 @@ export const processMarketFiles = async (data: FormData): Promise<{ success: boo
 				const items = [...new Set(flattened.map(x => x.item.id))];
 				const found = await prisma.item.findMany({ where: { id: { in: items } } });
 				const missing = items.filter(x => !found.some(y => y.id === x));
-				if (missing.length > 0) return { success: false, message: `Missing item(s) ${missing.join(", ")}`}
+				if (missing.length > 0) return { success: false, message: `Missing item(s) ${missing.join(", ")}` };
 			}
 			throw e;
 		}
@@ -73,11 +74,11 @@ export const processItemDatabaseFiles = async (data: FormData): Promise<{ succes
 	}
 };
 
-export const getItemDatabaseInfo = async() => {
+export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
 	return {
 		count: allItems.length,
-		firstMissing: allItems.find((x, i, a) => i !== 0 && a[i - 1].id !== x.id - 1) ?? allItems.at(-1)!.id + 1,
-		highest: allItems.at(-1)!.id
-	}
-}
+		firstMissing: [{ id: 0 }, ...allItems].find((x, i, a) => a[i + 1]?.id !== x.id + 1)!.id + 1,
+		highest: allItems.at(-1)?.id ?? -1,
+	};
+};
