@@ -1,5 +1,9 @@
 .currencyValue {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 0.2em;
+	img {
+		width: 2em;
+	}
 }

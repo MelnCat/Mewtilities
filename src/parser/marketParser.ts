@@ -1,3 +1,4 @@
+import { Result } from "@/util/result";
 import { readFileSync } from "fs";
 import { JSDOM } from "jsdom";
 import { Temporal } from "temporal-polyfill";
@@ -12,9 +13,7 @@ export interface RawMarketEntry {
 	expiryTime: number;
 }
 
-export type MarketParseResult = { type: "error"; message: string } | { type: "success"; data: RawMarketEntry[] };
-
-export const parseMarketPage = (content: string): MarketParseResult => {
+export const parseMarketPage = (content: string): Result<RawMarketEntry[]> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");

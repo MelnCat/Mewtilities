@@ -14,7 +14,7 @@ export interface RawItemDatabaseEntry {
 
 export type ItemDatabaseParseResult = { type: "error"; message: string } | { type: "success"; data: RawItemDatabaseEntry[] };
 
-export const parseItemDatabasePage = (content: string): ItemDatabaseParseResult => {
+export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEntry[]> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");

@@ -23,6 +23,7 @@ model Item {
     extraText     String[]
     source        Json
     marketEntries MarketEntry[]
+    shopEntries   ShopEntry[]
 }
 
 model MarketEntry {
@@ -39,7 +40,31 @@ model MarketEntry {
     creationTime DateTime
 }
 
+model ShopEntry {
+    id         String   @id @default(uuid())
+    item       Item     @relation(fields: [itemId], references: [id])
+    itemId     Int
+    priceType  Currency
+    priceCount Int
+    shopName   String
+    shopUrl    String
+    event      Event?
+
+    @@unique(name: "shopItemPriceType", [shopUrl, itemId, priceCount, priceType])
+}
+
+enum Event {
+    SNOWMELT
+    MIDSUMMER_FESTIVAL
+    LEAF_DAY
+    CANDLELIGHT_FESTIVAL
+}
+
 enum Currency {
     NOTE
     ESSENCE
+	SNOWMELT_STAMP
+	LEAF_DAY_STAMP
+	LOST_BUTTON
+	FESTIVAL_TICKET
 }
