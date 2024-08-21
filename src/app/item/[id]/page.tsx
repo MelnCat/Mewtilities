@@ -12,7 +12,7 @@ const createHistory = (entries: MarketEntry[]) => {
 	const slices = 50;
 	let lastPrice = -1;
 	const times: [Date, number][] = [];
-	/*
+	const realTimes: [Date, number][] = [];
 	for (let i = 0; i <= slices; i++) {
 		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
@@ -20,9 +20,10 @@ const createHistory = (entries: MarketEntry[]) => {
 		const price = lastPrice !== -1 && lowest > lastPrice * 2 ? lastPrice : lowest;
 		lastPrice = price;
 		times.push([new Date(time), price]);
-	}*/
-	for (const entry of dateSorted) times.push([entry.creationTime, entry.priceCount / entry.itemCount]);
-	return times;
+		const closest = dateSorted.find(x => +x.creationTime > time);
+		realTimes.push([new Date(time), closest ? closest.priceCount / closest.itemCount : realTimes.at(-1)[1]);
+	}
+	return [times, realTimes];
 };
 
 export default async function Page({ params: { id } }: { params: { id: string } }) {
