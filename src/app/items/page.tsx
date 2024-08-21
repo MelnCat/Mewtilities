@@ -13,7 +13,7 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 			<h2>
 				{item.name}
 			</h2>
-			<img src={item.image} />
+			<a href={`/item/${item.id}`}><img src={item.image} /></a>
 			<div className={styles.lower}>
 				<b>Current Cheapest: </b>
 				<NoteValue>{noteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>

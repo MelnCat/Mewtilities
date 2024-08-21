@@ -5,6 +5,7 @@ import { MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 
 const createHistory = (entries: MarketEntry[]) => {
+	if (entries.length === 0) return [];
 	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
 	const end = Math.min(Date.now(), +dateSorted.at(-1)!.expiryTime);
@@ -43,16 +44,16 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 				<section>
 					<div>{market.length} Records</div>
 					<div>
-						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0].unitPrice}</NoteValue> / <EssenceValue>{currentEssenceMarket[0].unitPrice}</EssenceValue>
+						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{currentEssenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 					<div>
-						<b>Current High</b>: <NoteValue>{currentNoteMarket.at(-1)!.unitPrice}</NoteValue> / <EssenceValue>{currentEssenceMarket.at(-1)!.unitPrice}</EssenceValue>
+						<b>Current High</b>: <NoteValue>{currentNoteMarket.at(-1)?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{currentEssenceMarket.at(-1)?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 					<div>
-						<b>Historical Low</b>: <NoteValue>{noteMarket[0].unitPrice}</NoteValue> / <EssenceValue>{essenceMarket[0].unitPrice}</EssenceValue>
+						<b>Historical Low</b>: <NoteValue>{noteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 					<div>
-						<b>Historical High</b>: <NoteValue>{noteMarket.at(-1)!.unitPrice}</NoteValue> / <EssenceValue>{essenceMarket.at(-1)!.unitPrice}</EssenceValue>
+						<b>Historical High</b>: <NoteValue>{noteMarket.at(-1)?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket.at(-1)?.unitPrice ?? "?"}</EssenceValue>
 					</div>
 				</section>
 			</article>
