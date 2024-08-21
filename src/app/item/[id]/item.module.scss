@@ -1,9 +1,25 @@
 .main {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
+	padding: 1em;
+	min-height: 60vh;
 }
 
 .itemImage {
 	height: 6em;
 	width: fit-content;
+}
+
+.leftPanel {
+	display: flex;
+	flex-direction: column;
+}
+
+.rightPanel {
+	display: flex;
+    flex-grow: 1;
+}
+
+.chartContainer {
+	width: 50%;
 }

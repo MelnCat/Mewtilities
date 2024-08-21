@@ -27,7 +27,7 @@ export const FilePanel = ({ title, onSubmit }: { title: string; onSubmit: (files
 			<input
 				type="file"
 				multiple
-				accept=".html"
+				accept=".html,.htm"
 				onChange={e => {
 					setFiles(e.target.files);
 					setMessage(null);

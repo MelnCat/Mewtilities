@@ -2,24 +2,25 @@ import { getItemData } from "@/db/db";
 import styles from "./item.module.scss";
 import { EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@/components/currencyIcons";
 import { MarketEntry } from "@prisma/client";
+import { PriceGraph } from "./components/PriceGraph";
 
 const createHistory = (entries: MarketEntry[]) => {
-	const dateSorted = entries.toSorted((a, b) => (+a.creationTime) - (+b.creationTime));
+	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
 	const end = Math.min(Date.now(), +dateSorted.at(-1)!.expiryTime);
-	const slices = 10;
+	const slices = 50;
 	let lastPrice = -1;
 	const times: [Date, number][] = [];
 	for (let i = 0; i <= slices; i++) {
-		const time = begin + (end - begin) / slices * i;
+		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
-		const lowest = valid.length ? valid.reduce((l, c) => l > (c.priceCount / c.itemCount) ? c.priceCount / c.itemCount : l, Infinity) : lastPrice;
+		const lowest = valid.length ? valid.reduce((l, c) => (l > c.priceCount / c.itemCount ? c.priceCount / c.itemCount : l), Infinity) : lastPrice;
 		const price = lastPrice !== -1 && lowest > lastPrice * 2 ? lastPrice : lowest;
 		lastPrice = price;
 		times.push([new Date(time), price]);
 	}
 	return times;
-}
+};
 
 export default async function Page({ params: { id } }: { params: { id: string } }) {
 	const data = await getItemData(+id);
@@ -27,24 +28,38 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 	const market = data.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
 	const noteMarket = market.filter(x => x.priceType === "NOTE");
 	const essenceMarket = market.filter(x => x.priceType === "ESSENCE");
+	const currentNoteMarket = noteMarket.filter(x => +x.expiryTime > Date.now());
+	const currentEssenceMarket = essenceMarket.filter(x => +x.expiryTime > Date.now());
 	const noteHistory = createHistory(noteMarket);
+	const essenceHistory = createHistory(essenceMarket);
 
 	return data ? (
 		<main className={styles.main}>
-			<h1>
-				{id}: {data.name}
-			</h1>
-			<img src={data.image} className={styles.itemImage} />
-			{market.length}
-			<section>
-				<div>
-					<b>Historical Low (N)</b>: <NoteValue>{noteMarket[0].unitPrice}</NoteValue>
-				</div>
-				<div>
-					<b>Historical Low (E)</b>: <EssenceValue>{essenceMarket[0].unitPrice}</EssenceValue>
-				</div>
-				<div>temp {noteHistory.map(x => x[1]).join(" ")}</div>
-			</section>
+			<article className={styles.leftPanel}>
+				<h1>
+					{id}: {data.name}
+				</h1>
+				<img src={data.image} className={styles.itemImage} />
+				<section>
+					<div>{market.length} Records</div>
+					<div>
+						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0].unitPrice}</NoteValue> / <EssenceValue>{currentEssenceMarket[0].unitPrice}</EssenceValue>
+					</div>
+					<div>
+						<b>Current High</b>: <NoteValue>{currentNoteMarket.at(-1)!.unitPrice}</NoteValue> / <EssenceValue>{currentEssenceMarket.at(-1)!.unitPrice}</EssenceValue>
+					</div>
+					<div>
+						<b>Historical Low</b>: <NoteValue>{noteMarket[0].unitPrice}</NoteValue> / <EssenceValue>{essenceMarket[0].unitPrice}</EssenceValue>
+					</div>
+					<div>
+						<b>Historical High</b>: <NoteValue>{noteMarket.at(-1)!.unitPrice}</NoteValue> / <EssenceValue>{essenceMarket.at(-1)!.unitPrice}</EssenceValue>
+					</div>
+				</section>
+			</article>
+			<article className={styles.rightPanel}>
+				<PriceGraph data={noteHistory} />
+				<PriceGraph data={essenceHistory} />
+			</article>
 		</main>
 	) : (
 		<h1>Error</h1>
