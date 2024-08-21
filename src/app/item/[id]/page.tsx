@@ -15,7 +15,7 @@ const createHistory = (entries: MarketEntry[]) => {
 	for (let i = 0; i <= slices; i++) {
 		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
-		const lowest = valid.length ? valid.reduce((l, c) => (l > c.priceCount / c.itemCount ? c.priceCount / c.itemCount : l), Infinity) : lastPrice;
+		const lowest = valid[0]?.priceCount/valid[0]?.itemCount ?? lastPrice// valid.length ? valid.reduce((l, c) => (l > c.priceCount / c.itemCount ? c.priceCount / c.itemCount : l), Infinity) : lastPrice;
 		const price = lastPrice !== -1 && lowest > lastPrice * 2 ? lastPrice : lowest;
 		lastPrice = price;
 		times.push([new Date(time), price]);
