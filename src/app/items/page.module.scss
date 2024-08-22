@@ -39,3 +39,17 @@
 .noDataBox {
 	background-color: #dfdfdf;
 }
+.article {
+	width: 100%;
+	height: 90vh;
+}
+.search {
+	display: flex;
+	flex-direction: column;
+	padding: 0.25em 0;
+	align-items: center;
+}
+.searchOption {
+	display: flex;
+	gap: 0.25em;
+}
