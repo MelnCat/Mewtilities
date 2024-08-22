@@ -144,15 +144,17 @@ export const processShopEntryFiles = processFileAction(parseShopPage, async data
 });
 
 export const processQuickSellFiles = processFileAction(parseQuickSellPage, async data => {
+	const items = await prisma.item.findMany({ where: { id: { in: data.flat().map(x => x.itemId) } } });
+
 	const result = await prisma.quickSellEntry.createMany({
-		data: data.flat().map(x => ({
+		data: data.flat().filter(x => items.some(y => y.id === x.itemId)).map(x => ({
 			itemId: x.itemId,
 			priceCount: x.priceCount,
 			priceType: x.priceType,
 		})),
 		skipDuplicates: true,
 	});
-	return { success: true, message: `${result.count} entries updated` };
+	return { success: true, message: `${result.count} entries updated, ${data.flat().filter(y => !items.some(x => x.id === y.itemId)).length} unknown items` };
 });
 
 export const getItemDatabaseInfo = async () => {
