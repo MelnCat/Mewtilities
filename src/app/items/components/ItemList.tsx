@@ -1,15 +1,14 @@
 "use client";
+import { CurrencyValue, EssenceValue, NoteValue } from "@/components/currencyIcons";
 import { getAllItems } from "@/db/db";
-import styles from "../page.module.scss";
-import { NoteValue, EssenceValue, CurrencyValue } from "@/components/currencyIcons";
 import { bestOffersByCurrency } from "@/util/util";
-import { Item, MarketEntry, ShopEntry, QuickSellEntry, Currency } from "@prisma/client";
-import useSWR from "swr";
-import { CSSProperties, useEffect, useMemo, useState } from "react";
-import NextAdapterApp from "next-query-params/app";
-import { QueryParamProvider, useQueryParam, StringParam, withDefault, NumberParam } from "use-query-params";
+import { Currency, Item, MarketEntry, QuickSellEntry, ShopEntry } from "@prisma/client";
 import fuzzysort from "fuzzysort";
-import { useDebounce } from "use-debounce";
+import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
+import { useEffect, useMemo } from "react";
+import * as R from "remeda";
+import useSWR from "swr";
+import styles from "../page.module.scss";
 
 const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unitPrice: number })[]; shopEntries: ShopEntry[]; quickSellEntries: QuickSellEntry[] } }) => {
 	const market = item.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
@@ -56,23 +55,77 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 	);
 };
 
+type PopulatedItem = Awaited<ReturnType<typeof getAllItems>>[number];
+
+const lowestForCurrency = (currency: Currency) => (item: PopulatedItem, asc: boolean) => {
+	const entries = item.marketEntries.filter(x => x.priceType === currency);
+	if (!entries.length) return asc ? Infinity : -Infinity;
+	return entries.reduce((l, c) => (c.unitPrice < l ? c.unitPrice : l), Infinity);
+};
+const lowestForCurrencyCity = (currency: Currency) => (item: PopulatedItem, asc: boolean) => {
+	const entries = item.shopEntries.filter(x => x.priceType === currency);
+	if (!entries.length) return asc ? Infinity : -Infinity;
+	return entries.reduce((l, c) => (c.priceCount < l ? c.priceCount : l), Infinity);
+};
+
+const itemKeys = {
+	id: item => item.id,
+	name: item => item.name.toLocaleLowerCase(),
+	category: item => item.category,
+	marketPriceNotes: lowestForCurrency(Currency.NOTE),
+	marketPriceEssence: lowestForCurrency(Currency.ESSENCE),
+	quickSellPrice: (item, asc) =>
+		item.quickSellEntries.length === 0 || item.quickSellEntries.every(x => x.priceCount === -1)
+			? asc
+				? Infinity
+				: -Infinity
+			: item.quickSellEntries.reduce((l, c) => (c.priceCount !== -1 && c.priceCount < l ? c.priceCount : l), Infinity),
+	cityPriceNotes: lowestForCurrencyCity(Currency.NOTE),
+	cityPriceEssence: lowestForCurrencyCity(Currency.ESSENCE),
+} as const satisfies Record<string, (item: PopulatedItem, asc: boolean) => string | number>;
+
 export const ItemList = () => {
-	const { data: items } = useSWR<Awaited<ReturnType<typeof getAllItems>>>(
-		"/api/items",
-		async () => await (await fetch("/api/items", { cache: "force-cache", next: { revalidate: 300 } })).json()
-	);
-	const [page, setPage] = useQueryParam("page", withDefault(NumberParam, 0));
-	const [name, setName] = useState(""); // useQueryParam("name", withDefault(StringParam, ""));
-	const [debouncedName] = useDebounce(name, 100);
-	const nameFilteredData = useMemo(() => {
+	const { data: rawItems } = useSWR<PopulatedItem[]>("/api/items", async () => await (await fetch("/api/items", { cache: "force-cache", next: { revalidate: 300 } })).json());
+	const items = useMemo(() => rawItems?.map(x => ({ ...x, prepared: fuzzysort.prepare(x.name) })), [rawItems]);
+	const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(0));
+	const [perPage, setPerPage] = useQueryState("per_page", parseAsInteger.withDefault(250));
+	const [name, setName] = useQueryState("name", parseAsString.withDefault(""));
+	const [sortBy, setSortBy] = useQueryState("sort_by", parseAsStringLiteral(Object.keys(itemKeys) as (keyof typeof itemKeys)[]).withDefault("id"));
+	const [sortOrder, setSortOrder] = useQueryState("sort_order", parseAsStringLiteral(["asc", "desc"]).withDefault("asc"));
+	const itemCategories = useMemo(() => (items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : []), [items]);
+	const [category, setCategory] = useQueryState("category", parseAsStringLiteral(itemCategories).withDefault("all"));
+
+	const presortData = useMemo(() => {
 		if (!items) return null;
-		if (!debouncedName.trim()) return items;
-		const filtered = fuzzysort.go(debouncedName, items, { key: "name", threshold: 0.5 });
+		return items.filter(x => category === "all" || x.category === category);
+	}, [items, category]);
+	const nameFilteredData = useMemo(() => {
+		if (!presortData) return null;
+		if (!name?.trim()) return presortData;
+		const filtered = fuzzysort.go(name, presortData, { key: "prepared", threshold: 0.5 });
 		return filtered.map(x => x.obj);
-	}, [items, debouncedName]);
+	}, [presortData, name]);
+	const finalData = useMemo(() => {
+		if (!nameFilteredData) return null;
+		return nameFilteredData.toSorted((a, b) => {
+			const first = itemKeys[sortBy](a, sortOrder === "asc");
+			const second = itemKeys[sortBy](b, sortOrder === "asc");
+			if (typeof first === "string" && typeof second === "string") return sortOrder === "asc" ? first.localeCompare(second) : second.localeCompare(first);
+			if (typeof first === "number" && typeof second === "number") return sortOrder === "asc" ? first - second : second - first;
+			return 0;
+		});
+	}, [nameFilteredData, sortBy, sortOrder]);
 	useEffect(() => {
 		setPage(0);
-	}, [nameFilteredData, setPage]);
+	}, [setPage, name, perPage, sortBy, sortOrder, category]);
+	const paginatedData = useMemo(() => {
+		return finalData
+			? R.chunk(
+					finalData.map(x => <ItemBox item={x} key={x.id} />),
+					perPage
+			  )
+			: [];
+	}, [finalData, perPage]);
 	return (
 		<>
 			<h1>Item Index</h1>
@@ -82,31 +135,57 @@ export const ItemList = () => {
 					<input value={name} onChange={e => setName(e.target.value)} />
 				</div>
 				<div className={styles.searchOption}>
-					<button
-						disabled={nameFilteredData === null || !((page - 1) * 50 in nameFilteredData)}
-						onClick={nameFilteredData && (page - 1) * 50 in nameFilteredData && setPage(x => x - 1)}
+					<p>Items Per Page</p>
+					<input value={perPage} onChange={e => setPerPage(+e.target.value)} />
+				</div>
+				<div className={styles.searchOption}>
+					<p>Sort By</p>
+					<select value={sortBy} onChange={e => setSortBy(e.target.value as keyof typeof itemKeys)}>
+						{Object.keys(itemKeys).map(k => (
+							<option value={k} key={k}>
+								{k}
+							</option>
+						))}
+					</select>
+					<select value={sortOrder} onChange={e => setSortOrder(e.target.value as "desc" | "asc")}>
+						<option value="asc">ASC</option>
+						<option value="desc">DESC</option>
+					</select>
+				</div>
+				<div className={styles.searchOption}>
+					<p>Category</p>
+					<select
+						value={category}
+						onChange={e => {
+							setCategory(e.target.value);
+						}}
 					>
+						<option value="all">all</option>
+						{itemCategories.map(k => (
+							<option value={k} key={k}>
+								{k}
+							</option>
+						))}
+					</select>
+				</div>
+				<div className={styles.searchOption}>
+					<button disabled={!(page - 1 in paginatedData)} onClick={() => page - 1 in paginatedData && setPage(page - 1)}>
 						{"<"}
 					</button>
-					<button
-						disabled={nameFilteredData === null || !((page + 1) * 50 in nameFilteredData)}
-						onClick={nameFilteredData && (page + 1) * 50 in nameFilteredData && setPage(x => x + 1)}
-					>
+					<button disabled={!(page + 1 in paginatedData)} onClick={() => page + 1 in paginatedData && setPage(page + 1)}>
 						{">"}
 					</button>
+					<p>
+						Page {finalData ? (!rawItems || paginatedData.length === 0 ? 0 : page + 1) : 1}/{paginatedData.length}
+					</p>
 				</div>
+				<div className={styles.searchOption}></div>
 			</section>
-			<article className={styles.itemList}>
-				{nameFilteredData ? nameFilteredData.slice(page * 50, (page + 1) * 50).map(x => <ItemBox item={x} key={x.id} />) : "Loading..."}
-			</article>
+			<article className={styles.itemList}>{finalData ? paginatedData[page] : "Loading..."}</article>
 		</>
 	);
 };
 
 export const ItemDisplay = () => {
-	return (
-		<QueryParamProvider adapter={NextAdapterApp}>
-			<ItemList />
-		</QueryParamProvider>
-	);
+	return <ItemList />;
 };
