@@ -13,6 +13,7 @@ const createHistory = (entries: MarketEntry[]) => {
 	let lastPrice = -1;
 	const times: [Date, number][] = [];
 	const realTimes: [Date, number][] = [];
+	let lastClosest = -1;
 	for (let i = 0; i <= slices; i++) {
 		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
@@ -21,7 +22,8 @@ const createHistory = (entries: MarketEntry[]) => {
 		lastPrice = price;
 		times.push([new Date(time), price]);
 		const closest = dateSorted.findLast(x => +x.creationTime <= time);
-		realTimes.push([new Date(time), closest ? closest.priceCount / closest.itemCount : realTimes.at(-1)?.[1] ?? lastPrice]);
+		const c = closest ? (lastClosest === -1 || (closest.priceCount / closest.itemCount) / lastClosest < 4 ? closest.priceCount / closest.itemCount : lastClosest) : null;
+		realTimes.push([new Date(time), c ? c : realTimes.at(-1)?.[1] ?? lastPrice]);
 	}
 	return [times, realTimes];
 };
