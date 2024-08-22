@@ -33,22 +33,36 @@ const processFileAction =
 
 export const processMarketFiles = processFileAction(parseMarketPage, async data => {
 	try {
-		const result = await prisma.marketEntry.createMany({
-			data: data.flat().map(x => ({
-				id: x.id,
-				category: x.category,
-				expiryTime: new Date(x.expiryTime),
-				itemId: x.item.id,
-				itemCount: x.item.count,
-				priceCount: x.priceCount,
-				priceType: x.priceType,
-				sellerId: x.seller.id,
-				sellerName: x.seller.name,
-				creationTime: new Date(x.expiryTime - 1000 * 60 * 60 * 24 * 7),
-			})),
-			skipDuplicates: true,
-		});
-		return { success: true, message: `${result.count} entries updated` };
+		let added = 0;
+		let updated = 0;
+		let untouched = 0;
+		for (const x of data.flat()) {
+			const existing = await prisma.marketEntry.findFirst({ where: { id: x.id } });
+			const details = await prisma.marketEntry.upsert({
+				where: {
+					id: x.id
+				},
+				update: {
+					expiryTime: new Date(x.expiryTime)
+				},
+				create: {
+					id: x.id,
+					category: x.category,
+					expiryTime: new Date(x.expiryTime),
+					itemId: x.item.id,
+					itemCount: x.item.count,
+					priceCount: x.priceCount,
+					priceType: x.priceType,
+					sellerId: x.seller.id,
+					sellerName: x.seller.name,
+					creationTime: new Date(x.expiryTime - 1000 * 60 * 60 * 24 * 7),
+				}
+			});
+			if (!existing) added++;
+			else if (existing.expiryTime !== details.expiryTime) updated++;
+			else untouched++;
+		}
+		return { success: true, message: `+${added} ~${updated} @${untouched}` };
 	} catch (e) {
 		if (e instanceof PrismaClientKnownRequestError && e.message.includes("Foreign key constraint failed")) {
 			const items = [...new Set(data.flat().map(x => x.item.id))];
