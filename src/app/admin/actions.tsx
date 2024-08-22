@@ -5,6 +5,7 @@ import prisma from "@/db/prisma";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
 import { parseShopListPage } from "@/parser/shopListParser";
+import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -78,10 +79,27 @@ export const processShopListFiles = processFileAction(parseShopListPage, async d
 			category: x.category,
 			description: x.description,
 			name: x.name,
-			previewImage: x.previewImage
+			previewImage: x.previewImage,
 		})),
 		skipDuplicates: true,
 	});
+	return { success: true, message: `${result.count} entries updated` };
+});
+
+export const processShopEntryFiles = processFileAction(parseShopPage, async data => {
+	const shops = data.map(x => x.shop);
+	const foundShops = await prisma.shop.findMany({ where: { url: { in: shops.map(x => x.url) } } });
+	if (!shops.every(x => foundShops.some(y => y.url === x.url)))
+		return {
+			success: false,
+			message: `Unknown shops ${shops
+				.filter(x => !foundShops.some(y => y.url === x.url))
+				.map(x => x.url)
+				.join(", ")}`,
+		};
+	for (const shop of shops) {
+		
+	}
 	return { success: true, message: `${result.count} entries updated` };
 });
 

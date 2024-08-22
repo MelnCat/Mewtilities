@@ -48,7 +48,7 @@ model Shop {
     previewImage String
     image        String?
     blurb        String?
-    ShopEntry    ShopEntry[]
+    shopEntries  ShopEntry[]
 }
 
 model ShopEntry {
