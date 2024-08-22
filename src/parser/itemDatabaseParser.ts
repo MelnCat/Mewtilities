@@ -1,4 +1,5 @@
 import { failure, Result, success } from "@/util/result";
+import { Season } from "@prisma/client";
 import { JSDOM } from "jsdom";
 
 export interface RawItemDatabaseEntry {
@@ -7,9 +8,9 @@ export interface RawItemDatabaseEntry {
 	name: string;
 	image: string;
 	category: string;
-	seasons: string[];
+	seasons: Season[];
 	extraText: string[];
-	sources: Record<string, string>;
+	info: Record<string, string>;
 }
 
 export type ItemDatabaseParseResult = { type: "error"; message: string } | { type: "success"; data: RawItemDatabaseEntry[] };
@@ -32,7 +33,8 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 		const id = topRightLines[0].match(/ID# (\d+)/)?.[1];
 		if (!id || isNaN(+id)) return failure("ID missing or invalid");
 		builder.id = +id;
-		builder.seasons = topRightLines.slice(1);
+		const seasons = topRightLines.slice(1).map(x => Season[x.toUpperCase() as keyof typeof Season] as Season | null ?? null);
+		if (seasons.includes(null)) return failure(`Unknown season(s) ${topRightLines.slice(1).filter(x => !(x.toUpperCase() in Season)).join(", ")}`)
 
 		const centerText = cube.querySelector(".shifting-flex > .item-mid > .itemtitle");
 		if (!centerText) return failure("Center text missing");
@@ -55,7 +57,7 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 			.filter(x => x.nodeType === 3 /* Node.TEXT_NODE */)
 			.map(x => x.textContent?.split(": ") as [string, string] | [string]);
 		if (sourceList.some(x => !x)) return failure("Invalid source list");
-		builder.sources = Object.fromEntries(sourceList.filter(x => x.length === 2));
+		builder.info = Object.fromEntries(sourceList.filter(x => x.length === 2));
 		builder.extraText = sourceList.filter(x => x.length === 1).flat();
 
 		const image = cube.querySelector(".itemjail > img:last-child");

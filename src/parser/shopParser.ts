@@ -1,10 +1,10 @@
 import { failure, Result, success } from "@/util/result";
+import { Currency, Season } from "@prisma/client";
 import { JSDOM } from "jsdom";
-import { RawMarketEntry } from "./marketParser";
-import { Currency } from "@prisma/client";
 
 export interface RawShopEntries {
 	entries: RawShopEntry[];
+	season: Season;
 	shop: {
 		url: string;
 		blurb: string;
@@ -31,12 +31,16 @@ export const parseShopPage = (content: string): Result<RawShopEntries> => {
 	if (!shopBlurb) return failure("Missing shop blurb");
 	const shopImage = doc.querySelector(".bannergroup > div > img")?.getAttribute("src");
 	if (!shopImage) return failure("Missing shop image");
+	const seasonText = doc.querySelector("#weatherlink")?.textContent?.trim().match(/.+?\| (\w+) .+?,.+?\|/)?.[1].toUpperCase().trim();
+	if (!seasonText) return failure("Season missing or invalid");
+	if (!(seasonText in Season)) return failure(`Unknown season "${seasonText}"`)
+	const season = Season[seasonText as keyof typeof Season];
 	for (const line of lines) {
 		const builder: Partial<RawShopEntry> = {};
 
 		const itemTitleNodes = line.querySelector(".shops-itemtitle")?.childNodes;
 		if (!itemTitleNodes) return failure("Item title nodes missing");
-		const itemId = [...itemTitleNodes].findLast(x => x.nodeType === x.TEXT_NODE)?.textContent?.match(/ID# (\d+)/)?.[1];
+		const itemId = [...itemTitleNodes].find(x => x.nodeType === x.TEXT_NODE && x.textContent?.includes("ID#"))?.textContent?.match(/ID# (\d+)/)?.[1];
 		if (!itemId || isNaN(+itemId)) return failure("Item id missing or invalid");
 		builder.itemId = +itemId;
 
@@ -63,5 +67,6 @@ export const parseShopPage = (content: string): Result<RawShopEntries> => {
 			image: shopImage,
 		},
 		entries,
+		season
 	});
 };

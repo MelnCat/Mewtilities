@@ -63,7 +63,7 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 			image: x.image,
 			key: x.key,
 			name: x.name,
-			source: x.sources,
+			info: x.info,
 			extraText: x.extraText,
 			seasons: x.seasons,
 		})),
@@ -92,14 +92,35 @@ export const processShopEntryFiles = processFileAction(parseShopPage, async data
 	if (!shops.every(x => foundShops.some(y => y.url === x.url)))
 		return {
 			success: false,
-			message: `Unknown shops ${shops
+			message: `Unknown shop(s) ${shops
 				.filter(x => !foundShops.some(y => y.url === x.url))
 				.map(x => x.url)
 				.join(", ")}`,
 		};
+	const updatedShops = new Set<string>();
 	for (const shop of shops) {
-		
+		if (updatedShops.has(shop.url)) continue;
+		await prisma.shop.update({
+			where: { url: shop.url },
+			data: { blurb: shop.blurb, image: shop.image },
+		});
+		updatedShops.add(shop.url);
 	}
+	const itemIds = data.flatMap(x => x.entries.map(y => y.itemId));
+	const items = await prisma.item.findMany({ select: { id: true, seasons: true }, where: { id: { in: itemIds } } });
+	const itemMap = Object.fromEntries(items.map(x => [x.id, x.seasons]));
+	if (!itemIds.every(x => items.some(y => y.id === x))) return { success: false, message: `Unknown item(s) ${itemIds.filter(x => !items.some(y => y.id === x)).join(", ")}` };
+	const result = await prisma.shopEntry.createMany({
+		data: data.flatMap(x =>
+			x.entries.map(y => ({
+				itemId: y.itemId,
+				shopUrl: x.shop.url,
+				priceType: y.priceType,
+				priceCount: itemMap[y.itemId].includes(x.season) ? y.priceCount : y.priceCount / 3,
+			}))
+		),
+		skipDuplicates: true,
+	});
 	return { success: true, message: `${result.count} entries updated` };
 });
 

@@ -19,9 +19,9 @@ model Item {
     name          String
     image         String
     category      String
-    seasons       String[]
+    seasons       Season[]
     extraText     String[]
-    source        Json
+    info          Json
     marketEntries MarketEntry[]
     shopEntries   ShopEntry[]
 }
@@ -62,6 +62,13 @@ model ShopEntry {
     event      Event?
 
     @@unique(name: "shopItemPriceType", [shopUrl, itemId, priceCount, priceType])
+}
+
+enum Season {
+    SPRING
+    SUMMER
+    AUTUMN
+    WINTER
 }
 
 enum Event {
