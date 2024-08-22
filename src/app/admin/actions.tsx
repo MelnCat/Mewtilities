@@ -56,20 +56,35 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 	}
 });
 export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage, async data => {
-	const result = await prisma.item.createMany({
-		data: data.flat().map(x => ({
-			id: x.id,
-			category: x.category,
-			image: x.image,
-			key: x.key,
-			name: x.name,
-			info: x.info,
-			extraText: x.extraText,
-			seasons: x.seasons,
-		})),
-		skipDuplicates: true,
-	});
-	return { success: true, message: `${result.count} entries updated` };
+	let i = 0;
+	for (const item of data.flat()) {
+		await prisma.item.upsert({
+			where: {
+				id: item.id,
+			},
+			update: {
+				category: item.category,
+				image: item.image,
+				key: item.key,
+				name: item.name,
+				info: item.info,
+				extraText: item.extraText,
+				seasons: item.seasons,
+			},
+			create: {
+				id: item.id,
+				category: item.category,
+				image: item.image,
+				key: item.key,
+				name: item.name,
+				info: item.info,
+				extraText: item.extraText,
+				seasons: item.seasons,
+			},
+		});
+		i++;
+	}
+	return { success: true, message: `${i} entries updated` };
 });
 
 export const processShopListFiles = processFileAction(parseShopListPage, async data => {

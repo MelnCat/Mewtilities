@@ -25,7 +25,8 @@ export const NoteValue = ({ children }: { children: string | number }) => (
 		{typeof children === "number" ? numberFormat.format(children) : children} <NoteIcon count={typeof children === "number" ? noteDenominations.find(x => x < children) : 1} />
 	</span>
 );
-export const CurrencyDisplay = ({ children, icon }: { children: string | number; icon: () => React.ReactNode }) => {
+export const EssenceValue = ({ children }: { children: string | number }) => <CurrencyValue type={Currency.ESSENCE}>{children}</CurrencyValue>;
+const CurrencyDisplay = ({ children, icon }: { children: string | number; icon: () => React.ReactNode }) => {
 	const Icon = icon;
 	return (
 		<span className={styles.currencyValue}>
@@ -34,8 +35,8 @@ export const CurrencyDisplay = ({ children, icon }: { children: string | number;
 	);
 };
 
-export const CurrencyValue = ({ type, count }: { type: Currency; count: number | string }) => {
-	if (type === Currency.NOTE) return <NoteValue>{count}</NoteValue>;
+export const CurrencyValue = ({ type, children }: { type: Currency; children: number | string }) => {
+	if (type === Currency.NOTE) return <NoteValue>{children}</NoteValue>;
 	const Icon = icons[type];
-	return <CurrencyDisplay icon={Icon}>{count}</CurrencyDisplay>;
+	return <CurrencyDisplay icon={Icon}>{children}</CurrencyDisplay>;
 };

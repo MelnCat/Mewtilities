@@ -33,8 +33,15 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 		const id = topRightLines[0].match(/ID# (\d+)/)?.[1];
 		if (!id || isNaN(+id)) return failure("ID missing or invalid");
 		builder.id = +id;
-		const seasons = topRightLines.slice(1).map(x => Season[x.toUpperCase() as keyof typeof Season] as Season | null ?? null);
-		if (seasons.includes(null)) return failure(`Unknown season(s) ${topRightLines.slice(1).filter(x => !(x.toUpperCase() in Season)).join(", ")}`)
+		const seasons = topRightLines.slice(1).map(x => (Season[x.toUpperCase() as keyof typeof Season] as Season | null) ?? null);
+		if (seasons.includes(null))
+			return failure(
+				`Unknown season(s) ${topRightLines
+					.slice(1)
+					.filter(x => !(x.toUpperCase() in Season))
+					.join(", ")}`
+			);
+		builder.seasons = seasons as Season[];
 
 		const centerText = cube.querySelector(".shifting-flex > .item-mid > .itemtitle");
 		if (!centerText) return failure("Center text missing");
@@ -76,4 +83,3 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 	}
 	return success(entries);
 };
-

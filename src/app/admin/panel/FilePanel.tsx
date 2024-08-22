@@ -1,9 +1,17 @@
 "use client";
 import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.scss";
-import { processItemDatabaseFiles, processMarketFiles } from "../actions";
+import { processItemDatabaseFiles, processMarketFiles, processShopEntryFiles, processShopListFiles } from "../actions";
 
-export const FilePanel = ({ title, onSubmit }: { title: string; onSubmit: (files: FileList) => Promise<{ success: boolean; message: string }> }) => {
+export const FilePanel = ({
+	title,
+	onSubmit,
+	description,
+}: {
+	title: string;
+	onSubmit: (files: FileList) => Promise<{ success: boolean; message: string }>;
+	description?: string;
+}) => {
 	const [files, setFiles] = useState<FileList | null>(null);
 	const [error, setError] = useState<boolean>(false);
 	const [message, setMessage] = useState<string | null>(null);
@@ -24,6 +32,7 @@ export const FilePanel = ({ title, onSubmit }: { title: string; onSubmit: (files
 	return (
 		<div className={styles.panelEntry}>
 			<h1 className={styles.panelEntryTitle}>{title}</h1>
+			{description && <p>{description}</p>}
 			<input
 				type="file"
 				multiple
@@ -44,22 +53,25 @@ export const FilePanel = ({ title, onSubmit }: { title: string; onSubmit: (files
 };
 
 export const FilePanels = () => {
-	const uploadItemDatabaseFiles = async (files: FileList) => {
-		const formData = new FormData();
-		for (const file of files) formData.append("files", file);
-		const result = await processItemDatabaseFiles(formData);
-		return result;
-	};
-	const uploadMarketFiles = async (files: FileList) => {
-		const formData = new FormData();
-		for (const file of files) formData.append("files", file);
-		const result = await processMarketFiles(formData);
-		return result;
-	};
+	const upload =
+		(
+			processor: (data: FormData) => Promise<{
+				success: boolean;
+				message: string;
+			}>
+		) =>
+		async (files: FileList) => {
+			const formData = new FormData();
+			for (const file of files) formData.append("files", file);
+			const result = await processor(formData);
+			return result;
+		};
 	return (
 		<>
-			<FilePanel title="Process Item Database Files" onSubmit={uploadItemDatabaseFiles} />
-			<FilePanel title="Process Marketplace Files" onSubmit={uploadMarketFiles} />
+			<FilePanel title="Process Item Database Files" onSubmit={upload(processItemDatabaseFiles)} />
+			<FilePanel title="Process Marketplace Files" onSubmit={upload(processMarketFiles)} />
+			<FilePanel title="Process Shop List Files" description="The city page, not the place where you buy stuff." onSubmit={upload(processShopListFiles)} />
+			<FilePanel title="Process Shop Files" description="The where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
 		</>
 	);
 };

@@ -13,8 +13,8 @@
 	flex-direction: column;
 	align-items: center;
 	text-align: center;
-	width: 10em;
-	height: 14em;
+	width: 12em;
+	height: 16em;
 	padding: 0.5em;
 	font-size: 0.9em;
 	border: 1px solid black;
@@ -23,6 +23,8 @@
 	}
 }
 .lower {
+	display: flex;
+	flex-direction: column;
 	font-size: 0.9em;
 }
 .recordCount {
