@@ -59,7 +59,7 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 				}
 			});
 			if (!existing) added++;
-			else if (existing.expiryTime !== details.expiryTime) updated++;
+			else if (+existing.expiryTime !== +details.expiryTime) updated++;
 			else untouched++;
 		}
 		return { success: true, message: `+${added} ~${updated} @${untouched}` };

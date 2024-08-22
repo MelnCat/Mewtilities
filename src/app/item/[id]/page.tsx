@@ -87,7 +87,7 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 										{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType!}>{x.priceCount}</CurrencyValue>}
 									</>
 							  ))
-							: "N/A"}
+							: "?"}
 					</div>
 					{data.shopEntries.length > 0 ? (
 						<div className={styles.shopList}>
