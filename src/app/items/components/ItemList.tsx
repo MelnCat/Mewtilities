@@ -1,6 +1,6 @@
 "use client";
 import { CurrencyValue, EssenceValue, NoteValue } from "@/components/currencyIcons";
-import { getAllItems } from "@/db/db";
+import { getAllItems, ProcessedItem } from "@/db/db";
 import { bestOffersByCurrency } from "@/util/util";
 import { Currency, Item, MarketEntry, QuickSellEntry, ShopEntry } from "@prisma/client";
 import fuzzysort from "fuzzysort";
@@ -10,12 +10,9 @@ import * as R from "remeda";
 import useSWR from "swr";
 import styles from "../page.module.scss";
 
-const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unitPrice: number })[]; shopEntries: ShopEntry[]; quickSellEntries: QuickSellEntry[] } }) => {
-	const market = item.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
-	const noteMarket = market.filter(x => x.priceType === "NOTE");
-	const essenceMarket = market.filter(x => x.priceType === "ESSENCE");
+const ItemBox = ({ item }: { item: ProcessedItem }) => {
 	return (
-		<section className={`${styles.itemBox}${market.length === 0 ? ` ${styles.noDataBox}` : ""}`}>
+		<section className={`${styles.itemBox}${item.records === 0 ? ` ${styles.noDataBox}` : ""}`}>
 			<p className={styles.itemId}>{item.id}</p>
 			<h2>{item.name}</h2>
 			<a href={`/item/${item.id}`}>
@@ -24,48 +21,44 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 			<div className={styles.lower}>
 				<b>Current Cheapest: </b>
 				<p>
-					<NoteValue>{noteMarket[0]?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
+					<NoteValue>{item.cheapestMarketEntries.find(x => x.priceType === Currency.NOTE)?.priceCount ?? "?"}</NoteValue> /{" "}
+					<EssenceValue>{item.cheapestMarketEntries.find(x => x.priceType === Currency.ESSENCE)?.priceCount ?? "?"}</EssenceValue>
 				</p>
-				{item.shopEntries.length > 0 ? (
+				{item.cityOffers.length > 0 ? (
 					<>
 						<b>City Shops:</b>
-						{bestOffersByCurrency(item.shopEntries).map(x => (
-							<p key={x[0]}>
-								<CurrencyValue type={x[0] as Currency}>{x[1]}</CurrencyValue>
+						{item.cityOffers.map(x => (
+							<p key={`${x.priceType}/${x.priceCount}`}>
+								<CurrencyValue type={x.priceType}>{x.priceCount}</CurrencyValue>
 							</p>
 						))}
 					</>
 				) : null}
-				{item.quickSellEntries.some(x => x.priceCount !== -1) ? (
+				{item.quickSell ? (
 					<>
 						<b>Quick Sell Value:</b>
 						<p>
-							{item.quickSellEntries.map((x, i) => (
-								<span key={x.id}>
+							{item.quickSell.map((x, i) => (
+								<span key={`${x?.priceType}_${x?.priceCount}`}>
 									{i === 0 ? "" : " / "}
-									{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType!}>{x.priceCount}</CurrencyValue>}
+									{x === null ? "None" : <CurrencyValue type={x.priceType}>{x.priceCount}</CurrencyValue>}
 								</span>
 							))}
 						</p>
 					</>
 				) : null}
+				{item.craftable ? <p>Craftable</p> : null}
 			</div>
-			<div className={styles.recordCount}>{market.length} Records</div>
+			<div className={styles.recordCount}>{item.records} Records</div>
 		</section>
 	);
 };
 
-type PopulatedItem = Awaited<ReturnType<typeof getAllItems>>[number];
-
-const lowestForCurrency = (currency: Currency) => (item: PopulatedItem, asc: boolean) => {
-	const entries = item.marketEntries.filter(x => x.priceType === currency);
-	if (!entries.length) return asc ? Infinity : -Infinity;
-	return entries.reduce((l, c) => (c.unitPrice < l ? c.unitPrice : l), Infinity);
+const lowestForCurrency = (currency: Currency) => (item: ProcessedItem, asc: boolean) => {
+	return item.cheapestMarketEntries.find(x => x.priceType === currency)?.priceCount ?? (asc ? Infinity : -Infinity);
 };
-const lowestForCurrencyCity = (currency: Currency) => (item: PopulatedItem, asc: boolean) => {
-	const entries = item.shopEntries.filter(x => x.priceType === currency);
-	if (!entries.length) return asc ? Infinity : -Infinity;
-	return entries.reduce((l, c) => (c.priceCount < l ? c.priceCount : l), Infinity);
+const lowestForCurrencyCity = (currency: Currency) => (item: ProcessedItem, asc: boolean) => {
+	return item.cityOffers.find(x => x.priceType === currency)?.priceCount ?? (asc ? Infinity : -Infinity);
 };
 
 const itemKeys = {
@@ -74,19 +67,14 @@ const itemKeys = {
 	category: item => item.category,
 	marketPriceNotes: lowestForCurrency(Currency.NOTE),
 	marketPriceEssence: lowestForCurrency(Currency.ESSENCE),
-	quickSellPrice: (item, asc) =>
-		item.quickSellEntries.length === 0 || item.quickSellEntries.every(x => x.priceCount === -1)
-			? asc
-				? Infinity
-				: -Infinity
-			: item.quickSellEntries.reduce((l, c) => (c.priceCount !== -1 && c.priceCount < l ? c.priceCount : l), Infinity),
+	quickSellPrice: (item, asc) => item.quickSell?.find(x => x !== null)?.priceCount ?? (asc ? Infinity : -Infinity),
 	cityPriceNotes: lowestForCurrencyCity(Currency.NOTE),
 	cityPriceEssence: lowestForCurrencyCity(Currency.ESSENCE),
-	records: item => item.marketEntries.length
-} as const satisfies Record<string, (item: PopulatedItem, asc: boolean) => string | number>;
+	records: item => item.records,
+} as const satisfies Record<string, (item: ProcessedItem, asc: boolean) => string | number>;
 
 export const ItemList = () => {
-	const { data: rawItems } = useSWR<PopulatedItem[]>("/api/items", async () => await (await fetch("/api/items", { cache: "force-cache", next: { revalidate: 300 } })).json());
+	const { data: rawItems } = useSWR<ProcessedItem[]>("/api/items", async () => await (await fetch("/api/items", { cache: "force-cache", next: { revalidate: 300 } })).json());
 	const items = useMemo(() => rawItems?.map(x => ({ ...x, prepared: fuzzysort.prepare(x.name) })), [rawItems]);
 	const [category, setCategory] = useQueryState("category", parseAsString.withDefault("all"));
 	const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(0));
@@ -117,7 +105,7 @@ export const ItemList = () => {
 			if (typeof first === "number" && typeof second === "number") return sortOrder === "asc" ? first - second : second - first;
 			return 0;
 		});
-	}, [nameFilteredData, sortBy, sortOrder]); 
+	}, [nameFilteredData, sortBy, sortOrder]);
 	useEffect(() => {
 		setPage(0);
 	}, [setPage, name, perPage, sortBy, sortOrder, category]);

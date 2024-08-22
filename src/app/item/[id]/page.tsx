@@ -22,7 +22,7 @@ const createHistory = (entries: MarketEntry[]) => {
 		lastPrice = price;
 		times.push([new Date(time), price]);
 		const closest = dateSorted.findLast(x => +x.creationTime <= time);
-		const c = closest ? (lastClosest === -1 || (closest.priceCount / closest.itemCount) / lastClosest < 4 ? closest.priceCount / closest.itemCount : lastClosest) : null;
+		const c = closest ? (lastClosest === -1 || closest.priceCount / closest.itemCount / lastClosest < 4 ? closest.priceCount / closest.itemCount : lastClosest) : null;
 		if (c && c > lastClosest) lastClosest = c;
 		realTimes.push([new Date(time), c ?? realTimes.at(-1)?.[1] ?? lastPrice]);
 	}
@@ -100,6 +100,15 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 									{x.shop.name}: <CurrencyValue type={x.priceType}>{x.priceCount}</CurrencyValue>
 								</p>
 							))}
+						</div>
+					) : null}
+					{data.recipe ? (
+						<div className={styles.recipe}>
+							<h2>Recipe</h2>
+							<p>Type: {data.recipe.category}</p>
+							<div className={styles.recipeRow}>
+								{data.recipe.ingredients.map(x => `${x.count} ${x.item.name}`).join(" + ")} = {data.recipe.resultCount} {data.name}
+							</div>
 						</div>
 					) : null}
 				</section>

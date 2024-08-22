@@ -1,6 +1,6 @@
 import { failure, success } from "@/util/result";
 
-export const parseItemCubeId = (element: HTMLElement | null) => {
+export const parseItemCubeId = (element: Element | null) => {
 	if (!element) return failure("Missing item element");
 	const idNodes = element.querySelector(".itemtitle")?.childNodes;
 	if (!idNodes) return failure("Item title nodes missing");

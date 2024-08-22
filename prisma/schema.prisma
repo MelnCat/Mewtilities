@@ -81,6 +81,7 @@ model Recipe {
     id          String             @id @default(uuid())
     resultId    Int                @unique
     result      Item               @relation(fields: [resultId], references: [id])
+	resultCount Int
     category    RecipeCategory
     ingredients RecipeIngredient[]
 }

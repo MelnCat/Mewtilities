@@ -5,6 +5,7 @@ import prisma from "@/db/prisma";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
 import { parseQuickSellPage } from "@/parser/quickSellParser";
+import { parseRecipeDatabasePage } from "@/parser/recipeDatabaseParser";
 import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
@@ -40,10 +41,10 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 			const existing = await prisma.marketEntry.findFirst({ where: { id: x.id } });
 			const details = await prisma.marketEntry.upsert({
 				where: {
-					id: x.id
+					id: x.id,
 				},
 				update: {
-					expiryTime: new Date(x.expiryTime)
+					expiryTime: new Date(x.expiryTime),
 				},
 				create: {
 					id: x.id,
@@ -56,7 +57,7 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 					sellerId: x.seller.id,
 					sellerName: x.seller.name,
 					creationTime: new Date(x.expiryTime - 1000 * 60 * 60 * 24 * 7),
-				}
+				},
 			});
 			if (!existing) added++;
 			else if (+existing.expiryTime !== +details.expiryTime) updated++;
@@ -161,14 +162,35 @@ export const processQuickSellFiles = processFileAction(parseQuickSellPage, async
 	const items = await prisma.item.findMany({ where: { id: { in: data.flat().map(x => x.itemId) } } });
 
 	const result = await prisma.quickSellEntry.createMany({
-		data: data.flat().filter(x => items.some(y => y.id === x.itemId)).map(x => ({
-			itemId: x.itemId,
-			priceCount: x.priceCount,
-			priceType: x.priceType,
-		})),
+		data: data
+			.flat()
+			.filter(x => items.some(y => y.id === x.itemId))
+			.map(x => ({
+				itemId: x.itemId,
+				priceCount: x.priceCount,
+				priceType: x.priceType,
+			})),
 		skipDuplicates: true,
 	});
 	return { success: true, message: `${result.count} entries updated, ${data.flat().filter(y => !items.some(x => x.id === y.itemId)).length} unknown items` };
+});
+
+export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabasePage, async data => {
+	let updated = 0;
+	for (const page of data) {
+		updated += (await prisma.recipe.createMany({
+			data: page.entries.map(x => ({
+				resultId: x.resultId,
+				resultCount: x.resultCount,
+				category: page.category,
+				ingredients: {
+					create: x.ingredients.map(y => ({ itemId: y.itemId, count: y.count }))
+				}
+			})),
+			skipDuplicates: true
+		})).count;
+	}
+	return { success: true, message: `${updated} entries updated` };
 });
 
 export const getItemDatabaseInfo = async () => {

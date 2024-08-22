@@ -10,10 +10,10 @@ export interface RawRecipeDatabaseEntries {
 export interface RawRecipeDatabaseEntry {
 	resultId: number;
 	resultCount: number;
-	ingredients: { itemId: number; count: number };
+	ingredients: { itemId: number; count: number }[];
 }
 
-export const parseItemDatabasePage = (content: string): Result<RawRecipeDatabaseEntries> => {
+export const parseRecipeDatabasePage = (content: string): Result<RawRecipeDatabaseEntries> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");
@@ -28,15 +28,24 @@ export const parseItemDatabasePage = (content: string): Result<RawRecipeDatabase
 	const groups = [...form.querySelectorAll(".crafting-group")];
 	const entries: RawRecipeDatabaseEntry[] = [];
 	for (const group of groups) {
-		const builder: Partial<RawRecipeDatabaseEntry> = {};
+		const builder: Partial<RawRecipeDatabaseEntry> = { ingredients: [] };
 
 		const resultItem = parseItemCubeId(group.querySelector(".mini-itemcube"));
 		if (!resultItem.ok) return failure(`Failed to parse result item: ${resultItem.message}`);
 		builder.resultId = resultItem.data;
+		const resultCount = group.querySelector(".mini-itemcube .itemqty")?.textContent?.match(/Qty: (\d+)/)?.[1];
+		if (!resultCount || isNaN(+resultCount)) return failure("Result count missing or invalid");
+		builder.resultCount = +resultCount;
 
-
+		for (const ingredient of group.querySelectorAll(".subtle-itemcube")) {
+			const item = parseItemCubeId(ingredient);
+			if (!item.ok) return failure(`Failed to parse ingredient: ${item.message}`);
+			const count = ingredient.querySelector(".itemqty")?.textContent?.match(/Qty: \d+\/(\d+)/)?.[1];
+			if (!count || isNaN(+count)) return failure(`Ingredient count missing or invalid`);
+			builder.ingredients!.push({ itemId: item.data, count: +count });
+		}
 
 		entries.push(builder as RawRecipeDatabaseEntry);
 	}
 	return success({ entries, category });
-};
+}; 
