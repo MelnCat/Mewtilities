@@ -1,21 +1,22 @@
-import { readFileSync } from "fs";
+import { failure, Result, success } from "@/util/result";
 import { JSDOM } from "jsdom";
-import { Temporal } from "temporal-polyfill";
 import { RawMarketEntry } from "./marketParser";
-import { Result } from "@/util/result";
 
 export interface RawShopEntry {
+	shopName: string;
+	shopUrl: string;
 }
 
-export const parseMarketPage = (content: string): Result<RawMarketEntry[]> => {
+export const parseShopPage = (content: string): Result<RawShopEntry[]> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
 	const form = doc.querySelector(".forumwide-content-area form");
-	if (!form) return { type: "error", message: "Invalid page layout" };
-	if (!form.getAttribute("action")?.includes("/market")) return { type: "error", message: "Not a marketplace page" };
-	const lines = [...form.querySelectorAll(".forum-line-wrapless")];
-	const entries: RawMarketEntry[] = [];
+	if (!form) return failure("Invalid page layout");
+	const lines = [...form.querySelectorAll(".shops-itemcube")];
+	const entries: RawShopEntry[] = [];
+	const template: Partial<RawShopEntry> = {};
 	for (const line of lines) {
+
 	}
-	return { type: "success", data: entries };
+	return success(entries);
 };

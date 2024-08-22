@@ -1,78 +1,74 @@
 "use server";
 
 import { getAdminState } from "@/admin/auth";
-import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import prisma from "@/db/prisma";
+import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
-import { createInitialRouterState } from "next/dist/client/components/router-reducer/create-initial-router-state";
+import { Failure, Result, unwrap } from "@/util/result";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 const decoder = new TextDecoder();
 
-export const processMarketFiles = async (data: FormData): Promise<{ success: boolean; message: string }> => {
-	if (!(await getAdminState())) return { success: false, message: ":(" };
-	const files = data.getAll("files") as File[];
-	try {
-		const processed = await Promise.all(files.map(async x => parseMarketPage(decoder.decode(await x.arrayBuffer()))));
-		const errors = processed.map((x, i) => [x, i] as const).filter(x => x[0].type === "error");
-		if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as { type: "error"; message: string }).message}`).join("\n")}` };
-		const flattened = processed.flatMap(x => (x.type === "success" ? x.data : []));
+const processFileAction =
+	<T,>(parser: (content: string) => Result<T>, cb: (args: T[]) => Promise<{ success: boolean; message: string }>) =>
+	async (data: FormData): Promise<{ success: boolean; message: string }> => {
+		if (!(await getAdminState())) return { success: false, message: ":(" };
+		const files = data.getAll("files") as File[];
 		try {
-			const result = await prisma.marketEntry.createMany({
-				data: flattened.map(x => ({
-					id: x.id,
-					category: x.category,
-					expiryTime: new Date(x.expiryTime),
-					itemId: x.item.id,
-					itemCount: x.item.count,
-					priceCount: x.priceCount,
-					priceType: x.priceType,
-					sellerId: x.seller.id,
-					sellerName: x.seller.name,
-					creationTime: new Date(x.expiryTime - 1000 * 60 * 60 * 24 * 7),
-				})),
-				skipDuplicates: true,
-			});
-			return { success: true, message: `${result.count} entries updated` };
+			const processed = await Promise.all(files.map(async x => parser(decoder.decode(await x.arrayBuffer()))));
+			const errors = processed.map((x, i) => [x, i] as const).filter(x => !x[0].ok);
+			if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as Failure).message}`).join("\n")}` };
+			const unwrapped = processed.map(x => unwrap(x));
+			return await cb(unwrapped);
 		} catch (e) {
-			if (e instanceof PrismaClientKnownRequestError && e.message.includes("Foreign key constraint failed")) {
-				const items = [...new Set(flattened.map(x => x.item.id))];
-				const found = await prisma.item.findMany({ where: { id: { in: items } } });
-				const missing = items.filter(x => !found.some(y => y.id === x));
-				if (missing.length > 0) return { success: false, message: `Missing item(s) ${missing.join(", ")}` };
-			}
-			throw e;
+			return { success: false, message: String(e) };
 		}
-	} catch (e) {
-		return { success: false, message: String(e) };
-	}
-};
-export const processItemDatabaseFiles = async (data: FormData): Promise<{ success: boolean; message: string }> => {
-	if (!(await getAdminState())) return { success: false, message: ":(" };
-	const files = data.getAll("files") as File[];
+	};
+
+export const processMarketFiles = processFileAction(parseMarketPage, async data => {
 	try {
-		const processed = await Promise.all(files.map(async x => parseItemDatabasePage(decoder.decode(await x.arrayBuffer()))));
-		const errors = processed.map((x, i) => [x, i] as const).filter(x => x[0].type === "error");
-		if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as { type: "error"; message: string }).message}`).join("\n")}` };
-		const flattened = processed.flatMap(x => (x.type === "success" ? x.data : []));
-		const result = await prisma.item.createMany({
-			data: flattened.map(x => ({
+		const result = await prisma.marketEntry.createMany({
+			data: data.flat().map(x => ({
 				id: x.id,
 				category: x.category,
-				image: x.image,
-				key: x.key,
-				name: x.name,
-				source: x.sources,
-				extraText: x.extraText,
-				seasons: x.seasons,
+				expiryTime: new Date(x.expiryTime),
+				itemId: x.item.id,
+				itemCount: x.item.count,
+				priceCount: x.priceCount,
+				priceType: x.priceType,
+				sellerId: x.seller.id,
+				sellerName: x.seller.name,
+				creationTime: new Date(x.expiryTime - 1000 * 60 * 60 * 24 * 7),
 			})),
 			skipDuplicates: true,
 		});
 		return { success: true, message: `${result.count} entries updated` };
 	} catch (e) {
-		return { success: false, message: String(e) };
+		if (e instanceof PrismaClientKnownRequestError && e.message.includes("Foreign key constraint failed")) {
+			const items = [...new Set(data.flat().map(x => x.item.id))];
+			const found = await prisma.item.findMany({ where: { id: { in: items } } });
+			const missing = items.filter(x => !found.some(y => y.id === x));
+			if (missing.length > 0) return { success: false, message: `Missing item(s) ${missing.join(", ")}` };
+		}
+		throw e;
 	}
-};
+});
+export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage, async data => {
+	const result = await prisma.item.createMany({
+		data: data.flat().map(x => ({
+			id: x.id,
+			category: x.category,
+			image: x.image,
+			key: x.key,
+			name: x.name,
+			source: x.sources,
+			extraText: x.extraText,
+			seasons: x.seasons,
+		})),
+		skipDuplicates: true,
+	});
+	return { success: true, message: `${result.count} entries updated` };
+});
 
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
