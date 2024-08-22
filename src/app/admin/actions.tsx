@@ -26,6 +26,7 @@ const processFileAction =
 			const unwrapped = processed.map(x => unwrap(x));
 			return await cb(unwrapped);
 		} catch (e) {
+			console.log(e);
 			return { success: false, message: String(e) };
 		} finally {
 			revalidatePath("/api/items");
@@ -178,17 +179,20 @@ export const processQuickSellFiles = processFileAction(parseQuickSellPage, async
 export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabasePage, async data => {
 	let updated = 0;
 	for (const page of data) {
-		updated += (await prisma.recipe.createMany({
-			data: page.entries.map(x => ({
-				resultId: x.resultId,
-				resultCount: x.resultCount,
-				category: page.category,
-				ingredients: {
-					create: x.ingredients.map(y => ({ itemId: y.itemId, count: y.count }))
-				}
-			})),
-			skipDuplicates: true
-		})).count;
+		for (const entry of page.entries) {
+			if (await prisma.recipe.count({ where: { resultId: entry.resultId } })) continue;
+			await prisma.recipe.create({
+				data: {
+					resultId: entry.resultId,
+					resultCount: entry.resultCount,
+					category: page.category,
+					ingredients: {
+						create: entry.ingredients.map(y => ({ itemId: y.itemId, count: y.count })),
+					},
+				},
+			});
+			updated++;
+		}
 	}
 	return { success: true, message: `${updated} entries updated` };
 });

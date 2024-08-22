@@ -4,7 +4,7 @@ import { CurrencyValue, EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@
 import { MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 
-const createHistory = (entries: MarketEntry[]) => {
+const createHistory = (entries: { creationTime: Date, expiryTime: Date, itemCount: number, priceCount: number }[]) => {
 	if (entries.length === 0) return [[], []];
 	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
