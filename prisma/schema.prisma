@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Item {
-    id               Int              @id
+    id               Int                @id
     key              String
     name             String
     image            String
@@ -25,6 +25,8 @@ model Item {
     marketEntries    MarketEntry[]
     shopEntries      ShopEntry[]
     quickSellEntries QuickSellEntry[]
+    recipe           Recipe?
+    usages           RecipeIngredient[]
 }
 
 model MarketEntry {
@@ -66,13 +68,43 @@ model ShopEntry {
 }
 
 model QuickSellEntry {
-    id         String   @id @default(uuid())
-    item       Item     @relation(fields: [itemId], references: [id])
+    id         String    @id @default(uuid())
+    item       Item      @relation(fields: [itemId], references: [id])
     itemId     Int
     priceType  Currency?
     priceCount Int
-	
+
     @@unique(name: "itemPrice", [itemId, priceCount, priceType])
+}
+
+model Recipe {
+    id          String             @id @default(uuid())
+    resultId    Int                @unique
+    result      Item               @relation(fields: [resultId], references: [id])
+    category    RecipeCategory
+    ingredients RecipeIngredient[]
+}
+
+model RecipeIngredient {
+    item     Item   @relation(fields: [itemId], references: [id])
+    itemId   Int
+    recipe   Recipe @relation(fields: [recipeId], references: [id])
+    recipeId String
+    count    Int
+
+    @@id([itemId, recipeId])
+}
+
+enum RecipeCategory {
+    APOTHECARY
+    CLOTHIER
+    SCRIBE
+    ARTIST
+    BLACKSMITH
+    CRAFTSCAT
+    BUILDER
+    MASON
+    BAKER
 }
 
 enum Season {

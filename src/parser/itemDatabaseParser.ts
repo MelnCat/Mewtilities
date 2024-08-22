@@ -13,8 +13,6 @@ export interface RawItemDatabaseEntry {
 	info: Record<string, string>;
 }
 
-export type ItemDatabaseParseResult = { type: "error"; message: string } | { type: "success"; data: RawItemDatabaseEntry[] };
-
 export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEntry[]> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;

@@ -105,7 +105,7 @@ export const ItemList = () => {
 	const nameFilteredData = useMemo(() => {
 		if (!presortData) return null;
 		if (!name?.trim()) return presortData;
-		const filtered = fuzzysort.go(name, presortData, { key: "prepared", threshold: 0.5 });
+		const filtered = fuzzysort.go(name, presortData, { key: "prepared", threshold: 0.4 });
 		return filtered.map(x => x.obj);
 	}, [presortData, name]);
 	const finalData = useMemo(() => {
