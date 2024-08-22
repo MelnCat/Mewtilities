@@ -23,3 +23,28 @@
 .chartContainer {
 	width: 50%;
 }
+.shopList {
+	display: flex;
+	flex-direction: column;
+}
+.seasons {
+	display: flex;
+	gap: 0.5em;
+	font-weight: bold;
+	p[data-season="SPRING"] {
+		color: #006400;
+	}
+	p[data-season="SUMMER"] {
+		color: #926904;
+	}
+	p[data-season="AUTUMN"] {
+		color: #8B4513;
+	}
+	p[data-season="WINTER"] {
+		color: #191970;
+	}
+}
+.info {
+	display: flex;
+	flex-direction: column;
+}

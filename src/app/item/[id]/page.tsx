@@ -1,6 +1,6 @@
 import { getItemData } from "@/db/db";
 import styles from "./item.module.scss";
-import { EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@/components/currencyIcons";
+import { CurrencyValue, EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@/components/currencyIcons";
 import { MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 
@@ -47,8 +47,23 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 				<section>
 					<div>{data.key}</div>
 					<div>{data.category}</div>
+					<div className={styles.info}>
+						{Object.entries(data.info ?? {}).map(x => (
+							<p key={x[0]}>
+								{x[0]}: {x[1]}
+							</p>
+						))}
+					</div>
 					{data.extraText.length ? <div>{data.extraText.join("\n")}</div> : null}
+					<div className={styles.seasons}>
+						{data.seasons.map(x => (
+							<p data-season={x} key={x}>
+								{x}
+							</p>
+						))}
+					</div>
 					<div>{market.length} Records</div>
+					<hr />
 					<div>
 						<b>Current Low</b>: <NoteValue>{currentNoteMarket[0]?.unitPrice ?? "?"}</NoteValue> /{" "}
 						<EssenceValue>{currentEssenceMarket[0]?.unitPrice ?? "?"}</EssenceValue>
@@ -63,6 +78,27 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 					<div>
 						<b>Historical High</b>: <NoteValue>{noteMarket.at(-1)?.unitPrice ?? "?"}</NoteValue> / <EssenceValue>{essenceMarket.at(-1)?.unitPrice ?? "?"}</EssenceValue>
 					</div>
+					<div className={styles.quickSell}>
+						<b>Quick Sell Value</b>:{" "}
+						{data.quickSellEntries.length > 0
+							? data.quickSellEntries.map((x, i) => (
+									<>
+										{i === 0 ? "" : " / "}
+										{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType!}>{x.priceCount}</CurrencyValue>}
+									</>
+							  ))
+							: "N/A"}
+					</div>
+					{data.shopEntries.length > 0 ? (
+						<div className={styles.shopList}>
+							<h2>City Shop Offers</h2>
+							{data.shopEntries.map(x => (
+								<p key={x.id}>
+									{x.shop.name}: <CurrencyValue type={x.priceType}>{x.priceCount}</CurrencyValue>
+								</p>
+							))}
+						</div>
+					) : null}
 				</section>
 			</article>
 			<article className={styles.rightPanel}>

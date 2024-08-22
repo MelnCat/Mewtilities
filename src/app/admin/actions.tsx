@@ -9,6 +9,7 @@ import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { revalidatePath } from "next/cache";
 
 const decoder = new TextDecoder();
 
@@ -25,6 +26,8 @@ const processFileAction =
 			return await cb(unwrapped);
 		} catch (e) {
 			return { success: false, message: String(e) };
+		} finally {
+			revalidatePath("/api/items");
 		}
 	};
 
@@ -145,7 +148,7 @@ export const processQuickSellFiles = processFileAction(parseQuickSellPage, async
 		data: data.flat().map(x => ({
 			itemId: x.itemId,
 			priceCount: x.priceCount,
-			priceType: x.priceType
+			priceType: x.priceType,
 		})),
 		skipDuplicates: true,
 	});
