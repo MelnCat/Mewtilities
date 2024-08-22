@@ -4,6 +4,7 @@ import { getAdminState } from "@/admin/auth";
 import prisma from "@/db/prisma";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
+import { parseShopListPage } from "@/parser/shopListParser";
 import { Failure, Result, unwrap } from "@/util/result";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -64,6 +65,20 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 			source: x.sources,
 			extraText: x.extraText,
 			seasons: x.seasons,
+		})),
+		skipDuplicates: true,
+	});
+	return { success: true, message: `${result.count} entries updated` };
+});
+
+export const processShopListFiles = processFileAction(parseShopListPage, async data => {
+	const result = await prisma.shop.createMany({
+		data: data.flat().map(x => ({
+			url: x.url,
+			category: x.category,
+			description: x.description,
+			name: x.name,
+			previewImage: x.previewImage
 		})),
 		skipDuplicates: true,
 	});

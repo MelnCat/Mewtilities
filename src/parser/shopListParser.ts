@@ -10,7 +10,7 @@ export interface RawShop {
 	category: string;
 }
 
-export const parseShopPage = (content: string): Result<RawShop[]> => {
+export const parseShopListPage = (content: string): Result<RawShop[]> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
 	const list = doc.querySelector(".forumwide-content-area > .horizontalflex.wrapflex.justify");
@@ -33,8 +33,8 @@ export const parseShopPage = (content: string): Result<RawShop[]> => {
 		if (!name) return failure("Name missing or invalid");
 		builder.name = name;
 
-		const description = [...box.childNodes].find(x => x.nodeType === 3 /* Node.TEXT */)?.textContent?.trim();
-		console.log([...box.childNodes].find(x => x.nodeType === 3 /* Node.TEXT */))
+		const description = [...box.childNodes].findLast(x => x.nodeType === 3 /* Node.TEXT */)?.textContent?.trim();
+
 		if (!description) return failure("Description missing or invalid");
 		builder.description = description;
 

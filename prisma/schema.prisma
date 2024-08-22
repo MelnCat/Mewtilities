@@ -41,19 +41,22 @@ model MarketEntry {
 }
 
 model Shop {
-    url          String  @id
-    name         String  @unique
+    url          String      @id
+    name         String      @unique
     description  String
     category     String
     previewImage String
     image        String?
     blurb        String?
+    ShopEntry    ShopEntry[]
 }
 
 model ShopEntry {
     id         String   @id @default(uuid())
     item       Item     @relation(fields: [itemId], references: [id])
     itemId     Int
+    shop       Shop     @relation(fields: [shopUrl], references: [url])
+    shopUrl    String
     priceType  Currency
     priceCount Int
     event      Event?
