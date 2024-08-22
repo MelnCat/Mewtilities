@@ -87,13 +87,15 @@ const itemKeys = {
 export const ItemList = () => {
 	const { data: rawItems } = useSWR<PopulatedItem[]>("/api/items", async () => await (await fetch("/api/items", { cache: "force-cache", next: { revalidate: 300 } })).json());
 	const items = useMemo(() => rawItems?.map(x => ({ ...x, prepared: fuzzysort.prepare(x.name) })), [rawItems]);
+	const [category, setCategory] = useQueryState("category", parseAsString.withDefault("all"));
 	const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(0));
 	const [perPage, setPerPage] = useQueryState("per_page", parseAsInteger.withDefault(250));
 	const [name, setName] = useQueryState("name", parseAsString.withDefault(""));
 	const [sortBy, setSortBy] = useQueryState("sort_by", parseAsStringLiteral(Object.keys(itemKeys) as (keyof typeof itemKeys)[]).withDefault("id"));
 	const [sortOrder, setSortOrder] = useQueryState("sort_order", parseAsStringLiteral(["asc", "desc"]).withDefault("asc"));
-	const itemCategories = useMemo(() => (items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : []), [items]);
-	const [category, setCategory] = useQueryState("category", parseAsStringLiteral(itemCategories).withDefault("all"));
+	const itemCategories = useMemo(() => {
+		return items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : [];
+	}, [items]);
 
 	const presortData = useMemo(() => {
 		if (!items) return null;
@@ -114,7 +116,7 @@ export const ItemList = () => {
 			if (typeof first === "number" && typeof second === "number") return sortOrder === "asc" ? first - second : second - first;
 			return 0;
 		});
-	}, [nameFilteredData, sortBy, sortOrder]);
+	}, [nameFilteredData, sortBy, sortOrder]); 
 	useEffect(() => {
 		setPage(0);
 	}, [setPage, name, perPage, sortBy, sortOrder, category]);
