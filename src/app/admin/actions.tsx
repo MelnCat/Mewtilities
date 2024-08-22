@@ -4,6 +4,7 @@ import { getAdminState } from "@/admin/auth";
 import prisma from "@/db/prisma";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
+import { parseQuickSellPage } from "@/parser/quickSellParser";
 import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
@@ -134,6 +135,18 @@ export const processShopEntryFiles = processFileAction(parseShopPage, async data
 				priceCount: itemMap[y.itemId].includes(x.season) ? y.priceCount : y.priceCount / 3,
 			}))
 		),
+		skipDuplicates: true,
+	});
+	return { success: true, message: `${result.count} entries updated` };
+});
+
+export const processQuickSellFiles = processFileAction(parseQuickSellPage, async data => {
+	const result = await prisma.quickSellEntry.createMany({
+		data: data.flat().map(x => ({
+			itemId: x.itemId,
+			priceCount: x.priceCount,
+			priceType: x.priceType
+		})),
 		skipDuplicates: true,
 	});
 	return { success: true, message: `${result.count} entries updated` };

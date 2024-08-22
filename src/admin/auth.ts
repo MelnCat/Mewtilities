@@ -7,6 +7,6 @@ import { redirect } from "next/navigation";
 export const getAdminState = cache(async () => {
 	const cookie = cookies().get("password")?.value;
 
-	return cookie === process.env.PASSWORD;
+	return cookie && cookie === process.env.PASSWORD || cookie === process.env.PASSWORD2;
 });
 

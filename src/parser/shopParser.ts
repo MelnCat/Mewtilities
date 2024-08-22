@@ -1,4 +1,5 @@
 import { failure, Result, success } from "@/util/result";
+import { parsePriceType } from "@/util/util";
 import { Currency, Season } from "@prisma/client";
 import { JSDOM } from "jsdom";
 
@@ -51,10 +52,7 @@ export const parseShopPage = (content: string): Result<RawShopEntries> => {
 		const priceCount = +cost[1];
 		if (isNaN(priceCount)) return failure(`Invalid cost "${cost[1]}"`);
 		builder.priceCount = priceCount;
-		const priceType = {
-			"Notes": Currency.NOTE,
-			"Essence Fragments": Currency.ESSENCE
-		}[cost[2].trim()];
+		const priceType = parsePriceType(cost[2].trim());
 		if (!priceType) return failure(`Unknown currency "${cost[2].trim()}"`);
 		builder.priceType = priceType;
 

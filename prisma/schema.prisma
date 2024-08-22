@@ -14,16 +14,17 @@ datasource db {
 }
 
 model Item {
-    id            Int           @id
-    key           String
-    name          String
-    image         String
-    category      String
-    seasons       Season[]
-    extraText     String[]
-    info          Json
-    marketEntries MarketEntry[]
-    shopEntries   ShopEntry[]
+    id               Int              @id
+    key              String
+    name             String
+    image            String
+    category         String
+    seasons          Season[]
+    extraText        String[]
+    info             Json
+    marketEntries    MarketEntry[]
+    shopEntries      ShopEntry[]
+    quickSellEntries QuickSellEntry[]
 }
 
 model MarketEntry {
@@ -62,6 +63,16 @@ model ShopEntry {
     event      Event?
 
     @@unique(name: "shopItemPriceType", [shopUrl, itemId, priceCount, priceType])
+}
+
+model QuickSellEntry {
+    id         String   @id @default(uuid())
+    item       Item     @relation(fields: [itemId], references: [id])
+    itemId     Int
+    priceType  Currency?
+    priceCount Int
+	
+    @@unique(name: "itemPrice", [itemId, priceCount, priceType])
 }
 
 enum Season {

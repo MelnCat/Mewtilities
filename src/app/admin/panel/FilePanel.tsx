@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.scss";
-import { processItemDatabaseFiles, processMarketFiles, processShopEntryFiles, processShopListFiles } from "../actions";
+import { processItemDatabaseFiles, processMarketFiles, processQuickSellFiles, processShopEntryFiles, processShopListFiles } from "../actions";
 
 export const FilePanel = ({
 	title,
@@ -71,7 +71,8 @@ export const FilePanels = () => {
 			<FilePanel title="Process Item Database Files" onSubmit={upload(processItemDatabaseFiles)} />
 			<FilePanel title="Process Marketplace Files" onSubmit={upload(processMarketFiles)} />
 			<FilePanel title="Process Shop List Files" description="The city page, not the place where you buy stuff." onSubmit={upload(processShopListFiles)} />
-			<FilePanel title="Process Shop Files" description="The where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
+			<FilePanel title="Process Shop Files" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
+			<FilePanel title="Process Quick Sell Files" onSubmit={upload(processQuickSellFiles)} />
 		</>
 	);
 };

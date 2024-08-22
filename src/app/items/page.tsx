@@ -1,10 +1,10 @@
 import { getAllItems } from "@/db/db";
 import styles from "./page.module.scss";
-import { Currency, Item, MarketEntry, ShopEntry } from "@prisma/client";
+import { Currency, Item, MarketEntry, QuickSellEntry, ShopEntry } from "@prisma/client";
 import { CurrencyValue, EssenceValue, NoteValue } from "@/components/currencyIcons";
 import { bestOffersByCurrency } from "@/util/util";
 
-const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unitPrice: number })[]; shopEntries: ShopEntry[] } }) => {
+const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unitPrice: number })[]; shopEntries: ShopEntry[]; quickSellEntries: QuickSellEntry[] } }) => {
 	const market = item.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
 	const noteMarket = market.filter(x => x.priceType === "NOTE");
 	const essenceMarket = market.filter(x => x.priceType === "ESSENCE");
@@ -28,6 +28,19 @@ const ItemBox = ({ item }: { item: Item & { marketEntries: (MarketEntry & { unit
 								<CurrencyValue type={x[0] as Currency}>{x[1]}</CurrencyValue>
 							</p>
 						))}
+					</>
+				) : null}
+				{item.quickSellEntries.some(x => x.priceCount !== -1) ? (
+					<>
+						<b>Quick Sell Value:</b>
+						<p>
+							{item.quickSellEntries.map((x, i) => (
+								<>
+									{i === 0 ? "" : " / "}
+									{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType!}>{x.priceCount}</CurrencyValue>}
+								</>
+							))}
+						</p>
 					</>
 				) : null}
 			</div>
