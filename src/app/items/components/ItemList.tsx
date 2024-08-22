@@ -82,6 +82,7 @@ const itemKeys = {
 			: item.quickSellEntries.reduce((l, c) => (c.priceCount !== -1 && c.priceCount < l ? c.priceCount : l), Infinity),
 	cityPriceNotes: lowestForCurrencyCity(Currency.NOTE),
 	cityPriceEssence: lowestForCurrencyCity(Currency.ESSENCE),
+	records: item => item.marketEntries.length
 } as const satisfies Record<string, (item: PopulatedItem, asc: boolean) => string | number>;
 
 export const ItemList = () => {
