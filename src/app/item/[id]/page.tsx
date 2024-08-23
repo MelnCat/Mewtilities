@@ -40,10 +40,10 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 	const currentNoteMarket = noteMarket.filter(x => +x.expiryTime > Date.now());
 	const currentEssenceMarket = essenceMarket.filter(x => +x.expiryTime > Date.now());
 	const individualMarket = data.marketEntries.toSorted((a, b) => a.priceCount - b.priceCount);
-	const individualNoteMarket = market.filter(x => x.priceType === "NOTE");
-	const individualEssenceMarket = market.filter(x => x.priceType === "ESSENCE");
-	const individualCurrentNoteMarket = noteMarket.filter(x => +x.expiryTime > Date.now());
-	const individualCurrentEssenceMarket = essenceMarket.filter(x => +x.expiryTime > Date.now());
+	const individualNoteMarket = individualMarket.filter(x => x.priceType === "NOTE");
+	const individualEssenceMarket = individualMarket.filter(x => x.priceType === "ESSENCE");
+	const individualCurrentNoteMarket = individualNoteMarket.filter(x => +x.expiryTime > Date.now());
+	const individualCurrentEssenceMarket = individualCurrentEssenceMarket.filter(x => +x.expiryTime > Date.now());
 	const noteHistory = createHistory(noteMarket);
 	const essenceHistory = createHistory(essenceMarket);
 
