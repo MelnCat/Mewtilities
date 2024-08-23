@@ -34,7 +34,7 @@ const ItemBox = ({ item }: { item: ProcessedItem }) => {
 						))}
 					</>
 				) : null}
-				{item.quickSell ? (
+				{item.quickSell?.some(x => x !== null) ? (
 					<>
 						<b>Quick Sell Value:</b>
 						<p>
@@ -49,6 +49,7 @@ const ItemBox = ({ item }: { item: ProcessedItem }) => {
 				) : null}
 				{item.craftable ? <p>Craftable</p> : null}
 			</div>
+			<div className={styles.spacer} />
 			<div className={styles.recordCount}>{item.records} Records</div>
 		</section>
 	);

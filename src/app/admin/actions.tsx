@@ -205,3 +205,9 @@ export const getItemDatabaseInfo = async () => {
 		highest: allItems.at(-1)?.id ?? -1,
 	};
 };
+export const getMarketInfo = async () => {
+	const entry = await prisma.marketEntry.findFirst({ orderBy: { expiryTime: "desc" } });
+	return {
+		lastUpdate: entry ? entry.expiryTime.getTime() - 24 * 60 * 60 * 1000 * 7 : null
+	};
+};

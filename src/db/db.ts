@@ -1,16 +1,16 @@
 "use server";
 import { Currency, Item, MarketEntry } from "@prisma/client";
 import prisma from "./prisma";
-import { groupBy } from "remeda";
+import { getCheapestEntries } from "./dbUtil";
 
 export const getItemData = (id: number) =>
 	prisma.item.findFirst({
 		where: { id },
 		include: {
-			marketEntries: { select: { itemCount: true, priceCount: true, priceType: true, expiryTime: true, creationTime: true, unitPrice: true } },
+			marketEntries: true,
 			shopEntries: { include: { shop: true } },
 			quickSellEntries: true,
-			recipe: { include: { ingredients: { include: { item: true } } } },
+			recipe: { include: { ingredients: { include: { item: { include: { marketEntries: true, shopEntries: true } } } } } },
 		},
 	});
 
@@ -27,6 +27,7 @@ export type ProcessedItem = Item & {
 	craftable: boolean;
 };
 
+
 export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 	const items = await getAllItems();
 	return items.map(x => ({
@@ -39,9 +40,7 @@ export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 		extraText: x.extraText,
 		info: x.info,
 		records: x.marketEntries.length,
-		cheapestMarketEntries: Object.values(groupBy(x.marketEntries, y => y.priceType))
-			.map(m => m.reduce((l, c) => (c.unitPrice < l.unitPrice ? c : l)))
-			.map(m => ({ priceType: m.priceType, priceCount: m.unitPrice })),
+		cheapestMarketEntries: getCheapestEntries(x.marketEntries),
 		cityOffers: x.shopEntries.map(e => ({ priceType: e.priceType, priceCount: e.priceCount })),
 		quickSell:
 			(x.quickSellEntries.map(e => ({ priceCount: e.priceCount, priceType: e.priceType })).map(x => (x.priceType !== null ? x : null)) as ({
