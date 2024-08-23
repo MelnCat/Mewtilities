@@ -9,15 +9,16 @@ import { useEffect, useMemo } from "react";
 import * as R from "remeda";
 import useSWR from "swr";
 import styles from "../page.module.scss";
+import Link from "next/link";
 
 const ItemBox = ({ item }: { item: ProcessedItem }) => {
 	return (
 		<section className={`${styles.itemBox}${item.records === 0 ? ` ${styles.noDataBox}` : ""}`}>
 			<p className={styles.itemId}>{item.id}</p>
 			<h2>{item.name}</h2>
-			<a href={`/item/${item.id}`}>
+			<Link href={`/item/${item.id}`}>
 				<img src={item.image} loading="lazy" />
-			</a>
+			</Link>
 			<div className={styles.lower}>
 				<b>Current Cheapest: </b>
 				<p>

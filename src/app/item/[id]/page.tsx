@@ -4,6 +4,7 @@ import { CurrencyValue, EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@
 import { Currency, MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 import { getCheapestEntries, getCheapestNote } from "@/db/dbUtil";
+import Link from "next/link";
 
 const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number }[]) => {
 	if (entries.length === 0) return [[], []];
@@ -155,7 +156,9 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 												<h4>
 													{x.count} {x.item.name}
 												</h4>
-												<img src={x.item.image} className={styles.icon} />
+												<Link href={`/item/${x.item.id}`}>
+													<img src={x.item.image} className={styles.icon} />
+												</Link>
 												{isFinite(cheapestNote) ? (
 													<div className={styles.ingredientPrice}>
 														<b>Total Cost</b>:
