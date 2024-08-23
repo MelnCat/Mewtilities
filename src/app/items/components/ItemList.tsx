@@ -92,7 +92,7 @@ export const ItemList = () => {
 	const presortData = useMemo(() => {
 		if (!items) return null;
 		return items.filter(x => category === "all" || x.category === category).filter(x => !craftable || x.craftable);
-	}, [items, category]);
+	}, [items, category, craftable]);
 	const nameFilteredData = useMemo(() => {
 		if (!presortData) return null;
 		if (!name?.trim()) return presortData;
