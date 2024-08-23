@@ -4,7 +4,7 @@ import { getAllItems, ProcessedItem } from "@/db/db";
 import { bestOffersByCurrency } from "@/util/util";
 import { Currency, Item, MarketEntry, QuickSellEntry, ShopEntry } from "@prisma/client";
 import fuzzysort from "fuzzysort";
-import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useMemo } from "react";
 import * as R from "remeda";
 import useSWR from "swr";
@@ -84,13 +84,14 @@ export const ItemList = () => {
 	const [name, setName] = useQueryState("name", parseAsString.withDefault(""));
 	const [sortBy, setSortBy] = useQueryState("sort_by", parseAsStringLiteral(Object.keys(itemKeys) as (keyof typeof itemKeys)[]).withDefault("id"));
 	const [sortOrder, setSortOrder] = useQueryState("sort_order", parseAsStringLiteral(["asc", "desc"]).withDefault("asc"));
+	const [craftable, setCraftable] = useQueryState("craftable_only", parseAsBoolean.withDefault(false));
 	const itemCategories = useMemo(() => {
 		return items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : [];
 	}, [items]);
 
 	const presortData = useMemo(() => {
 		if (!items) return null;
-		return items.filter(x => category === "all" || x.category === category);
+		return items.filter(x => category === "all" || x.category === category).filter(x => !craftable || x.craftable);
 	}, [items, category]);
 	const nameFilteredData = useMemo(() => {
 		if (!presortData) return null;
@@ -160,6 +161,10 @@ export const ItemList = () => {
 							</option>
 						))}
 					</select>
+				</div>
+				<div className={styles.searchOption}>
+					<p>Craftable</p>
+					<input type="checkbox" checked={craftable} onChange={() => setCraftable(!craftable)} />
 				</div>
 				<div className={styles.searchOption}>
 					<button disabled={!(page - 1 in paginatedData)} onClick={() => page - 1 in paginatedData && setPage(page - 1)}>
