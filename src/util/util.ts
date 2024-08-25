@@ -13,3 +13,7 @@ export const parsePriceType = (raw: string) =>
 		Notes: Currency.NOTE,
 		"Essence Fragments": Currency.ESSENCE,
 	}[raw]);
+
+export const numberFormat = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 2 });
+
+export const smallNumberFormat = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 6 });

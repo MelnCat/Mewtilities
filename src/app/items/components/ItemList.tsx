@@ -50,6 +50,7 @@ const ItemBox = ({ item }: { item: ProcessedItem }) => {
 				) : null}
 				{item.craftable ? <p>Craftable</p> : null}
 			</div>
+			{item.info && typeof item.info === "object" ? <div className={styles.itemInfo}>{Object.entries(item.info).map(([k, v]) => <p key={k}>{k}: {String(v)}</p>)}</div> : null}
 			<div className={styles.spacer} />
 			<div className={styles.recordCount}>{item.records} Records</div>
 		</section>
@@ -84,15 +85,27 @@ export const ItemList = () => {
 	const [name, setName] = useQueryState("name", parseAsString.withDefault(""));
 	const [sortBy, setSortBy] = useQueryState("sort_by", parseAsStringLiteral(Object.keys(itemKeys) as (keyof typeof itemKeys)[]).withDefault("id"));
 	const [sortOrder, setSortOrder] = useQueryState("sort_order", parseAsStringLiteral(["asc", "desc"]).withDefault("asc"));
-	const [craftable, setCraftable] = useQueryState("craftable_only", parseAsBoolean.withDefault(false));
+	const [craftable, setCraftable] = useQueryState("craftable", parseAsBoolean.withDefault(false));
+	const [infoKey, setInfoKey] = useQueryState("info_key", parseAsString.withDefault("-"));
+	const [infoValue, setInfoValue] = useQueryState("info_val", parseAsString.withDefault("-"));
 	const itemCategories = useMemo(() => {
 		return items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : [];
+	}, [items]);
+	const itemInfoKeys = useMemo(() => {
+		return items ? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.keys(x.info) : [])))].sort((a, b) => a.localeCompare(b)) : [];
+	}, [items]);
+	const itemInfoValues = useMemo(() => {
+		return items ? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.values(x.info) : [])))].map(x => String(x)).sort((a, b) => a.localeCompare(b)) : [];
 	}, [items]);
 
 	const presortData = useMemo(() => {
 		if (!items) return null;
-		return items.filter(x => category === "all" || x.category === category).filter(x => !craftable || x.craftable);
-	}, [items, category, craftable]);
+		return items
+			.filter(x => category === "all" || x.category === category)
+			.filter(x => !craftable || x.craftable)
+			.filter(x => infoKey === "-" || (x.info !== null && typeof x.info === "object" && "infoKey" in x.info))
+			.filter(x => infoValue === "-" || (x.info !== null && typeof x.info === "object" && Object.values(x.info).includes(infoValue)));
+	}, [items, category, craftable, infoKey, infoValue]);
 	const nameFilteredData = useMemo(() => {
 		if (!presortData) return null;
 		if (!name?.trim()) return presortData;
@@ -156,6 +169,38 @@ export const ItemList = () => {
 					>
 						<option value="all">all</option>
 						{itemCategories.map(k => (
+							<option value={k} key={k}>
+								{k}
+							</option>
+						))}
+					</select>
+				</div>
+				<div className={styles.searchOption}>
+					<p>Info Key</p>
+					<select
+						value={infoKey}
+						onChange={e => {
+							setInfoKey(e.target.value);
+						}}
+					>
+						<option value="-">-</option>
+						{itemInfoKeys.map(k => (
+							<option value={k} key={k}>
+								{k}
+							</option>
+						))}
+					</select>
+				</div>
+				<div className={styles.searchOption}>
+					<p>Info Value</p>
+					<select
+						value={infoValue}
+						onChange={e => {
+							setInfoValue(e.target.value);
+						}}
+					>
+						<option value="-">-</option>
+						{itemInfoValues.map(k => (
 							<option value={k} key={k}>
 								{k}
 							</option>

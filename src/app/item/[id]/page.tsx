@@ -5,6 +5,8 @@ import { Currency, MarketEntry } from "@prisma/client";
 import { PriceGraph } from "./components/PriceGraph";
 import { getCheapestEntries, getCheapestNote } from "@/db/dbUtil";
 import Link from "next/link";
+import { getNestorSources } from "@/util/nestor";
+import { smallNumberFormat } from "@/util/util";
 
 const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number }[]) => {
 	if (entries.length === 0) return [[], []];
@@ -33,6 +35,7 @@ const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCoun
 
 export default async function Page({ params: { id } }: { params: { id: string } }) {
 	const data = await getItemData(+id);
+	const nestor = await getNestorSources();
 	if (!data) return <h1>404</h1>;
 	const market = data.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
 	const noteMarket = market.filter(x => x.priceType === "NOTE");
@@ -109,6 +112,7 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 								  ))
 								: "?"}
 						</div>
+						<h1>Sources</h1>
 						{data.shopEntries.length > 0 ? (
 							<div className={styles.shopList}>
 								<h2>City Shop Offers</h2>
@@ -118,6 +122,12 @@ export default async function Page({ params: { id } }: { params: { id: string } 
 									</p>
 								))}
 							</div>
+						) : null}
+						{data.info && "gift_nestor" in (data.info as object) ? (
+							<p>Gift from Nestor: {smallNumberFormat.format((0.2 / nestor[(data.info as { gift_nestor: string }).gift_nestor].length * 100))}%</p>
+						) : null}
+						{data.id === 118 /*heartof nestor*/ ? (
+							<p>Gift from Nestor: 1%</p>
 						) : null}
 					</section>
 				</article>
