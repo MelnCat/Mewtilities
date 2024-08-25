@@ -1,5 +1,6 @@
 import { failure, Result, success } from "@/util/result";
 import { Cat, Season } from "@prisma/client";
+import { HTML2BBCode } from "html2bbcode";
 import { JSDOM } from "jsdom";
 import { chunk } from "remeda";
 
@@ -192,7 +193,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!friends) return failure("Friends missing");
 	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
-		const found = chunk([...friends.childNodes], 3).map(x => [x[0].textContent?.trim(), x[1]?.textContent?.replace("- ", "").trim()]);
+		const found = chunk([...friends.childNodes], 3).map(x => [(x[0].childNodes[0] as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1], x[1]?.textContent?.replace("- ", "").trim()]);
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
 		builder.friends = Object.fromEntries(found);
 	}
@@ -200,7 +201,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!family) return failure("Family missing");
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
-		const found = chunk([...family.childNodes], 3).map(x => [x[0].textContent?.trim(), x[1]?.textContent?.replace("- ", "").trim()]);
+		const found = chunk([...family.childNodes], 3).map(x => [(x[0].childNodes[0] as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1], x[1]?.textContent?.replace("- ", "").trim()]);
 		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
 		builder.family = Object.fromEntries(found);
 	}
@@ -211,7 +212,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 
 	const ownerId = doc.querySelector(".breadcrumbs > p > a")?.getAttribute("href")?.match(/&id=(\d+)/)?.[1].trim();
 	if (!ownerId || isNaN(+ownerId)) return failure("Owner ID missing or invalid");
-	builder.ownerId = ownerId;
+	builder.ownerId = +ownerId;
 
 	const personality = doc.querySelector(".cat-bio-column1 .rune-group:nth-child(4) .cat-minigroup-r")?.textContent?.match(/(.+) Personality/)?.[1].trim();
 	if (!personality) return failure("Personality missing or invalid");
@@ -220,6 +221,11 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	const trinket = doc.querySelector(".horizontalflex:has(.trinket-group) .itemjail img")?.getAttribute("src")?.match(/trinkets\/(.*)\.png/)?.[1];
 	if (trinket === undefined) return failure("Trinket missing or invalid");
 	builder.trinketName = trinket === "" ? null : trinket;
+
+	const bioElement = doc.querySelector(".cat-title + .editable-userpage-contents");
+	if (!bioElement) return failure("Bio missing");
+	const bio = new HTML2BBCode().feed(bioElement.innerHTML).toString();
+	builder.bio = bio;
 
 	return success(builder as RawCat);
 };

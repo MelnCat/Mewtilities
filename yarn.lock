@@ -1453,6 +1453,11 @@ html-encoding-sniffer@^4.0.0:
   dependencies:
     whatwg-encoding "^3.1.1"
 
+html2bbcode@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/html2bbcode/-/html2bbcode-1.2.6.tgz#0292a13efb4d8447560fddb929398bff01d603d9"
+  integrity sha512-ZojuqqXJdsh+BLe6UICGYxXw0ryqDGxev541+kDMm2wkF6544niqZ712OWX+aKmnjeJhYO2PiE32qmZdsSrjpw==
+
 http-proxy-agent@^7.0.2:
   version "7.0.2"
   resolved "https://registry.yarnpkg.com/http-proxy-agent/-/http-proxy-agent-7.0.2.tgz#9a8b1f246866c028509486585f62b8f2c18c270e"

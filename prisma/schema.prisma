@@ -110,7 +110,7 @@ model RecipeIngredient {
 model Cat {
     id        Int    @id
     ownerName String
-    ownerId   String
+    ownerId   Int
 
     travelling Boolean
     location   String
@@ -161,7 +161,7 @@ model Cat {
     friends Json
     family  Json
 
-    // bio?
+    bio String
 }
 
 enum RecipeCategory {

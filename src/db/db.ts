@@ -5,10 +5,10 @@ import { getCheapestEntries } from "./dbUtil";
 
 declare global {
 	namespace PrismaJson {
-		interface ItemInfo {
+		export interface ItemInfo {
 			[key: string]: string;
 		}
-		interface CustomItemData {
+		export interface CustomItemData {
 			author: {
 				id: string;
 				name: string;
@@ -66,5 +66,7 @@ export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 				priceCount: number;
 			} | null)[]) ?? null,
 		craftable: x.recipe !== null,
+		custom: x.custom,
+		customData: x.customData
 	}));
 };
