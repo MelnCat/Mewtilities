@@ -10,6 +10,7 @@ import { parseRecipeDatabasePage } from "@/parser/recipeDatabaseParser";
 import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
+import { Currency } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { revalidatePath } from "next/cache";
 
@@ -170,7 +171,7 @@ export const processQuickSellFiles = processFileAction(parseQuickSellPage, async
 			.map(x => ({
 				itemId: x.itemId,
 				priceCount: x.priceCount,
-				priceType: x.priceType,
+				priceType: x.priceType ?? Currency.NOTE,
 			})),
 		skipDuplicates: true,
 	});

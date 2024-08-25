@@ -82,7 +82,7 @@ model QuickSellEntry {
     id         String    @id @default(uuid())
     item       Item      @relation(fields: [itemId], references: [id])
     itemId     Int
-    priceType  Currency?
+    priceType  Currency @default(NOTE)
     priceCount Int
 
     @@unique(name: "itemPrice", [itemId, priceCount])
