@@ -9,12 +9,13 @@ declare global {
 			[key: string]: string;
 		}
 		export interface CustomItemData {
+			index: number;
 			author: {
-				id: string;
+				id: number;
 				name: string;
 			}
 			model: {
-				image: string;
+				image?: string;
 				x: number;
 				y: number;
 			}
