@@ -8,25 +8,36 @@ generator client {
     provider = "prisma-client-js"
 }
 
+generator json {
+    provider = "prisma-json-types-generator"
+}
+
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
 model Item {
-    id               Int                @id
-    key              String
-    name             String
-    image            String
-    category         String
-    seasons          Season[]
-    extraText        String[]
-    info             Json
+    id        Int      @id
+    key       String
+    name      String
+    image     String
+    category  String
+    seasons   Season[]
+    extraText String[]
+    /// [ItemInfo]
+    info      Json
+
+    custom     Boolean @default(false)
+    /// [CustomItemData]
+    customData Json?
+
     marketEntries    MarketEntry[]
     shopEntries      ShopEntry[]
     quickSellEntries QuickSellEntry[]
     recipe           Recipe?
     usages           RecipeIngredient[]
+    holdingCats      Cat[]
 }
 
 model MarketEntry {
@@ -74,14 +85,14 @@ model QuickSellEntry {
     priceType  Currency?
     priceCount Int
 
-    @@unique(name: "itemPrice", [itemId, priceCount, priceType])
+    @@unique(name: "itemPrice", [itemId, priceCount])
 }
 
 model Recipe {
     id          String             @id @default(uuid())
     resultId    Int                @unique
     result      Item               @relation(fields: [resultId], references: [id])
-	resultCount Int
+    resultCount Int
     category    RecipeCategory
     ingredients RecipeIngredient[]
 }
@@ -94,6 +105,63 @@ model RecipeIngredient {
     count    Int
 
     @@id([itemId, recipeId])
+}
+
+model Cat {
+    id        Int    @id
+    ownerName String
+    ownerId   String
+
+    travelling Boolean
+    location   String
+
+    genetic String?
+
+    name        String
+    wind        String
+    personality String
+    appearance  String[]
+    clothes     String[]
+    birthYear   Int
+    birthSeason Season
+    birthDay    Int
+    pronouns    String
+    origin      String
+    species     String
+    sizeLb      Float
+    sizeKg      Float
+    fur         String
+    color       String
+    pattern     String
+    whiteMarks  String
+    eyeColor    String
+
+    trinket   Item? @relation(fields: [trinketId], references: [id])
+    trinketId Int?
+
+    job     String
+    jobXp   Json
+    class   String
+    classXp Json
+
+    strength   Int
+    agility    Int
+    health     Int
+    finesse    Int
+    cleverness Int
+    perception Int
+    luck       Int
+
+    bravery      Int
+    benevolence  Int
+    energy       Int
+    extroversion Int
+    dedication   Int
+
+    friends Json
+    family  Json
+
+    // bio?
 }
 
 enum RecipeCategory {

@@ -2,6 +2,7 @@
 
 import { getAdminState } from "@/admin/auth";
 import prisma from "@/db/prisma";
+import { parseCatPage } from "@/parser/catParser";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
 import { parseQuickSellPage } from "@/parser/quickSellParser";
@@ -151,7 +152,7 @@ export const processShopEntryFiles = processFileAction(parseShopPage, async data
 				itemId: y.itemId,
 				shopUrl: x.shop.url,
 				priceType: y.priceType,
-				priceCount: itemMap[y.itemId].includes(x.season) ? y.priceCount : y.priceCount / 3,
+				priceCount: itemMap[y.itemId].includes(x.season) || itemMap[y.itemId].length === 0 ? y.priceCount : y.priceCount / 3,
 			}))
 		),
 		skipDuplicates: true,
@@ -196,6 +197,23 @@ export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabaseP
 	}
 	return { success: true, message: `${updated} entries updated` };
 });
+export const processCatFiles = processFileAction(parseCatPage, async data => {
+	const items = await prisma.item.findMany({ where: { key: { in: data.map(x => x.trinketName).filter(x => x) as string[] } } });
+	let added = 0;
+	for (const cat of data) {
+		const trinket = cat.trinketName === null ? null : items.find(x => x.key === cat.trinketName);
+		if (trinket === undefined) return { success: false, message: `Unknown trinket ${cat.trinketName}` };
+		const processed = { ...cat, trinket: trinket === null ? null : { connect: { id: trinket.id } } };
+		delete (processed as any).trinketName;
+		await prisma.cat.upsert({
+			create: processed as any,
+			update: processed as any,
+			where: { id: cat.id },
+		});
+		added++;
+	}
+	return { success: true, message: `${added} entries updated` };
+});
 
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
@@ -208,6 +226,6 @@ export const getItemDatabaseInfo = async () => {
 export const getMarketInfo = async () => {
 	const entry = await prisma.marketEntry.findFirst({ orderBy: { expiryTime: "desc" } });
 	return {
-		lastUpdate: entry ? entry.expiryTime.getTime() - 24 * 60 * 60 * 1000 * 7 : null
+		lastUpdate: entry ? entry.expiryTime.getTime() - 24 * 60 * 60 * 1000 * 7 : null,
 	};
 };

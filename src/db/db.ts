@@ -3,6 +3,25 @@ import { Currency, Item, MarketEntry } from "@prisma/client";
 import prisma from "./prisma";
 import { getCheapestEntries } from "./dbUtil";
 
+declare global {
+	namespace PrismaJson {
+		interface ItemInfo {
+			[key: string]: string;
+		}
+		interface CustomItemData {
+			author: {
+				id: string;
+				name: string;
+			}
+			model: {
+				image: string;
+				x: number;
+				y: number;
+			}
+		}
+	}
+}
+
 export const getItemData = (id: number) =>
 	prisma.item.findFirst({
 		where: { id },
@@ -26,7 +45,6 @@ export type ProcessedItem = Item & {
 	quickSell: ({ priceType: Currency; priceCount: number } | null)[] | null;
 	craftable: boolean;
 };
-
 
 export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 	const items = await getAllItems();

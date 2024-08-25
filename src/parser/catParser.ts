@@ -1,51 +1,225 @@
 import { failure, Result, success } from "@/util/result";
-import { RecipeCategory, Season } from "@prisma/client";
+import { Cat, Season } from "@prisma/client";
 import { JSDOM } from "jsdom";
-import { parseItemCubeId } from "./parserUtil";
+import { chunk } from "remeda";
 
-export interface RawRecipeDatabaseEntries {
-	entries: RawRecipeDatabaseEntry[];
-	category: RecipeCategory;
-}
-export interface RawRecipeDatabaseEntry {
-	resultId: number;
-	resultCount: number;
-	ingredients: { itemId: number; count: number }[];
-}
+export type RawCat = Omit<Cat, "trinketId"> & { trinketName: string | null; };
 
-export const parseRecipeDatabasePage = (content: string): Result<RawRecipeDatabaseEntries> => {
+export const parseCatPage = (content: string): Result<RawCat> => {
 	const dom = new JSDOM(content);
 	const doc = dom.window.document;
-	const form = doc.querySelector(".forumwide-content-area form");
+	const form = doc.querySelector(".forum-post-group");
 	if (!form) return failure("Invalid page layout");
-	if (!form.getAttribute("action")?.includes("/crafts")) return failure("Not a crafting database page");
-	const categoryHref = form.querySelector(".crafting-category.chosen a")?.getAttribute("href");
-	if (!categoryHref) return failure("Category missing or invalid");
-	const categoryId = categoryHref?.match(/&group=(.+)/)?.[1];
-	if (!categoryId) return failure(categoryHref.endsWith("crafts") ? "Category filter cannot be [View all Crafts]" : "Missing category id");
-	const category = RecipeCategory[categoryId.toUpperCase() as keyof typeof RecipeCategory] as RecipeCategory | undefined;
-	if (!category) return failure(`Unknown category "${categoryId}`);
-	const groups = [...form.querySelectorAll(".crafting-group")];
-	const entries: RawRecipeDatabaseEntry[] = [];
-	for (const group of groups) {
-		const builder: Partial<RawRecipeDatabaseEntry> = { ingredients: [] };
+	const builder = {} as Partial<RawCat>;
+	const title = doc.querySelector(".cat-title b")?.textContent;
+	if (!title) return failure("Invalid title");
+	builder.name = title;
+	const columns = [...form.querySelectorAll(".bio-group-column")];
+	const findColumn = (text: string) =>
+		columns
+			.find(x => x.children[0]?.textContent?.startsWith(text))
+			?.querySelector(".bio-group-end")
+			?.textContent?.trim();
+	const birthdayText = findColumn("Birthday");
+	if (!birthdayText) return failure("Missing birthday");
+	const birthdayComponents = birthdayText.match(/(\w+) (\d+), Year (\d+)/);
+	if (
+		!birthdayComponents?.[1] ||
+		!birthdayComponents?.[2] ||
+		!birthdayComponents?.[3] ||
+		!(birthdayComponents?.[1]?.toUpperCase() in Season) ||
+		isNaN(+birthdayComponents?.[2]) ||
+		isNaN(+birthdayComponents?.[3])
+	)
+		return failure("Birthday text missing or invalid");
+	builder.birthYear = +birthdayComponents?.[3];
+	builder.birthSeason = Season[birthdayComponents?.[1]?.toUpperCase() as keyof typeof Season];
+	builder.birthDay = +birthdayComponents?.[2];
 
-		const resultItem = parseItemCubeId(group.querySelector(".mini-itemcube"));
-		if (!resultItem.ok) return failure(`Failed to parse result item: ${resultItem.message}`);
-		builder.resultId = resultItem.data;
-		const resultCount = group.querySelector(".mini-itemcube .itemqty")?.textContent?.match(/Qty: (\d+)/)?.[1];
-		if (!resultCount || isNaN(+resultCount)) return failure("Result count missing or invalid");
-		builder.resultCount = +resultCount;
+	const wind = findColumn("Wind");
+	if (!wind) return failure("Missing wind");
+	builder.wind = wind;
 
-		for (const ingredient of group.querySelectorAll(".subtle-itemcube")) {
-			const item = parseItemCubeId(ingredient);
-			if (!item.ok) return failure(`Failed to parse ingredient: ${item.message}`);
-			const count = ingredient.querySelector(".itemqty")?.textContent?.match(/Qty: \d+\/(\d+)/)?.[1];
-			if (!count || isNaN(+count)) return failure(`Ingredient count missing or invalid`);
-			builder.ingredients!.push({ itemId: item.data, count: +count });
-		}
+	const pronouns = findColumn("Pronouns");
+	if (!pronouns) return failure("Missing pronouns");
+	builder.pronouns = pronouns;
 
-		entries.push(builder as RawRecipeDatabaseEntry);
+	const origin = findColumn("Origin");
+	if (!origin) return failure("Missing origin");
+	builder.origin = origin;
+
+	const id = findColumn("ID Code")?.match(/\[cat=(\d+)\]/)?.[1];
+	if (!id || isNaN(+id)) return failure("ID missing or invalid");
+	builder.id = +id;
+
+	const species = findColumn("Species");
+	if (!species) return failure("Species missing");
+	builder.species = species;
+
+	const size = findColumn("Size")?.match(/([\d.]+) lbs\. \/ ([\d.]+) kg/);
+	if (!size?.[1] || !size?.[2] || isNaN(+size?.[1]) || isNaN(+size?.[2])) return failure("Size missing or invalid");
+	builder.sizeLb = +size?.[1];
+	builder.sizeKg = +size?.[2];
+
+	const fur = findColumn("Fur");
+	if (!fur) return failure("Fur missing");
+	builder.fur = fur;
+
+	const color = findColumn("Color");
+	if (!color) return failure("Color missing");
+	builder.color = color;
+
+	const pattern = findColumn("Pattern");
+	if (!pattern) return failure("Pattern missing");
+	builder.pattern = pattern;
+
+	const whiteMarks = findColumn("White Marks");
+	if (!whiteMarks) return failure("White marks missing");
+	builder.whiteMarks = whiteMarks;
+
+	const eyeColor = findColumn("Eye Color");
+	if (!eyeColor) return failure("Eye color missing");
+	builder.eyeColor = eyeColor;
+
+	const bravery = findColumn("Bravery");
+	if (!bravery || isNaN(+bravery)) return failure("Bravery missing");
+	builder.bravery = +bravery;
+
+	const benevolence = findColumn("Benevolence");
+	if (!benevolence || isNaN(+benevolence)) return failure("Benevolence missing");
+	builder.benevolence = +benevolence;
+
+	const energy = findColumn("Energy");
+	if (!energy || isNaN(+energy)) return failure("Energy missing");
+	builder.energy = +energy;
+
+	const extroversion = findColumn("Extroversion");
+	if (!extroversion || isNaN(+extroversion)) return failure("Extroversion missing");
+	builder.extroversion = +extroversion;
+
+	const dedication = findColumn("Dedication");
+	if (!dedication || isNaN(+dedication)) return failure("Dedication missing");
+	builder.dedication = +dedication;
+	const jobLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Day Job"));
+	if (!jobLoop) return failure("Job loop missing");
+	const job = jobLoop.childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
+	if (!job) return failure("Job missing or invalid");
+	builder.job = job;
+	const jobCol = jobLoop.querySelector(".bio-group-column");
+	if (!jobCol) return failure("Job column missing or invalid");
+	const toNumberOrUndefined = (str: string | undefined) => (str === undefined ? undefined : +str);
+	const jobXp = [...jobCol.childNodes]
+		.filter(x => x.nodeType === x.TEXT_NODE)
+		.map(
+			x =>
+				[
+					x.textContent?.match(/(.+) Level/)?.[1],
+					{
+						level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
+						xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
+					},
+				] as const
+		);
+	if (jobXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined)) return failure("Job xp invalid");
+	builder.jobXp = Object.fromEntries(jobXp);
+
+	const classLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Adventuring Class"));
+	if (!classLoop) return failure("Class loop not found")
+	const clazz = classLoop?.childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
+	if (!clazz) return failure("Class missing or invalid");
+	builder.class = clazz;
+	const classCol = classLoop.querySelector(".bio-group-column");
+	if (!classCol) return failure("class column missing or invalid");
+	const classXp = [...jobCol.childNodes]
+		.filter(x => x.nodeType === x.TEXT_NODE)
+		.map(
+			x =>
+				[
+					x.textContent?.match(/(.+) Level/)?.[1],
+					{
+						level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
+						xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
+					},
+				] as const
+		);
+	if (classXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined)) return failure("Job xp invalid");
+	builder.classXp = Object.fromEntries(classXp);
+	// todo check if city
+	const getStat = (id: string) => {
+		const content = form.querySelector(`#base-stats #${id}-num`)?.textContent;
+		if (!content || isNaN(+content)) return null;
+		return +content;
+	};
+	const strength = getStat("str");
+	if (!strength) return failure("Strength missing or invalid");
+	builder.strength = strength;
+
+	const agility = getStat("agi");
+	if (!agility) return failure("Agility missing or invalid");
+	builder.agility = agility;
+
+	const health = getStat("hlth");
+	if (!health) return failure("Health missing or invalid");
+	builder.health = health;
+
+	const finesse = getStat("fin");
+	if (!finesse) return failure("Finesse missing or invalid");
+	builder.finesse = finesse;
+
+	const cleverness = getStat("clev");
+	if (!cleverness) return failure("Cleverness missing or invalid");
+	builder.cleverness = cleverness;
+
+	const perception = getStat("per");
+	if (!perception) return failure("Perception missing or invalid");
+	builder.perception = perception;
+
+	const luck = getStat("luck");
+	if (!luck) return failure("Luck missing or invalid");
+	builder.luck = luck;
+
+	const centerMessage = doc.querySelector(".formlike-content-area.center")?.textContent;
+	builder.travelling = centerMessage?.includes("is currently out travel") ?? false;
+
+	const location = doc.querySelector(".location-text")?.textContent?.replaceAll("★", "").trim();
+	if (!location) return failure("Location missing");
+	builder.location = location;
+
+	const genetic = form.querySelector(".genes-code")?.textContent?.match(/\w+/g);
+	if (genetic) builder.genetic = genetic.join("") === "UnknownGeneticString" ? null : genetic.join("");
+
+	const friends = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Friends"))?.querySelector(".bio-scroll");
+	if (!friends) return failure("Friends missing");
+	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
+	else {
+		const found = chunk([...friends.childNodes], 3).map(x => [x[0].textContent?.trim(), x[1]?.textContent?.replace("- ", "").trim()]);
+		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
+		builder.friends = Object.fromEntries(found);
 	}
-	return success({ entries, category });
-}; 
+	const family = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Family"))?.querySelector(".bio-scroll");
+	if (!family) return failure("Family missing");
+	if (family?.textContent?.trim() === "n/a") builder.family = {};
+	else {
+		const found = chunk([...family.childNodes], 3).map(x => [x[0].textContent?.trim(), x[1]?.textContent?.replace("- ", "").trim()]);
+		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
+		builder.family = Object.fromEntries(found);
+	}
+
+	const ownerName = doc.querySelector(".breadcrumbs > p")?.firstChild?.textContent?.match(/(.+)\'s Village/)?.[1].trim();
+	if (!ownerName) return failure("Owner name missing");
+	builder.ownerName = ownerName;
+
+	const ownerId = doc.querySelector(".breadcrumbs > p > a")?.getAttribute("href")?.match(/&id=(\d+)/)?.[1].trim();
+	if (!ownerId || isNaN(+ownerId)) return failure("Owner ID missing or invalid");
+	builder.ownerId = ownerId;
+
+	const personality = doc.querySelector(".cat-bio-column1 .rune-group:nth-child(4) .cat-minigroup-r")?.textContent?.match(/(.+) Personality/)?.[1].trim();
+	if (!personality) return failure("Personality missing or invalid");
+	builder.personality = personality;
+
+	const trinket = doc.querySelector(".horizontalflex:has(.trinket-group) .itemjail img")?.getAttribute("src")?.match(/trinkets\/(.*)\.png/)?.[1];
+	if (trinket === undefined) return failure("Trinket missing or invalid");
+	builder.trinketName = trinket === "" ? null : trinket;
+
+	return success(builder as RawCat);
+};

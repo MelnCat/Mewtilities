@@ -24,7 +24,7 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 	for (const cube of cubes) {
 		const builder: Partial<RawItemDatabaseEntry> = {};
 
-		const topRightText = cube.querySelector(".horizontalflex > .item-mid > .itemtitle")?.innerHTML;
+		const topRightText = cube.querySelector(".itemtitle")?.innerHTML;
 		if (!topRightText) return failure("Top right text missing");
 		const topRightLines = topRightText.split(/<br\s*\/?>/).map(x => x.trim());
 		if (topRightLines.length <= 0) return failure("Top right text empty");

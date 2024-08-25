@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.scss";
-import { processItemDatabaseFiles, processMarketFiles, processQuickSellFiles, processRecipeDatabaseFiles, processShopEntryFiles, processShopListFiles } from "../actions";
+import { processCatFiles, processItemDatabaseFiles, processMarketFiles, processQuickSellFiles, processRecipeDatabaseFiles, processShopEntryFiles, processShopListFiles } from "../actions";
 
 export const FilePanel = ({
 	title,
@@ -68,12 +68,13 @@ export const FilePanels = () => {
 		};
 	return (
 		<>
-			<FilePanel title="Process Item Database Files" onSubmit={upload(processItemDatabaseFiles)} />
-			<FilePanel title="Process Marketplace Files" onSubmit={upload(processMarketFiles)} />
-			<FilePanel title="Process Shop List Files" description="The city page, not the place where you buy stuff." onSubmit={upload(processShopListFiles)} />
-			<FilePanel title="Process Shop Files" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
-			<FilePanel title="Process Quick Sell Files" onSubmit={upload(processQuickSellFiles)} />
-			<FilePanel title="Process Recipe Database Files" onSubmit={upload(processRecipeDatabaseFiles)} />
+			<FilePanel title="Process Item Database" onSubmit={upload(processItemDatabaseFiles)} />
+			<FilePanel title="Process Marketplace" onSubmit={upload(processMarketFiles)} />
+			<FilePanel title="Process Shop List" description="The city page, not the place where you buy stuff." onSubmit={upload(processShopListFiles)} />
+			<FilePanel title="Process Shop" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
+			<FilePanel title="Process Quick Sell" onSubmit={upload(processQuickSellFiles)} />
+			<FilePanel title="Process Recipe Database" onSubmit={upload(processRecipeDatabaseFiles)} />
+			<FilePanel title="Process Cat" onSubmit={upload(processCatFiles)} />
 		</>
 	);
 };
