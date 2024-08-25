@@ -85,7 +85,7 @@ model QuickSellEntry {
     priceType  Currency @default(NOTE)
     priceCount Int
 
-    @@unique(name: "itemPrice", [itemId, priceCount])
+    @@unique(name: "itemPrice", [itemId, priceCount, priceType])
 }
 
 model Recipe {
