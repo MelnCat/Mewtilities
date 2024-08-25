@@ -120,7 +120,6 @@ model Cat {
     name        String
     wind        String
     personality String
-    appearance  String[]
     clothes     String[]
     birthYear   Int
     birthSeason Season

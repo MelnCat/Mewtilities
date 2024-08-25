@@ -61,7 +61,8 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 			const hrIndex = nodes.indexOf(hr);
 			if (hrIndex === -1) return failure("Custom hr index missing");
 			const text = nodes.slice(hrIndex + 1).filter(x => !(x instanceof dom.window.HTMLElement) || !x.hasAttribute("href") || !x.getAttribute("href")!.includes("report")).map(x => x.textContent).join("");
-			builder.extraText = [text]
+			builder.extraText = [text];
+
 
 		} else {
 			builder.category = overlay!;

@@ -131,7 +131,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	builder.class = clazz;
 	const classCol = classLoop.querySelector(".bio-group-column");
 	if (!classCol) return failure("class column missing or invalid");
-	const classXp = [...jobCol.childNodes]
+	const classXp = [...classCol.childNodes]
 		.filter(x => x.nodeType === x.TEXT_NODE)
 		.map(
 			x =>
