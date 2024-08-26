@@ -92,7 +92,7 @@ const itemKeys = {
 	cityPriceNotes: lowestForCurrencyCity(Currency.NOTE),
 	cityPriceEssence: lowestForCurrencyCity(Currency.ESSENCE),
 	records: item => item.records,
-	customAuthor: (item, asc) => item.custom ? item.customData!.author.id : (asc ? Infinity : -Infinity),
+	customAuthor: (item, asc) => (item.custom ? item.customData!.author.id : asc ? Infinity : -Infinity),
 } as const satisfies Record<string, (item: ProcessedItem, asc: boolean) => string | number>;
 
 export const ItemList = () => {
@@ -294,6 +294,19 @@ export const ItemList = () => {
 				<div className={styles.searchOption}></div>
 			</section>
 			<article className={styles.itemList}>{finalData ? paginatedData[page] : "Loading..."}</article>
+			<section className={styles.search}>
+				<div className={styles.searchOption}>
+					<button disabled={!(page - 1 in paginatedData)} onClick={() => page - 1 in paginatedData && setPage(page - 1)}>
+						{"<"}
+					</button>
+					<button disabled={!(page + 1 in paginatedData)} onClick={() => page + 1 in paginatedData && setPage(page + 1)}>
+						{">"}
+					</button>
+					<p>
+						Page {finalData ? (!rawItems || paginatedData.length === 0 ? 0 : page + 1) : 1}/{paginatedData.length}
+					</p>
+				</div>
+			</section>
 		</>
 	);
 };
