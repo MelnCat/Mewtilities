@@ -49,7 +49,7 @@ export const AdminPanel = async () => {
 					</p>
 				</div>
 			</section>
-			<CatGeneDisplay gene={randomCatGene()} />
+			<CatGeneDisplay gene={"[ C ] [ NN ] [ SS ] [ BBDD2 ] [ NNSM ] [ YY4C ] [ AA ] [ RB ]"} />
 			<CatGeneDisplay gene={randomCatGene()} />
 			<CatGeneDisplay gene={randomCatGene()} />
 			<CatGeneDisplay gene={randomCatGene()} />

@@ -133,6 +133,7 @@ model Cat {
     color       String
     pattern     String
     whiteMarks  String
+	accentColor String?
     eyeColor    String
 
     trinket   Item? @relation(fields: [trinketId], references: [id])

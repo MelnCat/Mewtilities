@@ -78,6 +78,9 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!whiteMarks) return failure("White marks missing");
 	builder.whiteMarks = whiteMarks;
 
+	const accentColor = findColumn("Accent Color");
+	builder.accentColor = accentColor ?? null;
+
 	const eyeColor = findColumn("Eye Color");
 	if (!eyeColor) return failure("Eye color missing");
 	builder.eyeColor = eyeColor;

@@ -212,19 +212,41 @@ export const randomCatGene = (species: "C" | "M" = "C"): CatGene => {
 	};
 };
 
-const catColors: Record<z.TypeOf<typeof colorType>, Record<z.TypeOf<typeof dilutionType>, Record<number, string>>> = {
+export type CatColor =
+	| "black"
+	| "choco"
+	| "brown"
+	| "tan"
+	| "snow"
+	| "charc"
+	| "grey"
+	| "smoke"
+	| "silver"
+	| "red"
+	| "orange"
+	| "ginger"
+	| "aprico"
+	| "buff"
+	| "cream"
+	| "almond"
+	| "beige";
+export type CatPattern = "solid" | "mackerel" | "classic" | "broken" | "lynxpoint" | "clouded" | "rosette" | "spotted" | "mink" | "colorpoint" | "cloudpoint";
+export type CatWhiteType = "inverse" | "right" | "left" | "piebald" | "classic";
+export type CatAccent = "blue" | "indigo" | "violet" | "green" | "black" | "pink" | "ruby" | "amber" | "teal" | "gold";
+
+const catColors = {
 	B: { F: { 4: "black", 3: "choco", 2: "brown", 1: "tan", 0: "snow" }, D: { 4: "charc", 3: "grey", 2: "smoke", 1: "silver", 0: "snow" } },
 	O: { F: { 4: "red", 3: "orange", 2: "ginger", 1: "aprico", 0: "snow" }, D: { 4: "buff", 3: "cream", 2: "almond", 1: "beige", 0: "snow" } },
-};
+} satisfies Record<z.TypeOf<typeof colorType>, Record<z.TypeOf<typeof dilutionType>, Record<number, CatColor>>>;
 
-const catPatterns: Record<z.TypeOf<typeof spottingType>, Record<z.TypeOf<typeof spottingType>, string>> = {
+const catPatterns = {
 	T: { T: "mackerel", M: "classic", S: "broken", P: "lynxpoint" },
 	M: { T: "classic", M: "clouded", S: "rosette", P: "cloudpoint" },
 	S: { T: "broken", M: "rosette", S: "spotted", P: "mink" },
 	P: { T: "lynxpoint", M: "cloudpoint", S: "mink", P: "colorpoint" },
-};
+} satisfies Record<z.TypeOf<typeof spottingType>, Record<z.TypeOf<typeof spottingType>, CatPattern>>;
 
-const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, string> = {
+const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
 	I: "inverse",
 	R: "right",
 	L: "left",
@@ -232,12 +254,12 @@ const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, string> = {
 	C: "classic",
 };
 
-const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accentType>, string>> = {
+const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accentType>, CatAccent>> = {
 	B: { B: "blue", L: "indigo", R: "violet", Y: "green" },
 	L: { B: "indigo", L: "black", R: "pink", Y: "teal" },
 	R: { B: "violet", L: "pink", R: "ruby", Y: "amber" },
 	Y: { B: "green", L: "teal", R: "amber", Y: "gold" },
-}
+};
 
 export const randomCatTexture = (species: "C" | "M" = "C") => {
 	const age = weightedRandomKeys({
@@ -269,12 +291,20 @@ export const randomCatTexture = (species: "C" | "M" = "C") => {
 	return textureFromGene(age, pose, eyes, randomCatGene(species));
 };
 
-export const textureFromGene = (
-	age: "adult" | "kitten" | "bean",
-	pose: "upsidedown" | "playing" | "sleeping" | "standing" | "sitting",
-	eyes: "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral",
-	gene: PartialCatGene
-) => {
+export interface GenePhenotype {
+	wind: "North" | "South" | "Null" | "Trade";
+	fur: "shorthair" | "longhair";
+	mainColor: CatColor;
+	tradeColor: CatColor | null;
+	pattern: CatPattern;
+	accent: CatAccent | "?";
+	whiteType: CatWhiteType | "?";
+	whiteNumber: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "?";
+	species: "c" | "m";
+}
+
+export const getGenePhenotype = (gene: PartialCatGene): GenePhenotype => {
+	const species = gene.species === "C" ? "c" : gene.species === "M" ? "m" : "c";
 	const wind = (() => {
 		if ((gene.wind[0] === "O" && gene.wind[1] === "?") || gene.wind.every(x => x === "O")) return "Null";
 		if (gene.wind.every(x => x === "N" || x === "S") && gene.wind[0] !== gene.wind[1]) return "Trade";
@@ -296,7 +326,7 @@ export const textureFromGene = (
 		if (wind !== "Trade") return null;
 		const g = gene as ColoredPartialCatGene;
 		const dilution = g.dilution.includes("F") ? "F" : "D";
-		if (g.color[0] === g.color[1]) return catColors[g.color[0]][dilution][g.density - 1];
+		if (g.color[0] === g.color[1]) return catColors[g.color[0]][dilution][(g.density - 1) as 0 | 1 | 2 | 3 | 4];
 		else return catColors[g.color[1]][dilution][g.density];
 	})();
 
@@ -306,24 +336,34 @@ export const textureFromGene = (
 	})();
 
 	const accent = (() => {
-		if (gene.accent.every(x => x === "?")) return "black";
+		if (gene.accent.every(x => x === "?")) return "?";
 		if (gene.accent[0] === "?") return accents[gene.accent[1] as "L"][gene.accent[1] as "L"];
-		else if (gene.accent[1] === "?")return accents[gene.accent[0] as "L"][gene.accent[0] as "L"];
-		return accents[gene.accent[0]][gene.accent[1]]
+		else if (gene.accent[1] === "?") return accents[gene.accent[0] as "L"][gene.accent[0] as "L"];
+		return accents[gene.accent[0]][gene.accent[1]];
 	})();
 
-	const whiteType = gene.whiteType === "?" ? "C" : whiteTypes[gene.whiteType];
+	const whiteType = gene.whiteType === "?" ? "?" : whiteTypes[gene.whiteType];
 	const whiteNumber = gene.white.some(x => x === "Y") ? gene.whiteNumber : 0;
 
-	const images: string[] = [];
-	const species = gene.species.toLowerCase() as "c" | "m";
-	if (whiteNumber !== 10 && whiteNumber !== "?") images.push(`images/cats/${species}/${mainColor}_main_${pattern}.png`);
-	if (tradeColor !== null) images.push(`images/cats/${species}/${tradeColor}_trade_${pattern}.png`);
-	if (whiteNumber !== 0) images.push(`images/cats/${species}/white_${whiteType}_${whiteNumber === "?" ? 10 : whiteNumber}.png`);
-	if (species === "m") images.push(`images/cats/${species}/${accent}_accent_${pattern}.png`)
-	images.push(`images/cats/eyes_${eyes}${whiteNumber === 10 ? `_a_${whiteType}` : ""}.png`);
+	return { wind, fur, mainColor, tradeColor, pattern, accent, whiteType, whiteNumber, species };
+};
 
-	return { images: images.map(x => pceLink(x)), offset: offsets[species][age][fur][pose] };
+export const textureFromGene = (
+	age: "adult" | "kitten" | "bean",
+	pose: "upsidedown" | "playing" | "sleeping" | "standing" | "sitting",
+	eyes: "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral",
+	gene: PartialCatGene
+) => {
+	const p = getGenePhenotype(gene);
+
+	const images: string[] = [];
+	if (p.whiteNumber !== 10 && p.whiteNumber !== "?") images.push(`images/cats/${p.species}/${p.mainColor}_main_${p.pattern}.png`);
+	if (p.tradeColor !== null) images.push(`images/cats/${p.species}/${p.tradeColor}_trade_${p.pattern}.png`);
+	if (p.whiteNumber !== 0) images.push(`images/cats/${p.species}/white_${p.whiteType}_${p.whiteNumber === "?" ? 10 : p.whiteNumber}.png`);
+	if (p.species === "m") images.push(`images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png`);
+	images.push(`images/cats/eyes_${eyes}${p.whiteNumber === 10 ? `_a_${p.whiteType}` : ""}.png`);
+
+	return { images: images.map(x => pceLink(x)), offset: offsets[p.species][age][p.fur][pose] };
 };
 
 export const serializeCatGene = (gene: PartialCatGene, formatted: boolean = false) => {

@@ -12,9 +12,13 @@
 	position: absolute;
 	bottom: 100%;
 	background-color: #ffffff;
+	border: #a3a3a3 2px solid;
 	padding: 0.8em;
 	color: #000000;
 	user-select: none;
+	pointer-events: none;
+	font-size: 0.8em;
+	width: max-content;
 }
 .geneContent {
 	color: var(--color);
@@ -60,11 +64,15 @@
 	&[data-category="white"] {
 		span[data-content="Y"] { --color: #af9687; }
 		span[data-content="N"] { --color: #3f3f3f; }
-		span[data-content="I"] { --color: #9e9b99; }
-		span[data-content="R"] { --color: #dd6c20; }
+		span[data-content="I"] { --color: #b39b30; }
+		span[data-content="R"] { --color: #27c52f; }
 		span[data-content="L"] { --color: #2847af; }
-		span[data-content="P"] { --color: #cf5fa4; }
-		span[data-content="C"] { --color: #428534; }
+		span[data-content="P"] { --color: #ac5fcf; }
+		span[data-content="C"] { --color: #a52a2a; }
+		span:nth-last-child(2) {
+			--color: #100b2e;
+			opacity: calc((11 - var(--content)) / 11)
+		}
 	}
 	&[data-category="growth"] {
 		span[data-content="A"] { --color: #189714; }

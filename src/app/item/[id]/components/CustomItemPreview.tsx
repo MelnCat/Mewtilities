@@ -1,16 +1,16 @@
 "use client";
-import { useMemo, useState } from "react";
-import styles from "../item.module.scss";
-import { PartialCatGene, randomCatTexture, textureFromGene } from "@/util/cat";
+import { randomCatTexture } from "@/util/cat";
+import { useState } from "react";
 import { sample } from "remeda";
+import styles from "../item.module.scss";
 
 const allowedSpecies = {
 	custom_clothing_global: ["C", "M"],
 	custom_clothing_c: ["C"],
-	custom_clothing_m: ["M"]
-}
+	custom_clothing_m: ["M"],
+};
 
-export const CustomItemPreview = ({ image, model, name, category }: { image: string; model?: string; name: string; category: string; }) => {
+export const CustomItemPreview = ({ image, model, name, category }: { image: string; model?: string; name: string; category: string }) => {
 	const [catTexture, setCatTexture] = useState<{ images: string[] } | null>();
 	const allowedTypes = allowedSpecies[category as keyof typeof allowedSpecies] as ("C" | "M")[] | null;
 	return (
@@ -21,7 +21,7 @@ export const CustomItemPreview = ({ image, model, name, category }: { image: str
 				</div>
 				<img src={image} alt={name} />
 			</div>
-			{allowedTypes? <button onClick={() => setCatTexture(randomCatTexture(sample(allowedTypes, 1)[0]))}>Randomize Cat</button> : null}
+			{allowedTypes ? <button onClick={() => setCatTexture(randomCatTexture(sample(allowedTypes, 1)[0]))}>Randomize Cat</button> : null}
 		</div>
 	);
 };
