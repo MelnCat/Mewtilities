@@ -108,6 +108,8 @@
     height: 0;
 	overflow: visible;
 	grid-area: 1 / 1;
+    margin-left: -1px;
+    margin-top: -1px;
 	img {
 		grid-area: 1 / 1;
 	}
