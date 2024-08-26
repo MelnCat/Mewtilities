@@ -8,17 +8,31 @@
 	font-weight: normal;
 	color: #777777;
 }
+.windIcon {
+	width: 2em;
+	height: 2em;
+	object-fit: cover;
+	object-position: 100% 0;
+}
 .tooltip {
+	display: flex;
+	flex-direction: column;
 	position: absolute;
 	bottom: 100%;
-	background-color: #ffffff;
 	border: #a3a3a3 2px solid;
 	padding: 0.8em;
-	color: #000000;
 	user-select: none;
 	pointer-events: none;
 	font-size: 0.8em;
 	width: max-content;
+
+	color: #ffffff;
+	background-color: #222222dd;
+	border-color: #eeeeee;
+	> div {
+		display: flex;
+		flex-direction: column;
+	}
 }
 .geneContent {
 	color: var(--color);
@@ -30,59 +44,127 @@
 		text-decoration: underline;
 		text-decoration-color: #000000;
 	}
+	span[data-content="?"] {
+		color: transparent;
+		background-clip: text;
+		background-image: linear-gradient(#888888, #444444);
+		font-variant-ligatures: none;
+	}
 	&[data-category="species"] {
-		span[data-content="C"] { --color: #50452c; }
-		span[data-content="M"] { --color: #2c3a50; }
+		span[data-content="C"] {
+			--color: #50452c;
+		}
+		span[data-content="M"] {
+			--color: #2c3a50;
+		}
 	}
 	&[data-category="wind"] {
-		span[data-content="N"] { --color: #6692bb; }
-		span[data-content="S"] { --color: #9b5960; }
-		span[data-content="O"] { --color: #2e2e2e; }
+		span[data-content="N"] {
+			--color: #6692bb;
+		}
+		span[data-content="S"] {
+			--color: #9b5960;
+		}
+		span[data-content="O"] {
+			--color: #2e2e2e;
+		}
 	}
 	&[data-category="fur"] {
-		span[data-content="S"] { --color: #a19979; }
-		span[data-content="L"] { --color: rgb(151, 65, 65); }
+		span[data-content="S"] {
+			--color: #a19979;
+		}
+		span[data-content="L"] {
+			--color: rgb(151, 65, 65);
+		}
 	}
 	&[data-category="color"] {
-		span[data-content="B"] { --color: #3d3b3a; }
-		span[data-content="O"] { --color: #ac7729; }
-		span[data-content="F"] { --color: #8d1212; }
-		span[data-content="D"] { --color: #bb6a6a; }
+		span[data-content="B"] {
+			--color: #3d3b3a;
+		}
+		span[data-content="O"] {
+			--color: #ac7729;
+		}
+		span[data-content="F"] {
+			--color: #8d1212;
+		}
+		span[data-content="D"] {
+			--color: #bb6a6a;
+		}
 		span:last-child {
 			--color: #23185f;
-			opacity: calc(var(--content) / 4)
+			opacity: calc(var(--content) / 4);
 		}
 	}
 	&[data-category="pattern"] {
-		span[data-content="Y"] { --color: #5aaf40; }
-		span[data-content="N"] { --color: #b82323; }
-		span[data-content="T"] { --color: #88922a; }
-		span[data-content="M"] { --color: #5a2514; }
-		span[data-content="S"] { --color: #3a3838; }
-		span[data-content="P"] { --color: #b36a6a; }
+		span[data-content="Y"] {
+			--color: #5aaf40;
+		}
+		span[data-content="N"] {
+			--color: #b82323;
+		}
+		span[data-content="T"] {
+			--color: #88922a;
+		}
+		span[data-content="M"] {
+			--color: #5a2514;
+		}
+		span[data-content="S"] {
+			--color: #3a3838;
+		}
+		span[data-content="P"] {
+			--color: #b36a6a;
+		}
 	}
 	&[data-category="white"] {
-		span[data-content="Y"] { --color: #af9687; }
-		span[data-content="N"] { --color: #3f3f3f; }
-		span[data-content="I"] { --color: #b39b30; }
-		span[data-content="R"] { --color: #27c52f; }
-		span[data-content="L"] { --color: #2847af; }
-		span[data-content="P"] { --color: #ac5fcf; }
-		span[data-content="C"] { --color: #a52a2a; }
+		span[data-content="Y"] {
+			--color: #af9687;
+		}
+		span[data-content="N"] {
+			--color: #3f3f3f;
+		}
+		span[data-content="I"] {
+			--color: #b39b30;
+		}
+		span[data-content="R"] {
+			--color: #27c52f;
+		}
+		span[data-content="L"] {
+			--color: #2847af;
+		}
+		span[data-content="P"] {
+			--color: #ac5fcf;
+		}
+		span[data-content="C"] {
+			--color: #a52a2a;
+		}
 		span:nth-last-child(2) {
 			--color: #100b2e;
-			opacity: calc((11 - var(--content)) / 11)
+			opacity: calc((11 - var(--content)) / 11);
 		}
 	}
 	&[data-category="growth"] {
-		span[data-content="A"] { --color: #189714; }
-		span[data-content="B"] { --color: #b89d24; }
-		span[data-content="C"] { --color: #b82d1b; }
+		span[data-content="A"] {
+			--color: #189714;
+		}
+		span[data-content="B"] {
+			--color: #b89d24;
+		}
+		span[data-content="C"] {
+			--color: #b82d1b;
+		}
 	}
 	&[data-category="accent"] {
-		span[data-content="B"] { --color: #13518a; }
-		span[data-content="L"] { --color: #8b8b8b; }
-		span[data-content="R"] { --color: #b43828; }
-		span[data-content="Y"] { --color: #a39830; }
+		span[data-content="B"] {
+			--color: #13518a;
+		}
+		span[data-content="L"] {
+			--color: #8b8b8b;
+		}
+		span[data-content="R"] {
+			--color: #b43828;
+		}
+		span[data-content="Y"] {
+			--color: #a39830;
+		}
 	}
 }

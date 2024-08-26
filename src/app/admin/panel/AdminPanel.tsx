@@ -7,6 +7,7 @@ import { CatImage } from "@/app/components/CatImage";
 import { randomCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "@/app/components/CatGeneDisplay";
 
+
 export const AdminPanel = async () => {
 	const itemDatabaseInfo = await getItemDatabaseInfo();
 	const marketInfo = await getMarketInfo();
@@ -50,8 +51,9 @@ export const AdminPanel = async () => {
 				</div>
 			</section>
 			<CatGeneDisplay gene={"[ C ] [ NN ] [ SS ] [ BBDD2 ] [ NNSM ] [ YY4C ] [ AA ] [ RB ]"} />
-			<CatGeneDisplay gene={randomCatGene()} />
-			<CatGeneDisplay gene={randomCatGene()} />
+			<CatGeneDisplay gene={"[C] [OO] [SL] [?????] [Y?SP] [Y?2C] [??] [??]"} />
+			<CatGeneDisplay gene={"[C] [OO] [SL] [?????] [Y?SP] [Y?2C] [??] [??]"} />
+			<CatGeneDisplay gene={randomCatGene("M")} />
 			<CatGeneDisplay gene={randomCatGene()} />
 		</article>
 	);

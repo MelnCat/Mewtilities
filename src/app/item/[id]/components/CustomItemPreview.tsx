@@ -11,13 +11,13 @@ const allowedSpecies = {
 };
 
 export const CustomItemPreview = ({ image, model, name, category }: { image: string; model?: string; name: string; category: string }) => {
-	const [catTexture, setCatTexture] = useState<{ images: string[] } | null>();
+	const [catTexture, setCatTexture] = useState<{ images: (string | null)[] } | null>();
 	const allowedTypes = allowedSpecies[category as keyof typeof allowedSpecies] as ("C" | "M")[] | null;
 	return (
 		<div className={styles.customPreview}>
 			<div className={styles.spriteSheetContainer}>
 				<div className={styles.modelContainer}>
-					{catTexture ? catTexture.images.map(x => <img key={x} src={x} alt="Random Cat" />) : model ? <img src={model} alt="Model" /> : null}
+					{catTexture ? catTexture.images.map(x => x ? <img key={x} src={x} alt="Random Cat" /> : null) : model ? <img src={model} alt="Model" /> : null}
 				</div>
 				<img src={image} alt={name} />
 			</div>
