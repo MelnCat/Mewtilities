@@ -203,13 +203,16 @@ export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabaseP
 	return { success: true, message: `${updated} entries updated` };
 });
 export const processCatFiles = processFileAction(parseCatPage, async data => {
-	const items = await prisma.item.findMany({ where: { key: { in: data.map(x => x.trinketName).filter(x => x) as string[] } } });
+	const items = await prisma.item.findMany({ where: { key: { in: data.map(x => x.trinketName).filter(x => x).concat(data.flatMap(x => x.clothingKeys)) as string[] } } });
 	let added = 0;
 	for (const cat of data) {
 		const trinket = cat.trinketName === null ? null : items.find(x => x.key === cat.trinketName);
 		if (trinket === undefined) return { success: false, message: `Unknown trinket ${cat.trinketName}` };
-		const processed = { ...cat, trinket: trinket === null ? null : { connect: { id: trinket.id } } };
+		const clothing = cat.clothingKeys.map(x => items.find(y => y.key === x));
+		if (clothing.includes(undefined)) return {success: false, message: `Unknown clothing item(s) ${cat.clothingKeys.filter(x => !items.some(y => y.key === x)).join(", ")}`}
+		const processed = { ...cat, trinketId: trinket === null ? null : trinket.id, clothing: clothing.map(x => x!.id) };
 		delete (processed as any).trinketName;
+		delete (processed as any).clothingKeys;
 		await prisma.cat.upsert({
 			create: processed as any,
 			update: processed as any,

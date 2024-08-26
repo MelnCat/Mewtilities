@@ -4,6 +4,8 @@ import styles from "./AdminPanel.module.scss";
 import { FilePanels } from "./FilePanel";
 import prettyMs from "pretty-ms";
 import { CatImage } from "@/app/components/CatImage";
+import { randomCatGene } from "@/util/cat";
+import { CatGeneDisplay } from "@/app/components/CatGeneDisplay";
 
 export const AdminPanel = async () => {
 	const itemDatabaseInfo = await getItemDatabaseInfo();
@@ -47,6 +49,10 @@ export const AdminPanel = async () => {
 					</p>
 				</div>
 			</section>
+			<CatGeneDisplay gene={randomCatGene()} />
+			<CatGeneDisplay gene={randomCatGene()} />
+			<CatGeneDisplay gene={randomCatGene()} />
+			<CatGeneDisplay gene={randomCatGene()} />
 		</article>
 	);
 };

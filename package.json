@@ -30,6 +30,7 @@
     "swr": "^2.2.5",
     "temporal-polyfill": "^0.2.5",
     "use-debounce": "^10.0.3",
+    "usehooks-ts": "^3.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

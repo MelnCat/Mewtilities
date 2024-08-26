@@ -4,7 +4,7 @@ import { HTML2BBCode } from "html2bbcode";
 import { JSDOM } from "jsdom";
 import { chunk } from "remeda";
 
-export type RawCat = Omit<Cat, "trinketId"> & { trinketName: string | null; };
+export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[] };
 
 export const parseCatPage = (content: string): Result<RawCat> => {
 	const dom = new JSDOM(content);
@@ -114,7 +114,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 		.map(
 			x =>
 				[
-					x.textContent?.match(/(.+) Level/)?.[1],
+					x.textContent?.match(/(.+?) Level/)?.[1],
 					{
 						level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
 						xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
@@ -226,6 +226,10 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!bioElement) return failure("Bio missing");
 	const bio = new HTML2BBCode().feed(bioElement.innerHTML).toString();
 	builder.bio = bio;
+
+	const clothing = [...form.querySelectorAll(".catjail .cat-clothes")].map(x => x.getAttribute("src")?.match(/\/(\w+)\.png/)?.[1]);
+	if (clothing.includes(undefined)) return failure("Clothing missing or invalid");
+	builder.clothingKeys = clothing as string[];
 
 	return success(builder as RawCat);
 };

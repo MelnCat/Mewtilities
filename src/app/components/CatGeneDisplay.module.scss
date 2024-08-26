@@ -1,0 +1,80 @@
+.display {
+	display: grid;
+	grid-template-columns: repeat(8, auto);
+	width: fit-content;
+	gap: 0.2em;
+	font-size: 1.2em;
+	font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+	font-weight: normal;
+	color: #777777;
+}
+.tooltip {
+	position: absolute;
+	bottom: 100%;
+	background-color: #ffffff;
+	padding: 0.8em;
+	color: #000000;
+	user-select: none;
+}
+.geneContent {
+	color: var(--color);
+	font-weight: 900;
+}
+.geneSection {
+	position: relative;
+	&:hover {
+		text-decoration: underline;
+		text-decoration-color: #000000;
+	}
+	&[data-category="species"] {
+		span[data-content="C"] { --color: #50452c; }
+		span[data-content="M"] { --color: #2c3a50; }
+	}
+	&[data-category="wind"] {
+		span[data-content="N"] { --color: #6692bb; }
+		span[data-content="S"] { --color: #9b5960; }
+		span[data-content="O"] { --color: #2e2e2e; }
+	}
+	&[data-category="fur"] {
+		span[data-content="S"] { --color: #a19979; }
+		span[data-content="L"] { --color: rgb(151, 65, 65); }
+	}
+	&[data-category="color"] {
+		span[data-content="B"] { --color: #3d3b3a; }
+		span[data-content="O"] { --color: #ac7729; }
+		span[data-content="F"] { --color: #8d1212; }
+		span[data-content="D"] { --color: #bb6a6a; }
+		span:last-child {
+			--color: #23185f;
+			opacity: calc(var(--content) / 4)
+		}
+	}
+	&[data-category="pattern"] {
+		span[data-content="Y"] { --color: #5aaf40; }
+		span[data-content="N"] { --color: #b82323; }
+		span[data-content="T"] { --color: #88922a; }
+		span[data-content="M"] { --color: #5a2514; }
+		span[data-content="S"] { --color: #3a3838; }
+		span[data-content="P"] { --color: #b36a6a; }
+	}
+	&[data-category="white"] {
+		span[data-content="Y"] { --color: #af9687; }
+		span[data-content="N"] { --color: #3f3f3f; }
+		span[data-content="I"] { --color: #9e9b99; }
+		span[data-content="R"] { --color: #dd6c20; }
+		span[data-content="L"] { --color: #2847af; }
+		span[data-content="P"] { --color: #cf5fa4; }
+		span[data-content="C"] { --color: #428534; }
+	}
+	&[data-category="growth"] {
+		span[data-content="A"] { --color: #189714; }
+		span[data-content="B"] { --color: #b89d24; }
+		span[data-content="C"] { --color: #b82d1b; }
+	}
+	&[data-category="accent"] {
+		span[data-content="B"] { --color: #13518a; }
+		span[data-content="L"] { --color: #8b8b8b; }
+		span[data-content="R"] { --color: #b43828; }
+		span[data-content="Y"] { --color: #a39830; }
+	}
+}

@@ -12,7 +12,7 @@ const allowedSpecies = {
 
 export const CustomItemPreview = ({ image, model, name, category }: { image: string; model?: string; name: string; category: string; }) => {
 	const [catTexture, setCatTexture] = useState<{ images: string[] } | null>();
-	const allowedTypes = allowedSpecies[category as keyof typeof allowedSpecies] as string[] | null;
+	const allowedTypes = allowedSpecies[category as keyof typeof allowedSpecies] as ("C" | "M")[] | null;
 	return (
 		<div className={styles.customPreview}>
 			<div className={styles.spriteSheetContainer}>
