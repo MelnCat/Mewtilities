@@ -1,0 +1,33 @@
+.itemImage {
+	height: 6em;
+	width: fit-content;
+	grid-area: 1 / 1;
+}
+.modelImage {
+	height: 6em;
+	width: fit-content;
+	grid-area: 1 / 1;
+}
+.imageContainer {
+	display: grid;
+	margin: 0.25em 0;
+	width: 6em;
+	height: 6em;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #666;
+	border-radius: 14px;
+	overflow: hidden;
+	--s: 11px; /* control the size*/
+	--c1: #e7e7e7aa;
+	--c2: #9c9c9caa;
+
+	--_g: var(--c1) 90deg, #0000 90.5deg;
+	background: conic-gradient(from -45deg, var(--_g)), conic-gradient(from 135deg, var(--_g)) calc(var(--s) / 2) 0, var(--c2);
+	background-size: var(--s) var(--s);
+	img {
+		transform-origin: 0 0;
+		scale: 1.74;
+		object-fit: none;
+	}
+}

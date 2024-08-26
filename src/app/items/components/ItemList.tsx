@@ -10,6 +10,7 @@ import * as R from "remeda";
 import useSWR from "swr";
 import styles from "../page.module.scss";
 import Link from "next/link";
+import { ItemImage } from "@/app/components/ItemImage";
 
 const ItemBox = ({ item }: { item: ProcessedItem }) => {
 	return (
@@ -17,7 +18,7 @@ const ItemBox = ({ item }: { item: ProcessedItem }) => {
 			<p className={styles.itemId}>{item.id}</p>
 			<h2>{item.name}</h2>
 			<Link href={`/item/${item.id}`}>
-				<img src={item.image} loading="lazy" />
+				<ItemImage item={item} />
 			</Link>
 			<div className={styles.lower}>
 				<b>Current Cheapest: </b>
@@ -50,7 +51,16 @@ const ItemBox = ({ item }: { item: ProcessedItem }) => {
 				) : null}
 				{item.craftable ? <p>Craftable</p> : null}
 			</div>
-			{item.info && typeof item.info === "object" ? <div className={styles.itemInfo}>{Object.entries(item.info).map(([k, v]) => <p key={k}>{k}: {String(v)}</p>)}</div> : null}
+			{item.info && typeof item.info === "object" ? (
+				<div className={styles.itemInfo}>
+					{Object.entries(item.info).map(([k, v]) => (
+						<p key={k}>
+							{k}: {String(v)}
+						</p>
+					))}
+				</div>
+			) : null}
+			<div className={styles.itemCategory}>{item.category}</div>
 			<div className={styles.spacer} />
 			<div className={styles.recordCount}>{item.records} Records</div>
 		</section>
@@ -88,24 +98,30 @@ export const ItemList = () => {
 	const [craftable, setCraftable] = useQueryState("craftable", parseAsBoolean.withDefault(false));
 	const [infoKey, setInfoKey] = useQueryState("info_key", parseAsString.withDefault("-"));
 	const [infoValue, setInfoValue] = useQueryState("info_val", parseAsString.withDefault("-"));
+	const [type, setType] = useQueryState("type", parseAsStringLiteral(["all", "vanilla", "custom"]).withDefault("all"));
 	const itemCategories = useMemo(() => {
 		return items ? [...new Set(items.map(x => x.category))].sort((a, b) => a.localeCompare(b)) : [];
 	}, [items]);
 	const itemInfoKeys = useMemo(() => {
-		return items ? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.keys(x.info) : [])))].sort((a, b) => a.localeCompare(b)) : [];
-	}, [items]);
+		return items ? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.keys(x.info) : [])))].sort((a, b) => a.localeCompare(b)).filter(x => infoValue === "-" || 
+			items.some(y => y.info[x] === infoValue)) : [];
+	}, [items, infoValue]);
 	const itemInfoValues = useMemo(() => {
-		return items ? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.values(x.info) : [])))].map(x => String(x)).sort((a, b) => a.localeCompare(b)) : [];
-	}, [items]);
+		return items
+			? [...new Set(items.flatMap(x => (x.info && typeof x.info === "object" ? Object.values(x.info) : [])))].map(x => String(x)).sort((a, b) => a.localeCompare(b))
+			.filter(x => infoKey === "-" || items.some(y => y.info[infoKey] === x))
+			: [];
+	}, [items, infoKey]);
 
 	const presortData = useMemo(() => {
 		if (!items) return null;
 		return items
+			.filter(x => type === "all" || (type === "custom" && x.custom) || (type === "vanilla" && !x.custom))
 			.filter(x => category === "all" || x.category === category)
 			.filter(x => !craftable || x.craftable)
-			.filter(x => infoKey === "-" || (x.info !== null && typeof x.info === "object" && "infoKey" in x.info))
+			.filter(x => infoKey === "-" || (x.info !== null && typeof x.info === "object" && infoKey in x.info))
 			.filter(x => infoValue === "-" || (x.info !== null && typeof x.info === "object" && Object.values(x.info).includes(infoValue)));
-	}, [items, category, craftable, infoKey, infoValue]);
+	}, [items, type, category, craftable, infoKey, infoValue]);
 	const nameFilteredData = useMemo(() => {
 		if (!presortData) return null;
 		if (!name?.trim()) return presortData;
@@ -210,6 +226,14 @@ export const ItemList = () => {
 				<div className={styles.searchOption}>
 					<p>Craftable</p>
 					<input type="checkbox" checked={craftable} onChange={() => setCraftable(!craftable)} />
+				</div>
+				<div className={styles.searchOption}>
+					<p>Type</p>
+					<select value={type} onChange={e => setType(e.target.value as "all" | "vanilla" | "custom")}>
+						<option value="all">All</option>
+						<option value="vanilla">Vanilla</option>
+						<option value="custom">Custom</option>
+					</select>
 				</div>
 				<div className={styles.searchOption}>
 					<button disabled={!(page - 1 in paginatedData)} onClick={() => page - 1 in paginatedData && setPage(page - 1)}>

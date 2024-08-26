@@ -3,6 +3,7 @@ import { getItemDatabaseInfo, getMarketInfo } from "../actions";
 import styles from "./AdminPanel.module.scss";
 import { FilePanels } from "./FilePanel";
 import prettyMs from "pretty-ms";
+import { CatImage } from "@/app/components/CatImage";
 
 export const AdminPanel = async () => {
 	const itemDatabaseInfo = await getItemDatabaseInfo();

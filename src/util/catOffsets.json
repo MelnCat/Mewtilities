@@ -1,0 +1,282 @@
+{
+    "c": {
+        "adult": {
+            "shorthair": {
+                "playing": {
+                    "x": -200,
+                    "y": -2
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": 0
+                },
+                "standing": {
+                    "x": -100,
+                    "y": 0
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": 0
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": 0
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -100
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -102
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -100
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -100
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -100
+                }
+            }
+        },
+        "kitten": {
+            "shorthair": {
+                "standing": {
+                    "x": -100,
+                    "y": -200
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -202
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -200
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -200
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -200
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -300
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -302
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -300
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -300
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -300
+                }
+            }
+        },
+        "bean": {
+            "shorthair": {
+                "standing": {
+                    "x": -100,
+                    "y": -400
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -400
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -400
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -400
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -400
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -500
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -500
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -500
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -500
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -500
+                }
+            }
+        }
+    },
+    "m": {
+        "adult": {
+            "shorthair": {
+                "standing": {
+                    "x": -100,
+                    "y": -8
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -2
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -11
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": 0
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": 0
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -108
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -102
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -100
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -100
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -111
+                }
+            }
+        },
+        "kitten": {
+            "shorthair": {
+                "standing": {
+                    "x": -100,
+                    "y": -208
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -202
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -200
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -200
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -211
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -308
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -302
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -300
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -300
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -311
+                }
+            }
+        },
+        "bean": {
+            "shorthair": {
+                "standing": {
+                    "x": -100,
+                    "y": -400
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -400
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -400
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -400
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -411
+                }
+            },
+            "longhair": {
+                "standing": {
+                    "x": -100,
+                    "y": -500
+                },
+                "playing": {
+                    "x": -200,
+                    "y": -500
+                },
+                "sleeping": {
+                    "x": -300,
+                    "y": -500
+                },
+                "upsidedown": {
+                    "x": -400,
+                    "y": -500
+                },
+                "sitting": {
+                    "x": 0,
+                    "y": -511
+                }
+            }
+        }
+    }
+}

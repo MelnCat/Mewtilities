@@ -1,0 +1,9 @@
+.catContainer {
+	display: grid;
+    width: 100px;
+    height: 100px;
+	overflow: hidden;
+	img {
+		grid-area: 1 / 1;
+	}
+}

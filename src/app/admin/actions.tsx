@@ -92,6 +92,8 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 				info: item.info,
 				extraText: item.extraText,
 				seasons: item.seasons,
+				custom: item.custom,
+				...(item.customItemData ? { customData: item.customItemData } : null),
 			},
 			create: {
 				id: item.id,
@@ -102,6 +104,8 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 				info: item.info,
 				extraText: item.extraText,
 				seasons: item.seasons,
+				custom: item.custom,
+				...(item.customItemData ? { customData: item.customItemData } : null),
 			},
 		});
 		i++;

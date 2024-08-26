@@ -14,12 +14,6 @@
 	}
 }
 
-
-.itemImage {
-	height: 6em;
-	width: fit-content;
-}
-
 .leftPanel {
 	display: flex;
 	flex-direction: column;
@@ -27,7 +21,7 @@
 
 .rightPanel {
 	display: flex;
-    flex-grow: 1;
+	flex-grow: 1;
 }
 
 .chartContainer {
@@ -48,7 +42,7 @@
 		color: #926904;
 	}
 	p[data-season="AUTUMN"] {
-		color: #8B4513;
+		color: #8b4513;
 	}
 	p[data-season="WINTER"] {
 		color: #191970;
@@ -60,7 +54,7 @@
 }
 .recipeRow {
 	display: flex;
-    align-items: stretch;
+	align-items: stretch;
 	gap: 0.25em;
 	.operator {
 		margin: auto 0;
@@ -77,7 +71,7 @@
 	padding: 0.5em;
 	width: 10em;
 	font-size: 0.9em;
-    white-space: nowrap;
+	white-space: nowrap;
 	.icon {
 		width: fit-content;
 		height: 6em;
@@ -85,7 +79,7 @@
 }
 .ingredientPrice {
 	font-size: 0.8em;
-    display: flex;
+	display: flex;
 	align-items: center;
 	justify-content: center;
 	.value {
@@ -97,4 +91,30 @@
 	.slash {
 		margin: 0 0.25em;
 	}
+}
+.spriteSheetContainer {
+	display: grid;
+	border: 1px solid #00000044;
+    height: fit-content;
+	overflow: hidden;
+	img {
+		grid-area: 1 / 1;
+	}
+}
+
+.modelContainer {
+	display: grid;
+	border: 1px solid #00000044;
+    height: 0;
+	overflow: visible;
+	grid-area: 1 / 1;
+	img {
+		grid-area: 1 / 1;
+	}
+}
+
+.customPreview {
+	display: flex;
+	flex-direction: column;
+	margin-left: 1em;
 }
