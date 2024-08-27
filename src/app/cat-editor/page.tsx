@@ -31,7 +31,7 @@ import { ProcessedClothing } from "@/db/db";
 import { Reorder } from "framer-motion";
 import useSWR from "swr";
 
-export const EditorLayer = <T extends { shown: boolean }>({
+const EditorLayer = <T extends { shown: boolean }>({
 	layer,
 	setLayer,
 	title,
