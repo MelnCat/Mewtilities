@@ -75,16 +75,16 @@ export default function CatEditorPage() {
 	);
 	const [geneInput, setGeneInput] = useState("");
 	const [species, setSpecies] = useState("Any");
-	const [colorLayer, setColorLayer] = useState({ species: "c", color: sampleRandom(catColorList) as string, pattern: sampleRandom(catPatternList) as string, shown: true });
+	const [colorLayer, setColorLayer] = useState({ species: "c", color: sampleRandom(catColorList) as string, pattern: sampleRandom(catPatternList) as string, shown: false });
 	const [tradeColorLayer, setTradeColorLayer] = useState({ species: "c", color: "-", pattern: "-", shown: false });
 	const [whiteLayer, setWhiteLayer] = useState({
 		species: "c",
 		whiteType: sampleRandom(whiteTypeList) as string,
 		whiteNumber: randomInteger(0, 10) as number | "-",
-		shown: true,
+		shown: false,
 	});
 	const [accentLayer, setAccentLayer] = useState({ species: "c", accent: "-", pattern: "-", shown: false });
-	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: true });
+	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: false });
 	const [clothing, setClothing] = useState<(ProcessedClothing & { keyId: number })[]>([]);
 	const [selected, setSelected] = useState<{ value: number } | null>(null);
 	const layers = useMemo(
