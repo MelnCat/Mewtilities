@@ -32,12 +32,13 @@ model Item {
     /// [CustomItemData]
     customData Json?
 
-    marketEntries    MarketEntry[]
-    shopEntries      ShopEntry[]
-    quickSellEntries QuickSellEntry[]
-    recipe           Recipe?
-    usages           RecipeIngredient[]
-    holdingCats      Cat[]
+    marketEntries        MarketEntry[]
+    shopEntries          ShopEntry[]
+    quickSellEntries     QuickSellEntry[]
+    recipe               Recipe?
+    usages               RecipeIngredient[]
+    holdingCats          Cat[]
+    ResourceGatherResult ResourceGatherResult[]
 }
 
 model MarketEntry {
@@ -79,8 +80,8 @@ model ShopEntry {
 }
 
 model QuickSellEntry {
-    id         String    @id @default(uuid())
-    item       Item      @relation(fields: [itemId], references: [id])
+    id         String   @id @default(uuid())
+    item       Item     @relation(fields: [itemId], references: [id])
     itemId     Int
     priceType  Currency @default(NOTE)
     priceCount Int
@@ -107,6 +108,27 @@ model RecipeIngredient {
     @@id([itemId, recipeId])
 }
 
+model ResourceGather {
+    id         String                 @id
+    roll       Int
+    skillBonus Int
+    profession String
+    catName    String
+    catId      Int
+    extraText  String?
+    results    ResourceGatherResult[]
+}
+
+model ResourceGatherResult {
+    item             Item           @relation(fields: [itemId], references: [id])
+    itemId           Int
+    resourceGather   ResourceGather @relation(fields: [resourceGatherId], references: [id])
+    resourceGatherId String
+    count            Int
+
+    @@id([itemId, resourceGatherId])
+}
+
 model Cat {
     id        Int    @id
     ownerName String
@@ -120,7 +142,7 @@ model Cat {
     name        String
     wind        String
     personality String
-    clothing     Int[]
+    clothing    Int[]
     birthYear   Int
     birthSeason Season
     birthDay    Int
@@ -133,7 +155,7 @@ model Cat {
     color       String
     pattern     String
     whiteMarks  String
-	accentColor String?
+    accentColor String?
     eyeColor    String
 
     trinket   Item? @relation(fields: [trinketId], references: [id])
