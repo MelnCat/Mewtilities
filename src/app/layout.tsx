@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.scss";
-import { defaultFont } from "@/util/font";
 
+import { defaultFont } from "@/util/font";
 
 export const dynamic = "force-dynamic";
 

@@ -75,6 +75,8 @@ export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 export interface ProcessedClothing {
 	id: number;
 	name: string;
+	key: string;
 	image: string;
+	custom: boolean;
 }
-export const getClothing = () => prisma.item.findMany({ select: { id: true, name: true, image: true }, where: { category: { contains: "clothing" } } });
+export const getClothing = () => prisma.item.findMany({ select: { id: true, name: true, key: true, image: true, custom: true }, where: { category: { contains: "clothing" } }, orderBy: { id: "asc" } });

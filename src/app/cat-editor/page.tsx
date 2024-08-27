@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef, Dispatch, SetStateAction, useEffect } from "react";
+import { useState, useMemo, useRef, Dispatch, SetStateAction, useEffect, useId } from "react";
 import styles from "./page.module.scss";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { CatImage, CatSheet } from "../components/CatImage";
@@ -23,9 +23,13 @@ import {
 	textureFromGene,
 	whiteTypeList,
 } from "@/util/cat";
+import Select, { createFilter } from "react-windowed-select";
 import { randomInteger, sample } from "remeda";
 import { pceLink, sampleRandom } from "@/util/util";
 import { accentNames, colorNames, patternNames, whiteTypeKeys } from "@/util/catData";
+import { ProcessedClothing } from "@/db/db";
+import { Reorder } from "framer-motion";
+import useSWR from "swr";
 
 export const EditorLayer = <T extends { shown: boolean }>({
 	layer,
@@ -65,6 +69,10 @@ export const EditorLayer = <T extends { shown: boolean }>({
 };
 
 export default function CatEditorPage() {
+	const { data: clothingIndex } = useSWR<ProcessedClothing[]>(
+		"/api/clothing",
+		async () => await (await fetch("/api/clothing", { cache: "force-cache", next: { revalidate: 300 } })).json()
+	);
 	const [geneInput, setGeneInput] = useState("");
 	const [species, setSpecies] = useState("Any");
 	const [colorLayer, setColorLayer] = useState({ species: "c", color: sampleRandom(catColorList) as string, pattern: sampleRandom(catPatternList) as string, shown: true });
@@ -77,6 +85,8 @@ export default function CatEditorPage() {
 	});
 	const [accentLayer, setAccentLayer] = useState({ species: "c", accent: "-", pattern: "-", shown: false });
 	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: true });
+	const [clothing, setClothing] = useState<(ProcessedClothing & { keyId: number })[]>([]);
+	const [selected, setSelected] = useState<{ value: number } | null>(null);
 	const layers = useMemo(
 		() =>
 			[
@@ -91,8 +101,10 @@ export default function CatEditorPage() {
 					? `images/cats/${accentLayer.species}/${accentLayer.accent}_accent_${accentLayer.pattern}.png`
 					: null,
 				eyesLayer.shown && eyesLayer.eyes !== "-" ? `images/cats/eyes_${eyesLayer.eyes}${eyesLayer.albinoType === "-" ? "" : `_a_${eyesLayer.albinoType}`}.png` : null,
-			].map(x => (x ? pceLink(x) : x)),
-		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer]
+			]
+				.map(x => (x ? pceLink(x) : x))
+				.concat(clothing.map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))),
+		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer, clothing]
 	);
 	useEffect(() => {
 		loadFromGene(randomCatGene(species === "Any" ? undefined : species === "Not-Cat" ? "C" : "M"));
@@ -188,6 +200,36 @@ export default function CatEditorPage() {
 							pattern: { name: "Pattern", values: catPatternList.map(x => ({ name: patternNames[x], key: x })) },
 						}}
 					/>
+				</section>
+				<section className={styles.clothingSelect}>
+					<h1>Clothing</h1>
+					<div className={styles.selectRow}>
+						<Select
+							className={styles.select}
+							windowThreshold={50}
+							filterOption={createFilter({ ignoreAccents: false })}
+							options={(clothingIndex ?? []).map(x => ({ label: `(${x.id}) ${x.name}`, value: x.id }))}
+							instanceId={useId()}
+							onChange={x => setSelected((x as { value: number }) ?? null)}
+							value={selected}
+						/>
+						<button
+							onClick={() => {
+								if (!selected) return;
+								setClothing(x => x.concat({ ...clothingIndex!.find(x => x.id === selected.value)!, keyId: Math.random() }));
+								setSelected(null);
+							}}
+						>
+							Add
+						</button>
+					</div>
+					<Reorder.Group axis="y" values={clothing} onReorder={setClothing} className={styles.clothingList}>
+						{clothing.map(item => (
+							<Reorder.Item key={item.keyId} value={item} className={styles.clothingItem}>
+								{item.name} <button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>
+							</Reorder.Item>
+						))}
+					</Reorder.Group>
 				</section>
 			</article>
 		</main>

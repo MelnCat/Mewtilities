@@ -1,8 +1,8 @@
-import { getAllItems, getProcessedItems } from "@/db/db";
+import { getAllItems, getClothing, getProcessedItems } from "@/db/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-	const data = await getProcessedItems();
+	const data = await getClothing();
 	return Response.json(data);
 }

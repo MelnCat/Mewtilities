@@ -40,3 +40,38 @@
 	padding: 0.2em;
 	gap: 0.2em;
 }
+.clothingSelect {
+	border: 1px solid #888888;
+	width: 20em;
+
+}
+.selectRow {
+	display: flex;
+}
+.select {
+	flex-grow: 1;
+	div { border-radius: 0 }
+}
+.clothingList {
+	list-style-type: none;
+}
+.clothingItem {
+	padding: 0.2em 0.5em;
+	background-color: #00000022;
+	margin: 0.4em;
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: bold;
+		border: none;
+		background-color: #9e1b1b;
+		color: white;
+		padding: 0;
+		width: 1.4em;
+		height: 1.4em;
+	}
+}
