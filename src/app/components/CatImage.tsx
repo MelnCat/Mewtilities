@@ -1,25 +1,31 @@
 "use client";
-import { Ref, useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import styles from "./CatImage.module.scss";
 import { CatEyes, PartialCatGene, deserializeCatGene, textureFromGene } from "@/util/cat";
+import { downloadFile } from "@/util/downloadFile";
 
 export const CatImage = (
 	data: ({ gene: string } | { gene: PartialCatGene } | { images: (string | null)[]; offset: { x: number; y: number } }) & {
 		layer?: number | string | number[];
 		sheet?: boolean;
 		eyes?: CatEyes;
-		downloadRef?: Ref<() => void>;
+		downloadRef?: MutableRefObject<() => unknown>;
 	}
 ) => {
 	const imageRefs = useRef([] as HTMLImageElement[]);
 	useEffect(() => {
-		const images = imageRefs.current;
-		const width = Math.max(...images.map(x => x.width));
-		const height = Math.max(...images.map(x => x.height));
-		const canvas = new OffscreenCanvas(width, height);
-		const context = canvas.getContext("2d");
-		for (const image of images) context?.drawImage(image, 0, 0);
-		
+		(async () => {
+			const images = imageRefs.current.filter(x => x);
+			if (images.length === 0) return;
+			await Promise.all(images.map(x => new Promise(res => x.addEventListener("load", res))));
+			const width = Math.max(...images.map(x => x.width));
+			const height = Math.max(...images.map(x => x.height));
+			const canvas = new OffscreenCanvas(width, height);
+			const context = canvas.getContext("2d");
+			for (const image of images) context?.drawImage(image, 0, 0);
+			const blob = await canvas.convertToBlob();
+			if (data.downloadRef) data.downloadRef.current = () => downloadFile("cat.png", blob);
+		})();
 	}, []);
 	if ("gene" in data) {
 		if (typeof data.gene === "string") {
@@ -33,6 +39,7 @@ export const CatImage = (
 	const images = data.images.map((x, i) =>
 		x === null ? null : (
 			<img
+			crossOrigin="anonymous"
 				ref={ref => {
 					imageRefs.current[i] = ref!;
 				}}

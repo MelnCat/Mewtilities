@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import styles from "./page.module.scss";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { CatImage } from "../components/CatImage";
@@ -9,6 +9,7 @@ export default function GenePage() {
 	const [geneInput, setGeneInput] = useState("");
 	const [eyes, setEyes] = useState<CatEyes>("neutral");
 	const gene = useMemo(() => deserializeCatGene(geneInput), [geneInput]);
+	const downloadRef = useRef<() => unknown>(() => {})
 	return (
 		<main className={styles.main}>
 			<h1>Cat Gene Viewer</h1>
@@ -22,8 +23,9 @@ export default function GenePage() {
 			<section className={styles.output}>
 				{gene.ok ? (
 					<>
-						<CatImage gene={gene.data} sheet eyes={eyes} />
+						<CatImage gene={gene.data} sheet eyes={eyes} downloadRef={downloadRef} />
 						<CatGeneDisplay gene={gene.data} />
+						<button onClick={() => downloadRef.current()}>Download</button>
 					</>
 				) : (
 					<p>{geneInput ? "Invalid Gene" : ""}</p>
