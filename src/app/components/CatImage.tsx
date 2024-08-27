@@ -8,10 +8,9 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	useEffect(() => {
 		if (!canvasRef.current) return;
-		const canvas = canvasRef.current;
-		const context = canvasRef.current.getContext("2d");
+		const canvas = new OffscreenCanvas(600, 500);
+		const context = canvas.getContext("2d");
 		if (!context) return;
-		context.clearRect(0, 0, 600, 500);
 		let shouldCancel = false;
 		(async () => {
 			const processed = gene instanceof Array ? { images: gene } : textureFromGene("adult", "standing", eyes ?? "neutral", gene);
@@ -33,6 +32,8 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 				} else context.drawImage(image, 0, 0);
 				if (shouldCancel) return;
 			}
+			const ctx = canvasRef.current!.getContext("2d")!;
+			ctx.drawImage(canvas, 0, 0);
 		})();
 		return () => {
 			shouldCancel = true;
