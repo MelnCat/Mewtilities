@@ -23,9 +23,9 @@ export const parseGatherResourcesPage = (content: string): Result<RawResourceGat
 	const form = doc.querySelector(".forumwide-content-area");
 	if (!form) return failure("Invalid page layout");
 	const rows = [...form.querySelectorAll(".forum-post-group")];
-	if (form.querySelector(".jobdo-input")) return failure("Incomplete resource gathering")
 	const entries: RawResourceGatherEntry[] = [];
 	for (const row of rows) {
+		if (row.querySelector(".jobdo-input")) continue;
 		const builder: Partial<RawResourceGatherEntry> = {};
 		const jobTitle = row.querySelector(".jobdo-title")?.textContent?.trim();
 		if (!jobTitle) return failure("Job title missing");
