@@ -78,7 +78,7 @@ export const partialCatGeneSchema = z.union([
 export type ColoredPartialCatGene = z.TypeOf<typeof coloredPartialCatGeneSchema>;
 export type PartialCatGene = z.TypeOf<typeof partialCatGeneSchema>;
 
-export const randomCatGene = (species: "C" | "M" = "C"): CatGene => {
+export const randomCatGene = (species: "C" | "M" = R.sample(["C", "M"] as const, 1)[0]): CatGene => {
 	const firstWind = weightedRandomKeys({
 		O: 14,
 		N: 43,
@@ -375,10 +375,13 @@ export const getCatTextures = (p: GenePhenotype) => ({
 	accent: p.species === "m" ? `images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png` : null
 });
 
+export type CatEyes = "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral";
+export const catEyes = ["squint", "sleepy", "uwu", "content", "danger", "sad", "stern", "right", "left", "neutral"] as const;
+
 export const textureFromGene = (
 	age: "adult" | "kitten" | "bean",
 	pose: "upsidedown" | "playing" | "sleeping" | "standing" | "sitting",
-	eyes: "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral",
+	eyes: CatEyes,
 	gene: PartialCatGene
 ) => {
 	const p = getGenePhenotype(gene);
