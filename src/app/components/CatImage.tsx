@@ -33,7 +33,7 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 				if (shouldCancel) return;
 			}
 			const ctx = canvasRef.current!.getContext("2d")!;
-			context.clearRect(0, 0, 600, 500);
+			ctx.clearRect(0, 0, 600, 500);
 			ctx.drawImage(canvas, 0, 0);
 		})();
 		return () => {
