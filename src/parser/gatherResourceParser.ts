@@ -9,6 +9,8 @@ export interface RawResourceGatherEntry {
 	catName: string;
 	catId: number;
 	profession: string;
+	id: string;
+	time: string;
 	results: {
 		type: number,
 		count: number
@@ -44,6 +46,12 @@ export const parseGatherResourcesPage = (content: string): Result<RawResourceGat
 		const catRoll = row.querySelector(".die-roll")?.textContent;
 		if (!catRoll || isNaN(+catRoll)) return failure("Roll missing or invalid");
 		builder.roll = +catRoll;
+
+		const timeText = doc.querySelector("#weatherlink")?.textContent?.trim().match(/.+?\| (\w+) (.+)?, Year (.+?) \|/);
+		if (!timeText || !timeText[1] || !timeText[2] || !timeText[3]) return failure("Time missing or invalid");
+		const formatted = `${timeText[3]}-${timeText[1]}-${timeText[2]}`;
+		builder.time = formatted;
+		builder.id = `${formatted}_${catId}`;
 
 		const items = row.querySelectorAll(".jobdo-bottomhalf .mini-itemcube");
 		builder.results = [];

@@ -110,6 +110,7 @@ model RecipeIngredient {
 
 model ResourceGather {
     id         String                 @id
+    time       String
     roll       Int
     skillBonus Int
     profession String

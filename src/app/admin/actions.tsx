@@ -3,6 +3,7 @@
 import { getAdminState } from "@/admin/auth";
 import prisma from "@/db/prisma";
 import { parseCatPage } from "@/parser/catParser";
+import { parseGatherResourcesPage } from "@/parser/gatherResourceParser";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage } from "@/parser/marketParser";
 import { parseQuickSellPage } from "@/parser/quickSellParser";
@@ -203,13 +204,22 @@ export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabaseP
 	return { success: true, message: `${updated} entries updated` };
 });
 export const processCatFiles = processFileAction(parseCatPage, async data => {
-	const items = await prisma.item.findMany({ where: { key: { in: data.map(x => x.trinketName).filter(x => x).concat(data.flatMap(x => x.clothingKeys)) as string[] } } });
+	const items = await prisma.item.findMany({
+		where: {
+			key: {
+				in: data
+					.map(x => x.trinketName)
+					.filter(x => x)
+					.concat(data.flatMap(x => x.clothingKeys)) as string[],
+			},
+		},
+	});
 	let added = 0;
 	for (const cat of data) {
 		const trinket = cat.trinketName === null ? null : items.find(x => x.key === cat.trinketName);
 		if (trinket === undefined) return { success: false, message: `Unknown trinket ${cat.trinketName}` };
 		const clothing = cat.clothingKeys.map(x => items.find(y => y.key === x));
-		if (clothing.includes(undefined)) return {success: false, message: `Unknown clothing item(s) ${cat.clothingKeys.filter(x => !items.some(y => y.key === x)).join(", ")}`}
+		if (clothing.includes(undefined)) return { success: false, message: `Unknown clothing item(s) ${cat.clothingKeys.filter(x => !items.some(y => y.key === x)).join(", ")}` };
 		const processed = { ...cat, trinketId: trinket === null ? null : trinket.id, clothing: clothing.map(x => x!.id) };
 		delete (processed as any).trinketName;
 		delete (processed as any).clothingKeys;
@@ -223,6 +233,28 @@ export const processCatFiles = processFileAction(parseCatPage, async data => {
 	return { success: true, message: `${added} entries updated` };
 });
 
+export const processResourceGatherFiles = processFileAction(parseGatherResourcesPage, async data => {
+	let updated = 0;
+	for (const entry of data.flat()) {
+		await prisma.resourceGather.create({
+			data: {
+				catId: entry.catId,
+				catName: entry.catName,
+				id: entry.id,
+				time: entry.time,
+				profession: entry.profession,
+				roll: entry.roll,
+				skillBonus: entry.skillBonus,
+				extraText: null,
+				results: {
+					create: entry.results.map(x => ({ itemId: x.type, count: x.count }))
+				}
+			},
+		});
+		updated++;
+	}
+	return { success: true, message: `${updated} entries updated` };
+});
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
 	return {
