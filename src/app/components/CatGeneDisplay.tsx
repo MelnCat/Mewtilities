@@ -6,6 +6,7 @@ import { useHover } from "usehooks-ts";
 import { defaultFont } from "@/util/font";
 import { CatImage } from "./CatImage";
 import { pceLink } from "@/util/util";
+import { colorNames, patternNames, whiteTypeNames, accentNames } from "@/util/catData";
 
 const CatGeneSection = ({ category, children, tooltip }: { category: string; children: React.ReactNode; tooltip: { title: string; content: string | React.ReactNode } }) => {
 	const ref = useRef<HTMLDivElement | null>(null);
@@ -36,122 +37,6 @@ const CatGeneContent = ({ content }: { content: number | string | string[] }) =>
 		</span>
 	);
 };
-
-const whiteTypeNames = {
-	classic: {
-		0: "None",
-		1: "Locket",
-		2: "Locket & Toes",
-		3: "Bib & Boots",
-		4: "Bib, Boots, & Belly",
-		5: "Classic Bicolor",
-		6: "Piebald",
-		7: "Spotted Piebald",
-		8: "Freckled Piebald",
-		9: "Van",
-		10: "Albino",
-	},
-	piebald: {
-		0: "None",
-		1: "Nose",
-		2: "Nose & Toes",
-		3: "Nose, Bib & Boots",
-		4: "Bib, Ears, & Belly",
-		5: "True Piebald",
-		6: "Scattered Piebald",
-		7: "Painted Spots",
-		8: "Confetti",
-		9: "Speckled Van",
-		10: "Albino",
-	},
-	left: {
-		0: "None",
-		1: "Toes",
-		2: "Tie & Toes",
-		3: "Tie, Toes & Chin",
-		4: "Chin, Boots, & Belly",
-		5: "Left Bicolor",
-		6: "Left Piebald",
-		7: "Left Patches",
-		8: "Left Spots",
-		9: "Left Van",
-		10: "Albino",
-	},
-	right: {
-		0: "None",
-		1: "Tail Tip",
-		2: "Tail Tip & Toes",
-		3: "Tail, Toes, & Tie",
-		4: "Tail, Boots, & Belly",
-		5: "Right Bicolor",
-		6: "Right Piebald",
-		7: "Right Patches",
-		8: "Right Spots",
-		9: "Right Van",
-		10: "Albino",
-	},
-	inverse: {
-		0: "None",
-		1: "Ear Tips",
-		2: "Ear & Tail Tips",
-		3: "Ears, Tail, & Toes",
-		4: "Snowspots",
-		5: "Snowmelt",
-		6: "Ghost",
-		7: "Owl Mantle",
-		8: "Heart Mantle",
-		9: "Heart",
-		10: "Albino",
-	},
-};
-
-const patternNames = {
-	solid: "Solid",
-	mackerel: "Mackerel",
-	classic: "Classic",
-	broken: "Broken",
-	lynxpoint: "Lynxpoint",
-	clouded: "Clouded",
-	rosette: "Rosette",
-	cloudpoint: "Cloudpoint",
-	spotted: "Spotted",
-	mink: "Mink",
-	colorpoint: "Colorpoint",
-};
-
-const colorNames = {
-	black: "Black",
-	choco: "Chocolate",
-	brown: "Brown",
-	tan: "Tan",
-	charc: "Charcoal",
-	grey: "Grey",
-	smoke: "Smoke",
-	silver: "Silver",
-	red: "Red",
-	ginger: "Ginger",
-	orange: "Orange",
-	aprico: "Apricot",
-	buff: "Buff",
-	cream: "Cream",
-	almond: "Almond",
-	beige: "Beige",
-	snow: "Snow",
-};
-
-const accentNames = {
-	blue: "Blue",
-	indigo: "Indigo",
-	violet: "Violet",
-	green: "Green",
-	black: "Black",
-	pink: "Pink",
-	teal: "Teal",
-	ruby: "Ruby",
-	amber: "Amber",
-	gold: "Gold",
-};
-
 export const WindIcon = ({ wind }: { wind: string }) => <img className={styles.windIcon} src={pceLink(`main_assets/runes/wind_${wind.toLowerCase()}.png`)} alt={wind} />;
 
 export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }) => {

@@ -12,6 +12,7 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 		const context = canvasRef.current.getContext("2d");
 		if (!context) return;
 		context.clearRect(0, 0, 600, 500);
+		let shouldCancel = false;
 		(async () => {
 			const processed = gene instanceof Array ? { images: gene } : textureFromGene("adult", "standing", eyes ?? "neutral", gene);
 			const images = processed.images
@@ -24,9 +25,13 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 			if (!images.length) return;
 			for (const image of images) {
 				if (!image.complete) await new Promise(res => image.addEventListener("load", res));
+				if (shouldCancel) return;
 				context.drawImage(image, 0, 0);
 			}
 		})();
+		return () => {
+			shouldCancel = true;
+		}
 	}, [gene]);
 	return <canvas height={600} width={500} ref={canvasRef} />;
 };

@@ -239,12 +239,21 @@ const catColors = {
 	O: { F: { 4: "red", 3: "orange", 2: "ginger", 1: "aprico", 0: "snow" }, D: { 4: "buff", 3: "cream", 2: "almond", 1: "beige", 0: "snow" } },
 } satisfies Record<z.TypeOf<typeof colorType>, Record<z.TypeOf<typeof dilutionType>, Record<number, CatColor>>>;
 
+export const catColorList = [...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x))))] as CatColor[];
+
 const catPatterns = {
 	T: { T: "mackerel", M: "classic", S: "broken", P: "lynxpoint" },
 	M: { T: "classic", M: "clouded", S: "rosette", P: "cloudpoint" },
 	S: { T: "broken", M: "rosette", S: "spotted", P: "mink" },
 	P: { T: "lynxpoint", M: "cloudpoint", S: "mink", P: "colorpoint" },
 } satisfies Record<z.TypeOf<typeof spottingType>, Record<z.TypeOf<typeof spottingType>, CatPattern>>;
+
+export const catPatternList = [...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[];
+
+export type CatSpecies = "c" | "m";
+
+export const catSpeciesList: CatSpecies[] = ["c", "m"];
+export const catSpeciesNames = { c: "Not-Cat", m: "Mercat" };
 
 const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
 	I: "inverse",
@@ -254,12 +263,16 @@ const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
 	C: "classic",
 };
 
+export const whiteTypeList = Object.values(whiteTypes) as CatWhiteType[];
+
 const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accentType>, CatAccent>> = {
 	B: { B: "blue", L: "indigo", R: "violet", Y: "green" },
 	L: { B: "indigo", L: "black", R: "pink", Y: "teal" },
 	R: { B: "violet", L: "pink", R: "ruby", Y: "amber" },
 	Y: { B: "green", L: "teal", R: "amber", Y: "gold" },
 };
+
+export const accentTypeList = Object.values(accents).flatMap(x => Object.values(x)) as CatAccent[];
 
 const growthTypes = {
 	A: {
@@ -372,18 +385,38 @@ export const getCatTextures = (p: GenePhenotype) => ({
 	color: p.whiteNumber !== 10 && p.whiteNumber !== "?" ? `images/cats/${p.species}/${p.mainColor}_main_${p.pattern}.png` : null,
 	tradeColor: p.tradeColor !== null ? `images/cats/${p.species}/${p.tradeColor}_trade_${p.pattern}.png` : null,
 	white: p.whiteNumber !== 0 ? `images/cats/${p.species}/white_${p.whiteType}_${p.whiteNumber === "?" ? 10 : p.whiteNumber}.png` : null,
-	accent: p.species === "m" ? `images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png` : null
+	accent: p.species === "m" ? `images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png` : null,
 });
+
+export const getCatTextureProperties = (p: GenePhenotype) =>
+	[
+		p.whiteNumber !== 10 && p.whiteNumber !== "?"
+			? { species: p.species, color: p.mainColor, pattern: p.pattern, shown: true }
+			: { species: p.species, color: "-", pattern: "-", shown: false },
+		p.tradeColor !== null ? { species: p.species, color: p.tradeColor, pattern: p.pattern, shown: true } : { species: p.species, color: "-", pattern: "-", shown: false },
+		p.whiteNumber !== 0
+			? { species: p.species, whiteType: p.whiteType, whiteNumber: p.whiteNumber === "?" ? 10 : p.whiteNumber, shown: true }
+			: ({ species: p.species, whiteType: "-", whiteNumber: "-", shown: false } as const),
+		p.species === "m" ? { species: p.species, accent: p.accent, pattern: p.pattern, shown: true } : { species: p.species, accent: "-", pattern: "-", shown: false },
+		{ eyes: "neutral", albinoType: p.whiteNumber === 10 ? p.whiteType : "-", shown: true },
+	] as const;
 
 export type CatEyes = "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral";
 export const catEyes = ["squint", "sleepy", "uwu", "content", "danger", "sad", "stern", "right", "left", "neutral"] as const;
+export const catEyesNames = {
+	squint: "Squint",
+	sleepy: "Sleepy",
+	uwu: "UwU",
+	content: "Content",
+	danger: "Danger",
+	sad: "Sad",
+	stern: "Stern",
+	right: "Right",
+	left: "Left",
+	neutral: "Neutral",
+};
 
-export const textureFromGene = (
-	age: "adult" | "kitten" | "bean",
-	pose: "upsidedown" | "playing" | "sleeping" | "standing" | "sitting",
-	eyes: CatEyes,
-	gene: PartialCatGene
-) => {
+export const textureFromGene = (age: "adult" | "kitten" | "bean", pose: "upsidedown" | "playing" | "sleeping" | "standing" | "sitting", eyes: CatEyes, gene: PartialCatGene) => {
 	const p = getGenePhenotype(gene);
 
 	const t = getCatTextures(p);
@@ -394,7 +427,7 @@ export const textureFromGene = (
 	images.push(t.accent);
 	images.push(`images/cats/eyes_${eyes}${p.whiteNumber === 10 ? `_a_${p.whiteType}` : ""}.png`);
 
-	return { images: images.map(x => x ? pceLink(x) : x), offset: offsets[p.species][age][p.fur][pose] };
+	return { images: images.map(x => (x ? pceLink(x) : x)), offset: offsets[p.species][age][p.fur][pose] };
 };
 
 export const serializeCatGene = (gene: PartialCatGene, formatted: boolean = false) => {

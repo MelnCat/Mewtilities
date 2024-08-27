@@ -34,3 +34,5 @@ export const weightedRandomKeys = <T extends string | number | symbol>(data: Rec
 }
 
 export const pceLink = (path: string) => `https://www.pixelcatsend.com/${path}`;
+
+export const sampleRandom = <T>(array: T[]) => array[Math.floor(Math.random() * array.length)];
