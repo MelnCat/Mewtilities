@@ -43,6 +43,10 @@
 .clothingSelect {
 	border: 1px solid #888888;
 	width: 20em;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+	padding: 0.5em;
 
 }
 .selectRow {
