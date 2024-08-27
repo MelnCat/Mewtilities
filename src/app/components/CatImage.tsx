@@ -39,7 +39,7 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 		return () => {
 			shouldCancel = true;
 		};
-	}, [gene]);
+	}, [eyes, gene]);
 	return <canvas height={600} width={500} ref={canvasRef} />;
 };
 

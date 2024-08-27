@@ -25,9 +25,11 @@
 	--_g: var(--c1) 90deg, #0000 90.5deg;
 	background: conic-gradient(from -45deg, var(--_g)), conic-gradient(from 135deg, var(--_g)) calc(var(--s) / 2) 0, var(--c2);
 	background-size: var(--s) var(--s);
+	--custom-item-scale: 1.74;
 	img {
 		transform-origin: 0 0;
-		scale: 1.74;
+		scale: var(--custom-item-scale);
 		object-fit: none;
+		height: auto;
 	}
 }

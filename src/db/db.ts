@@ -78,5 +78,11 @@ export interface ProcessedClothing {
 	key: string;
 	image: string;
 	custom: boolean;
+	customData: PrismaJson.CustomItemData | null;
 }
-export const getClothing = () => prisma.item.findMany({ select: { id: true, name: true, key: true, image: true, custom: true }, where: { category: { contains: "clothing" } }, orderBy: { id: "asc" } });
+export const getClothing = () =>
+	prisma.item.findMany({
+		select: { id: true, name: true, key: true, image: true, custom: true, customData: true },
+		where: { category: { contains: "clothing" } },
+		orderBy: { id: "asc" },
+	});

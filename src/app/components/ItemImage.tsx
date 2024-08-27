@@ -1,7 +1,7 @@
 import styles from "./ItemImage.module.scss";
 import { Item } from "@prisma/client";
 
-export const ItemImage = ({ item }: { item: Item }) => {
+export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "image" | "custom"> }) => {
 	if (item.custom) {
 		const position = `${item.customData!.model.x}px ${item.customData!.model.y}px`;
 		return (
@@ -9,13 +9,7 @@ export const ItemImage = ({ item }: { item: Item }) => {
 				{item.customData!.model.image ? (
 					<img loading="lazy" src={item.customData!.model.image} className={styles.modelImage} style={{ objectPosition: position }} alt="cat" />
 				) : null}
-				<img
-					loading="lazy"
-					src={item.image}
-					className={styles.itemImage}
-					style={{ objectPosition: position }}
-					alt={item.name}
-				/>
+				<img loading="lazy" src={item.image} className={styles.itemImage} style={{ objectPosition: position }} alt={item.name} />
 			</div>
 		);
 	} else return <img loading="lazy" src={item.image} className={styles.itemImage} alt={item.name} />;

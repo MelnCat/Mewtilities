@@ -3,25 +3,58 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 0.25em;
+	margin: 0 1em;
+	@media screen and (max-width: 1080px) {
+		font-size: 0.8em;
+	}
+	@media screen and (max-width: 942px) {
+		font-size: 0.7em;
+	}
 }
 .geneInput {
 	width: 40em;
 	font-size: 1.2em;
+	max-width: 80%;
 	font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
 }
 .output {
 	border: 1px solid #888888;
-	padding: 1em 4em;
 	display: flex;
 	align-items: center;
 	flex-direction: column;
+	padding: 0.5em;
+	width: 120em;
+	max-width: 500px;
+	canvas {
+		width: 100%;
+	}
 }
 .mainView {
 	display: flex;
 	margin-top: 1em;
+	width: 80em;
+	@media screen and (max-width: 840px) {
+		flex-direction: column;
+		width: 100%;
+		align-items: stretch;
+		.output {
+			width: 100%;
+			max-width: 100%;
+			canvas {
+				max-width: 500px;
+			}
+		}
+	}
+}
+.outputRow {
+	display: flex;
 }
 .editor {
 	border: 1px solid #888888;
+	flex-basis: 60em;
+	@media screen and (max-width: 840px) {
+		flex-basis: 0;
+	}
 }
 .editorLayer {
 	padding: 0.5em;
@@ -42,12 +75,11 @@
 }
 .clothingSelect {
 	border: 1px solid #888888;
-	width: 20em;
+	flex-basis: 40em;
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
 	padding: 0.5em;
-
 }
 .selectRow {
 	display: flex;
@@ -55,21 +87,29 @@
 .select {
 	flex-grow: 1;
 	width: 0;
-	div { border-radius: 0 }
+	div {
+		border-radius: 0;
+	}
 }
 .clothingList {
 	list-style-type: none;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4em;
 }
 .clothingItem {
-	padding: 0.2em 0.5em;
+	padding: 0.2em 0;
+	padding-right: 0.5em;
+	padding-left: 0.3em;
+	min-height: 2.8em;
 	background-color: #00000022;
-	margin: 0.4em;
 	display: flex;
 	align-items: center;
-	gap: 0.4em;
+	gap: 0.5em;
 	button {
 		display: flex;
 		align-items: center;
+		margin-left: auto;
 		justify-content: center;
 		font-weight: bold;
 		border: none;
@@ -78,5 +118,19 @@
 		padding: 0;
 		width: 1.4em;
 		height: 1.4em;
+		flex-shrink: 0;
+	}
+}
+.clothingImage {
+	font-size: 0.4em;
+	width: 5.6em;
+	& > div {
+		border-radius: 0;
+		border: none;
+		background: none;
+	}
+	img {
+		image-rendering: initial;
+		--custom-item-scale: 0.8;
 	}
 }

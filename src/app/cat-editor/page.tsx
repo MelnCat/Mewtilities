@@ -30,6 +30,8 @@ import { accentNames, colorNames, patternNames, whiteTypeKeys } from "@/util/cat
 import { ProcessedClothing } from "@/db/db";
 import { Reorder } from "framer-motion";
 import useSWR from "swr";
+import { downloadFile } from "@/util/downloadFile";
+import { ItemImage } from "../components/ItemImage";
 
 const EditorLayer = <T extends { shown: boolean }>({
 	layer,
@@ -87,6 +89,7 @@ export default function CatEditorPage() {
 	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: false });
 	const [clothing, setClothing] = useState<(ProcessedClothing & { keyId: number })[]>([]);
 	const [selected, setSelected] = useState<{ value: number } | null>(null);
+	const [downloading, setDownloading] = useState(false);
 	const layers = useMemo(
 		() =>
 			[
@@ -103,12 +106,12 @@ export default function CatEditorPage() {
 				eyesLayer.shown && eyesLayer.eyes !== "-" ? `images/cats/eyes_${eyesLayer.eyes}${eyesLayer.albinoType === "-" ? "" : `_a_${eyesLayer.albinoType}`}.png` : null,
 			]
 				.map(x => (x ? pceLink(x) : x))
-				.concat(clothing.map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))),
+				.concat(clothing.toReversed().map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))),
 		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer, clothing]
 	);
 	useEffect(() => {
 		loadFromGene(randomCatGene(species === "Any" ? undefined : species === "Not-Cat" ? "C" : "M"));
-	}, []);
+	}, [species]);
 	const loadFromGene = (gene: PartialCatGene) => {
 		const props = getCatTextureProperties(getGenePhenotype(gene));
 		setColorLayer(props[0]);
@@ -116,6 +119,20 @@ export default function CatEditorPage() {
 		setWhiteLayer(props[2]);
 		setAccentLayer(props[3]);
 		setEyesLayer(props[4]);
+	};
+	const download = async () => {
+		setDownloading(true);
+		const canvas = new OffscreenCanvas(500, 600);
+		const ctx = canvas.getContext("2d")!;
+		for (const layer of layers.filter(x => x)) {
+			const image = new Image();
+			image.src = `https://corsproxy.io/?${layer}`; // Cat images dont have CORS :(
+			image.crossOrigin = "anonymous";
+			if (!image.complete) await new Promise(res => image.addEventListener("load", res));
+			ctx.drawImage(image, 0, 0);
+		}
+		downloadFile(`cat.png`, await canvas.convertToBlob({ type: "image/png" }));
+		setDownloading(false);
 	};
 
 	return (
@@ -149,7 +166,16 @@ export default function CatEditorPage() {
 				Import Gene
 			</button>
 			<article className={styles.mainView}>
-				<section className={styles.output}>{layers.length ? <CatSheet gene={layers} /> : null}</section>
+				<section className={styles.output}>
+					{layers.length ? (
+						<>
+							<CatSheet gene={layers} />
+							<section className={styles.outputRow}>
+								<button onClick={download} disabled={downloading}>Download</button>
+							</section>
+						</>
+					) : null}
+				</section>
 				<section className={styles.editor}>
 					<EditorLayer
 						title="Eyes"
@@ -226,7 +252,11 @@ export default function CatEditorPage() {
 					<Reorder.Group axis="y" values={clothing} onReorder={setClothing} className={styles.clothingList}>
 						{clothing.map(item => (
 							<Reorder.Item key={item.keyId} value={item} className={styles.clothingItem}>
-								{item.name} <button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>
+								<section className={styles.clothingImage}>
+									<ItemImage item={item} />
+								</section>
+								<p>{item.name}</p>
+								<button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>
 							</Reorder.Item>
 						))}
 					</Reorder.Group>
