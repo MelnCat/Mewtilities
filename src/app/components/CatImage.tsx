@@ -4,6 +4,33 @@ import styles from "./CatImage.module.scss";
 import { CatEyes, PartialCatGene, deserializeCatGene, textureFromGene } from "@/util/cat";
 import { downloadFile } from "@/util/downloadFile";
 
+export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null)[]; eyes?: CatEyes }) => {
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	useEffect(() => {
+		if (!canvasRef.current) return;
+		const canvas = canvasRef.current;
+		const context = canvasRef.current.getContext("2d");
+		if (!context) return;
+		context.clearRect(0, 0, 600, 500);
+		(async () => {
+			const processed = gene instanceof Array ? { images: gene } : textureFromGene("adult", "standing", eyes ?? "neutral", gene);
+			const images = processed.images
+				.filter(x => x)
+				.map(x => {
+					const img = new Image();
+					img.src = x!;
+					return img;
+				});
+			if (!images.length) return;
+			for (const image of images) {
+				if (!image.complete) await new Promise(res => image.addEventListener("load", res));
+				context.drawImage(image, 0, 0);
+			}
+		})();
+	}, [gene]);
+	return <canvas height={600} width={500} ref={canvasRef} />;
+};
+
 export const CatImage = (
 	data: ({ gene: string } | { gene: PartialCatGene } | { images: (string | null)[]; offset: { x: number; y: number } }) & {
 		layer?: number | string | number[];
@@ -13,6 +40,7 @@ export const CatImage = (
 	}
 ) => {
 	const imageRefs = useRef([] as HTMLImageElement[]);
+	/*
 	useEffect(() => {
 		(async () => {
 			const images = imageRefs.current.filter(x => x);
@@ -26,7 +54,7 @@ export const CatImage = (
 			const blob = await canvas.convertToBlob();
 			if (data.downloadRef) data.downloadRef.current = () => downloadFile("cat.png", blob);
 		})();
-	}, []);
+	}, []);*/
 	if ("gene" in data) {
 		if (typeof data.gene === "string") {
 			const test = deserializeCatGene(data.gene);
@@ -39,7 +67,6 @@ export const CatImage = (
 	const images = data.images.map((x, i) =>
 		x === null ? null : (
 			<img
-			crossOrigin="anonymous"
 				ref={ref => {
 					imageRefs.current[i] = ref!;
 				}}
