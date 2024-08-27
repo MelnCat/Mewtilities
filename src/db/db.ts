@@ -13,12 +13,12 @@ declare global {
 			author: {
 				id: number;
 				name: string;
-			}
+			};
 			model: {
 				image?: string;
 				x: number;
 				y: number;
-			}
+			};
 		}
 	}
 }
@@ -68,6 +68,13 @@ export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 			} | null)[]) ?? null,
 		craftable: x.recipe !== null,
 		custom: x.custom,
-		customData: x.customData
+		customData: x.customData,
 	}));
 };
+
+export interface ProcessedClothing {
+	id: number;
+	name: string;
+	image: string;
+}
+export const getClothing = () => prisma.item.findMany({ select: { id: true, name: true, image: true }, where: { category: { contains: "clothing" } } });

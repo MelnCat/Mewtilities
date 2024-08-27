@@ -1,7 +1,6 @@
 import { getAdminState } from "@/admin/auth";
-import { useState } from "react";
-import styles from "./page.module.scss";
 import { cookies } from "next/headers";
+import styles from "./page.module.scss";
 import { AdminPanel } from "./panel/AdminPanel";
 
 const Login = () => {

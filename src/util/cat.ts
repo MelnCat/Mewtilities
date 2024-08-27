@@ -272,7 +272,7 @@ const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accent
 	Y: { B: "green", L: "teal", R: "amber", Y: "gold" },
 };
 
-export const accentTypeList = Object.values(accents).flatMap(x => Object.values(x)) as CatAccent[];
+export const accentTypeList = [...new Set(Object.values(accents).flatMap(x => Object.values(x)))] as CatAccent[];
 
 const growthTypes = {
 	A: {

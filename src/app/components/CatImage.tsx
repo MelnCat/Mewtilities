@@ -24,14 +24,19 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 				});
 			if (!images.length) return;
 			for (const image of images) {
-				if (!image.complete) await new Promise(res => image.addEventListener("load", res));
+				if (!image.complete) {
+					const success = await new Promise(res => {
+						image.addEventListener("load", () => res(true));
+						image.addEventListener("error", () => res(false));
+					});
+					if (success) context.drawImage(image, 0, 0);
+				} else context.drawImage(image, 0, 0);
 				if (shouldCancel) return;
-				context.drawImage(image, 0, 0);
 			}
 		})();
 		return () => {
 			shouldCancel = true;
-		}
+		};
 	}, [gene]);
 	return <canvas height={600} width={500} ref={canvasRef} />;
 };

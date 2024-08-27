@@ -43,12 +43,12 @@ export const EditorLayer = <T extends { shown: boolean }>({
 			<h1>{title}</h1>
 			<div className={styles.editorLayerOptions}>
 				<div className={styles.editorLayerOption}>
-					<b>Visible</b>
+					<p>Visible</p>
 					<input type="checkbox" checked={layer.shown} onChange={() => setLayer(x => ({ ...x, shown: !x.shown }))} />
 				</div>
 				{(Object.entries(values) as [keyof T & string, (typeof values)[keyof typeof values]][]).map(([k, v]) => (
 					<div className={styles.editorLayerOption} key={k}>
-						<b>{v.name}</b>
+						<p>{v.name}</p>
 						<select value={layer[k] as string} onChange={e => setLayer(x => ({ ...x, [k]: e.target.value }))}>
 							{k === "species" ? null : <option value="-">-</option>}
 							{v.values.map(x => (
@@ -84,7 +84,7 @@ export default function CatEditorPage() {
 				tradeColorLayer.shown && Object.values(tradeColorLayer).every(x => x !== "-")
 					? `images/cats/${tradeColorLayer.species}/${tradeColorLayer.color}_trade_${tradeColorLayer.pattern}.png`
 					: null,
-				whiteLayer.shown && Object.values(whiteLayer).every(x => x !== "-")
+				whiteLayer.shown && Object.values(whiteLayer).every(x => x !== "-") && whiteLayer.whiteNumber !== 0
 					? `images/cats/${whiteLayer.species}/white_${whiteLayer.whiteType}_${whiteLayer.whiteNumber}.png`
 					: null,
 				accentLayer.shown && Object.values(accentLayer).every(x => x !== "-") && accentLayer.species !== "c"
@@ -92,7 +92,7 @@ export default function CatEditorPage() {
 					: null,
 				eyesLayer.shown && eyesLayer.eyes !== "-" ? `images/cats/eyes_${eyesLayer.eyes}${eyesLayer.albinoType === "-" ? "" : `_a_${eyesLayer.albinoType}`}.png` : null,
 			].map(x => (x ? pceLink(x) : x)),
-		[colorLayer, tradeColorLayer, whiteLayer, accentLayer]
+		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer]
 	);
 	useEffect(() => {
 		loadFromGene(randomCatGene(species === "Any" ? undefined : species === "Not-Cat" ? "C" : "M"));
