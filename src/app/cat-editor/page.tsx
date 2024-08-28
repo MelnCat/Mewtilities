@@ -149,7 +149,7 @@ export default function CatEditorPage() {
 						const item = clothingIndex?.find(y => y.id === x);
 						if (!item) return [];
 						return { ...item, keyId: Math.random() };
-					})
+					}).toReversed()
 			);
 		}
 		const find = (header: string) => data.match(new RegExp(`${header}:\n(.+)`))?.[1];
