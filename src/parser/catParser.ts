@@ -210,7 +210,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
 		const found = chunk([...family.childNodes], 3).map(x => [
-			(x[0].childNodes[0] as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+			((x[0] as HTMLElement).tagName === "A" ? (x[0] as HTMLElement) : (x[0].childNodes[0] as HTMLElement))?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
 			x[1]?.textContent?.replace("- ", "").trim(),
 		]);
 		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
