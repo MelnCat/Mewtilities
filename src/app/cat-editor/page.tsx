@@ -33,6 +33,7 @@ import { Reorder } from "framer-motion";
 import useSWR from "swr";
 import { downloadFile } from "@/util/downloadFile";
 import { ItemImage } from "../components/ItemImage";
+import { showOpenFilePicker } from "file-system-access";
 
 const EditorLayer = <T extends { shown: boolean }>({
 	layer,
@@ -200,6 +201,67 @@ export default function CatEditorPage() {
 		if (found) setImportInput("");
 		else setImportInput("[Invalid]");
 	};
+	const save = async () => {
+		downloadFile(
+			"export.notcat",
+			new Blob([
+				JSON.stringify({
+					color: colorLayer,
+					tradeColor: tradeColorLayer,
+					white: whiteLayer,
+					accent: accentLayer,
+					eyes: eyesLayer,
+					clothing: clothing.map(x => x.id),
+				}),
+			])
+		);
+	};
+	const saveCat = async () => {
+		downloadFile(
+			"export.notcat",
+			new Blob([
+				JSON.stringify({
+					color: colorLayer,
+					tradeColor: tradeColorLayer,
+					white: whiteLayer,
+					accent: accentLayer,
+					eyes: eyesLayer,
+				}),
+			])
+		);
+	};
+	const saveClothing = async () => {
+		downloadFile(
+			"export.notclothing",
+			new Blob([
+				JSON.stringify({
+					clothing: clothing.map(x => x.id),
+				}),
+			])
+		);
+	};
+	const load = async () => {
+		try {
+			const file = await showOpenFilePicker({
+				types: [{ description: "Saved Not-Data", accept: { "application/notdata": [".notcat", ".notclothing"] } }],
+				multiple: false,
+			});
+			if (!file?.[0]) return;
+			const data = JSON.parse(await (await file[0].getFile()).text());
+			if (data.color) setColorLayer(data.color);
+			if (data.tradeColor) setTradeColorLayer(data.tradeColor);
+			if (data.white) setWhiteLayer(data.white);
+			if (data.accent) setAccentLayer(data.accent);
+			if (data.eyes) setEyesLayer(data.eyes);
+			if (data.clothing) setClothing(
+				data.clothing.map((x: number) => {
+					const item = clothingIndex?.find(y => y.id === x);
+					if (!item) return [];
+					return { ...item, keyId: Math.random() };
+				})
+			);
+		} catch {}
+	};
 
 	return (
 		<main className={styles.main}>
@@ -241,6 +303,12 @@ export default function CatEditorPage() {
 				placeholder="Import Cat/Clothing (Copy/Paste)"
 				rows={1}
 			/>
+			<div className={styles.saveLoad}>
+				<button onClick={load}>Load</button>
+				<button onClick={save}>Save All</button>
+				<button onClick={saveCat}>Save Cat</button>
+				<button onClick={saveClothing}>Save Clothing</button>
+			</div>
 			<article className={styles.mainView}>
 				<section className={styles.output}>
 					{layers.length ? (
@@ -251,11 +319,11 @@ export default function CatEditorPage() {
 							</section>
 							<section className={styles.outputRow}>
 								<button onClick={download} disabled={downloading}>
-									Download
+									Export
 								</button>
 								{selected && (
 									<button onClick={downloadSelected} disabled={downloading}>
-										Download Selected
+										Export Selected
 									</button>
 								)}
 							</section>

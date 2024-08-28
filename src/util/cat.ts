@@ -503,3 +503,4 @@ export const parseCatBio = (bio: { species: string; color: string; pattern: stri
 		{ eyes: bio.eyes as "neutral", albinoType: whiteNumber === 10 ? whiteType : "-", shown: true },
 	] as const;
 };
+
