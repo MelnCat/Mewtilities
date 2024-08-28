@@ -23,13 +23,18 @@ const processFileAction =
 		if (!(await getAdminState())) return { success: false, message: ":(" };
 		const files = data.getAll("files") as File[];
 		try {
-			const processed = await Promise.all(files.map(async x => parser(decoder.decode(await x.arrayBuffer()))));
+			const processed = await Promise.all(files.map(async x => {
+				try {
+					return parser(decoder.decode(await x.arrayBuffer()));
+				} catch (e) {
+					throw new Error(`${x.name}: ${e}`)
+				}
+			}));
 			const errors = processed.map((x, i) => [x, i] as const).filter(x => !x[0].ok);
 			if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as Failure).message}`).join("\n")}` };
 			const unwrapped = processed.map(x => unwrap(x));
 			return await cb(unwrapped);
 		} catch (e) {
-			console.log(e);
 			return { success: false, message: String(e) };
 		} finally {
 			revalidatePath("/api/items");
