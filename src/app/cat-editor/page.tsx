@@ -179,7 +179,7 @@ export default function CatEditorPage() {
 					})
 					.toReversed()
 			);
-		}
+		} else setClothing([]);
 		const find = (header: string) => data.match(new RegExp(`${header}:\n(.+)`))?.[1];
 		const species = find("Species");
 		const color = find("Color");
