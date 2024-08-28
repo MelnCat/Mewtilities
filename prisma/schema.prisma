@@ -131,9 +131,9 @@ model ResourceGatherResult {
 }
 
 model Cat {
-    id        Int    @id
-    ownerName String
-    ownerId   Int
+    id        Int     @id
+    ownerName String?
+    ownerId   Int?
 
     travelling Boolean
     location   String
@@ -158,33 +158,35 @@ model Cat {
     whiteMarks  String
     accentColor String?
     eyeColor    String
+    ageType     String
+    ageNumber   String
 
     trinket   Item? @relation(fields: [trinketId], references: [id])
     trinketId Int?
 
-    job     String
-    jobXp   Json
-    class   String
-    classXp Json
+    job     String?
+    jobXp   Json?
+    class   String?
+    classXp Json?
 
-    strength   Int
-    agility    Int
-    health     Int
-    finesse    Int
-    cleverness Int
-    perception Int
-    luck       Int
+    strength   Int?
+    agility    Int?
+    health     Int?
+    finesse    Int?
+    cleverness Int?
+    perception Int?
+    luck       Int?
 
-    bravery      Int
-    benevolence  Int
-    energy       Int
-    extroversion Int
-    dedication   Int
+    bravery      Int?
+    benevolence  Int?
+    energy       Int?
+    extroversion Int?
+    dedication   Int?
 
     friends Json
     family  Json
 
-    bio String
+    bio String?
 }
 
 enum RecipeCategory {
