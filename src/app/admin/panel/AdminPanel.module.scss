@@ -29,3 +29,14 @@
 .success {
 	color: #008800;
 }
+.catLink {
+	display: inline-flex;
+	background-color: #558cd3;
+	color: #ffffff;
+	padding: 0.25em 0.5em;
+	margin: 0.25em;
+	text-decoration: none;
+	&[data-visited] {
+		background-color: #b3b3b3;
+	}
+}

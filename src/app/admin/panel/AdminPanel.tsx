@@ -6,7 +6,7 @@ import prettyMs from "pretty-ms";
 import { CatImage } from "@/app/components/CatImage";
 import { randomCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "@/app/components/CatGeneDisplay";
-
+import { CatLinkPanel } from "./CatLinkPanel";
 
 export const AdminPanel = async () => {
 	const itemDatabaseInfo = await getItemDatabaseInfo();
@@ -17,7 +17,7 @@ export const AdminPanel = async () => {
 		else if (c.id === l.at(-1)![1] + 1) l.at(-1)![1] = c.id;
 		else l.push([c.id, c.id]);
 		return l;
-	}, [] as [number, number][])
+	}, [] as [number, number][]);
 	return (
 		<article className={styles.panel}>
 			<header className={styles.panelHeader}>
@@ -46,9 +46,10 @@ export const AdminPanel = async () => {
 				<div className={styles.panelEntry}>
 					<h1 className={styles.panelEntryTitle}>Cat Info</h1>
 					<p>
-						<b>Ranges</b>: {ranges.map(x => x[0] === x[1] ? x[0] : x.join("-")).join(", ") || "None"}
+						<b>Ranges</b>: {ranges.map(x => (x[0] === x[1] ? x[0] : x.join("-"))).join(", ") || "None"}
 					</p>
 				</div>
+				<CatLinkPanel />
 			</section>
 			<CatGeneDisplay gene={"[ C ] [ NN ] [ SS ] [ BBDD2 ] [ NNSM ] [ YY4C ] [ AA ] [ RB ]"} />
 			<CatGeneDisplay gene={"[C] [OO] [SL] [?????] [Y?SP] [Y?2C] [??] [??]"} />
