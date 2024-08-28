@@ -67,6 +67,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	builder.sizeLb = +size?.[1];
 	builder.sizeKg = +size?.[2];
 
+
 	const fur = findColumn("Fur");
 	if (!fur) return failure("Fur missing");
 	builder.fur = fur;
@@ -90,21 +91,43 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!eyeColor) return failure("Eye color missing");
 	builder.eyeColor = eyeColor;
 
+
+	const mayorBonusText = form.querySelector("#base-stats + .genes-code")?.textContent?.matchAll(/([+-]\d+) (\w+)/g);
+	const statBonuses: Record<string, number> = {};
+	const trinketBonusText = form.querySelector(".trinket-subgroup .bio-group-label")?.textContent?.matchAll(/(\w+) ([+-]\d+)/g);
+	if (mayorBonusText) 
+		for (const bonus of mayorBonusText) {
+			statBonuses[bonus[2].toLowerCase()] = +bonus[1];
+	}
+	if (trinketBonusText) 
+		for (const bonus of trinketBonusText) {
+			const name = bonus[1].toLowerCase();
+			if (name in statBonuses) statBonuses[name] += +bonus[2];
+			else statBonuses[name] = +bonus[2];
+	}
+
+	const reverseBonus = (data: string | null | undefined, name: string) => {
+		if (data === null || data === undefined) return null;
+		if (name in statBonuses) return +data - statBonuses[name];
+		return +data;
+	}
+
 	const bravery = findColumn("Bravery");
 	//if (!bravery || isNaN(+bravery)) return failure("Bravery missing");
-	builder.bravery = bravery ? +bravery : null;
+	builder.bravery = reverseBonus(bravery, "bravery");
 
 	const benevolence = findColumn("Benevolence");
-	builder.benevolence = benevolence ? +benevolence : null;
+	builder.benevolence = reverseBonus(benevolence, "benevolence");
 
 	const energy = findColumn("Energy");
-	builder.energy = energy ? +energy : null;
+	builder.energy = reverseBonus(energy, "energy");
 
 	const extroversion = findColumn("Extroversion");
-	builder.extroversion = extroversion ? +extroversion : null;
+	builder.extroversion = reverseBonus(extroversion, "extroversion");
 
 	const dedication = findColumn("Dedication");
-	builder.dedication = dedication ? +dedication : null;
+	builder.dedication = reverseBonus(dedication, "dedication");
+
 	const jobLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Day Job"));
 	const toNumberOrUndefined = (str: string | undefined) => (str === undefined ? undefined : +str);
 	if (jobLoop) {
@@ -191,7 +214,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!location) return failure("Location missing");
 	builder.location = location;
 
-	const genetic = form.querySelector(".genes-code")?.textContent?.match(/\w+/g);
+	const genetic = form.querySelector(".genes-code.cat-minigroup")?.textContent?.match(/\w+/g);
 	if (genetic) builder.genetic = genetic.join("") === "UnknownGeneticString" ? null : genetic.join("");
 
 	const friends = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Friends"))?.querySelector(".bio-scroll");
