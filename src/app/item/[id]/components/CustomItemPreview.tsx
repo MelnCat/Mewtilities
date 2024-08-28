@@ -17,7 +17,7 @@ export const CustomItemPreview = ({ image, model, name, category }: { image: str
 		<div className={styles.customPreview}>
 			<div className={styles.spriteSheetContainer}>
 				<div className={styles.modelContainer}>
-					{catTexture ? catTexture.images.map(x => x ? <img key={x} src={x} alt="Random Cat" /> : null) : model ? <img src={model} alt="Model" /> : null}
+					{catTexture ? catTexture.images.map(x => x ? <img key={x} src={`https://cataas.com/cat?`} /*{x}*/ alt="Random Cat" /> : null) : model ? <img src={model} alt="Model" /> : null}
 				</div>
 				<img src={image} alt={name} />
 			</div>
