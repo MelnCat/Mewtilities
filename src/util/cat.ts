@@ -249,7 +249,7 @@ const catPatterns = {
 	P: { T: "lynxpoint", M: "cloudpoint", S: "mink", P: "colorpoint" },
 } satisfies Record<z.TypeOf<typeof spottingType>, Record<z.TypeOf<typeof spottingType>, CatPattern>>;
 
-export const catPatternList = ["solid"].concat([...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[]);
+export const catPatternList = ["solid" as CatPattern].concat([...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[]);
 
 export type CatSpecies = "c" | "m";
 8
