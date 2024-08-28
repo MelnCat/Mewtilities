@@ -17,6 +17,7 @@ import {
 	deserializeCatGene,
 	getCatTextureProperties,
 	getGenePhenotype,
+	parseCatBio,
 	PartialCatGene,
 	randomCatGene,
 	serializeCatGene,
@@ -76,6 +77,8 @@ export default function CatEditorPage() {
 		async () => await (await fetch("/api/clothing", { cache: "force-cache", next: { revalidate: 300 } })).json()
 	);
 	const [geneInput, setGeneInput] = useState("");
+	const [importInput, setImportInput] = useState("");
+
 	const [species, setSpecies] = useState("Any");
 	const [colorLayer, setColorLayer] = useState({ species: "c", color: sampleRandom(catColorList) as string, pattern: sampleRandom(catPatternList) as string, shown: false });
 	const [tradeColorLayer, setTradeColorLayer] = useState({ species: "c", color: "-", pattern: "-", shown: false });
@@ -134,6 +137,42 @@ export default function CatEditorPage() {
 		downloadFile(`cat.png`, await canvas.convertToBlob({ type: "image/png" }));
 		setDownloading(false);
 	};
+	const tryImport = (data: string) => {
+		let found = false;
+		const foundClothing = data.match(/Currently Wearing: (.+)/)?.[1];
+		if (foundClothing) {
+			found = true;
+			setClothing(
+				[...foundClothing.matchAll(/#(\d+)/g)]
+					.map(x => +x[1])
+					.flatMap(x => {
+						const item = clothingIndex?.find(y => y.id === x);
+						if (!item) return [];
+						return { ...item, keyId: Math.random() };
+					})
+			);
+		}
+		const find = (header: string) => data.match(new RegExp(`${header}:\n(.+)`))?.[1];
+		const species = find("Species");
+		const color = find("Color");
+		const pattern = find("Pattern");
+		const white = find("White Marks");
+		const accent = find("Accent") ?? undefined;
+		const eyes = data.match(/ (\w+) eyes/)?.[1];
+		if (species && color && pattern && eyes && white) {
+			try {
+				const parsed = parseCatBio({ species, color, pattern, white, accent, eyes });
+				setColorLayer(parsed[0]);
+				setTradeColorLayer(parsed[1]);
+				setWhiteLayer(parsed[2]);
+				setAccentLayer(parsed[3]);
+				setEyesLayer(parsed[4]);
+				found = true;
+			} catch {}
+		}
+		if (found) setImportInput("");
+		else setImportInput("[Invalid]");
+	};
 
 	return (
 		<main className={styles.main}>
@@ -153,7 +192,7 @@ export default function CatEditorPage() {
 					<option value="Mercat">Mercat</option>
 				</select>
 			</div>
-			<input className={styles.geneInput} value={geneInput} onChange={x => setGeneInput(x.target.value)} />
+			<input className={styles.geneInput} value={geneInput} onChange={x => setGeneInput(x.target.value)} placeholder="[C] [NS] [LL] [OBDD4] [NYMT] [NY7I] [CB] [RL]" />
 			<button
 				onClick={() => {
 					const deserialize = deserializeCatGene(geneInput);
@@ -165,13 +204,25 @@ export default function CatEditorPage() {
 			>
 				Import Gene
 			</button>
+			<textarea
+				className={styles.geneInput}
+				value={importInput}
+				onChange={x => {
+					setImportInput(x.target.value);
+					tryImport(x.target.value);
+				}}
+				placeholder="Import Cat/Clothing (Copy/Paste)"
+				rows={1}
+			/>
 			<article className={styles.mainView}>
 				<section className={styles.output}>
 					{layers.length ? (
 						<>
 							<CatSheet gene={layers} />
 							<section className={styles.outputRow}>
-								<button onClick={download} disabled={downloading}>Download</button>
+								<button onClick={download} disabled={downloading}>
+									Download
+								</button>
 							</section>
 						</>
 					) : null}
@@ -242,7 +293,7 @@ export default function CatEditorPage() {
 						<button
 							onClick={() => {
 								if (!selected) return;
-								setClothing(x => x.concat({ ...clothingIndex!.find(x => x.id === selected.value)!, keyId: Math.random() }));
+								setClothing(x => [{ ...clothingIndex!.find(x => x.id === selected.value)!, keyId: Math.random() }].concat(x));
 								setSelected(null);
 							}}
 						>
