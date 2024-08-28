@@ -17,7 +17,13 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={defaultFont.className}>{children}</body>
+			<body className={defaultFont.className}>
+				{children}
+				<footer className="footer">
+					All images and art are property of Cloudy Squid Games&apos; Pixel Cat&apos;s End. The site can be accessed at{" "}
+					<a href="https://www.pixelcatsend.com/">https://www.pixelcatsend.com/</a>
+				</footer>
+			</body>
 		</html>
 	);
 }

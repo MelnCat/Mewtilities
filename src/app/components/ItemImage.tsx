@@ -7,10 +7,10 @@ export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "
 		return (
 			<div className={styles.imageContainer}>
 				{item.customData!.model.image ? (
-					<img loading="lazy" src={item.customData!.model.image} className={styles.modelImage} style={{ objectPosition: position }} alt="cat" />
+					<img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`/*item.customData!.model.image*/} className={styles.modelImage} style={{ objectPosition: position }} alt="cat" />
 				) : null}
-				<img loading="lazy" src={item.image} className={styles.itemImage} style={{ objectPosition: position }} alt={item.name} />
+				<img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`}/*{item.image} */className={styles.itemImage} style={{ objectPosition: position }} alt={item.name} />
 			</div>
 		);
-	} else return <img loading="lazy" src={item.image} className={styles.itemImage} alt={item.name} />;
+	} else return <img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`}/*{item.image} */ className={styles.itemImage} alt={item.name} />;
 };

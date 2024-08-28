@@ -1,16 +1,17 @@
 import { Currency } from "@prisma/client";
 import styles from "./currencyIcons.module.scss";
+import { pceLink } from "@/util/util";
 
 const numberFormat = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 2 });
 
 const noteDenominations = [1, 2, 5, 25, 100, 1000].reverse();
 
-export const NoteIcon = ({ count }: { count?: number }) => <img src={`https://www.pixelcatsend.com/images/catmojis/${count ?? 1}note.png`} alt="notes" title="Paper Notes" />;
-export const EssenceIcon = () => <img src="https://www.pixelcatsend.com/images/catmojis/essencefragment.png" alt="essence fragments" title="Essence Fragments" />;
-export const SnowmeltStampIcon = () => <img src="https://www.pixelcatsend.com/images/catmojis/snowmeltstamp.png" alt="snowmelt stamps" title="Snowmelt Stamps" />;
-export const LeafDayStampIcon = () => <img src="https://www.pixelcatsend.com/images/catmojis/leafdaystamp.png" alt="leaf day stamps" title="Leaf Day Stamps" />;
-export const LostButtonIcon = () => <img src="https://www.pixelcatsend.com/images/catmojis/lostbuttons.png" alt="lost buttons" title="Lost Buttons" />;
-export const FestivalTicketIcon = () => <img src="https://www.pixelcatsend.com/images/catmojis/festivaltickets.png" alt="festival tickets" title="Festival Tickets" />;
+export const NoteIcon = ({ count }: { count?: number }) => <img src={pceLink(`images/catmojis/${count ?? 1}note.png`)} alt="notes" title="Paper Notes" />;
+export const EssenceIcon = () => <img src={pceLink(`images/catmojis/essencefragment.png`)} alt="essence fragments" title="Essence Fragments" />;
+export const SnowmeltStampIcon = () => <img src={pceLink(`images/catmojis/snowmeltstamp.png`)} alt="snowmelt stamps" title="Snowmelt Stamps" />;
+export const LeafDayStampIcon = () => <img src={pceLink(`images/catmojis/leafdaystamp.png`)} alt="leaf day stamps" title="Leaf Day Stamps" />;
+export const LostButtonIcon = () => <img src={pceLink("images/catmojis/lostbuttons.png")} alt="lost buttons" title="Lost Buttons" />;
+export const FestivalTicketIcon = () => <img src={pceLink("images/catmojis/festivaltickets.png")} alt="festival tickets" title="Festival Tickets" />;
 
 const icons = {
 	[Currency.ESSENCE]: EssenceIcon,
