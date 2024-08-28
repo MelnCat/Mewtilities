@@ -249,10 +249,10 @@ const catPatterns = {
 	P: { T: "lynxpoint", M: "cloudpoint", S: "mink", P: "colorpoint" },
 } satisfies Record<z.TypeOf<typeof spottingType>, Record<z.TypeOf<typeof spottingType>, CatPattern>>;
 
-export const catPatternList = [...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[];
+export const catPatternList = ([...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[]).concat("solid");
 
 export type CatSpecies = "c" | "m";
-
+8
 export const catSpeciesList: CatSpecies[] = ["c", "m"];
 export const catSpeciesNames = { c: "Not-Cat", m: "Mercat" };
 
@@ -398,7 +398,9 @@ export const getCatTextureProperties = (p: GenePhenotype) =>
 		p.whiteNumber !== 0
 			? { species: p.species, whiteType: p.whiteType, whiteNumber: p.whiteNumber === "?" ? 10 : p.whiteNumber, shown: true }
 			: ({ species: p.species, whiteType: "-", whiteNumber: "-", shown: false } as const),
-		p.species === "m" ? { species: p.species, accent: p.accent, pattern: p.pattern, shown: true } : { species: p.species as "c" | "m", accent: "-", pattern: "-", shown: false },
+		p.species === "m"
+			? { species: p.species, accent: p.accent, pattern: p.pattern, shown: true }
+			: { species: p.species as "c" | "m", accent: "-", pattern: "-", shown: false },
 		{ eyes: "neutral", albinoType: p.whiteNumber === 10 ? p.whiteType : "-", shown: true },
 	] as const;
 
@@ -481,25 +483,22 @@ export const deserializeCatGene = (text: string) => {
 	return success(data.data);
 };
 
-export const parseCatBio = (bio: { species: string; color: string; pattern: string; white: string; accent?: string; eyes: string; }): ReturnType<typeof getCatTextureProperties> => {
+export const parseCatBio = (bio: { species: string; color: string; pattern: string; white: string; accent?: string; eyes: string }): ReturnType<typeof getCatTextureProperties> => {
 	const species = bio.species === "Not-cat" ? "c" : "m";
 	const whiteData = bio.white.match(/\/ ([a-zA-Z]+)(\d+)/)!;
 	const whiteType = whiteTypes[whiteData[1] as keyof typeof whiteTypes];
 	const whiteNumber = +whiteData[2] as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-	const colorData = bio.color === "-hidden-" ? null : bio.color.includes("Standard") ? bio.color.match(/(\w+) Standard/)?.[1] ?? null : bio.color.match(/(\w+)-(\w+) \w+/)?.slice(1);
+	const colorData =
+		bio.color === "-hidden-" ? null : bio.color.includes("Standard") ? bio.color.match(/(\w+) Standard/)?.[1] ?? null : bio.color.match(/(\w+)-(\w+) \w+/)?.slice(1);
 	const mainColorText = colorData ? (colorData instanceof Array ? colorData[0] : colorData) : null;
 	const mainColor = mainColorText ? Object.entries(colorNames).find(x => x[1] === mainColorText)?.[0] : null;
 	const tradeColor = colorData instanceof Array ? Object.entries(colorNames).find(x => x[1] === colorData[1])?.[0] : null;
 	const pattern = Object.entries(patternNames).find(x => x[1] === bio.pattern)?.[0] as CatPattern;
-	const accent = bio.accent ? Object.entries(accentNames).find(x => x[1] === bio.accent)?.[0] as CatAccent : null;
+	const accent = bio.accent ? (Object.entries(accentNames).find(x => x[1] === bio.accent)?.[0] as CatAccent) : null;
 	return [
-		whiteNumber !== 10 && mainColor && pattern
-			? { species, color: mainColor, pattern, shown: true }
-			: { species, color: "-", pattern: "-", shown: false },
+		whiteNumber !== 10 && mainColor && pattern ? { species, color: mainColor, pattern, shown: true } : { species, color: "-", pattern: "-", shown: false },
 		tradeColor && pattern ? { species: species, color: tradeColor, pattern: pattern, shown: true } : { species: species, color: "-", pattern: "-", shown: false },
-		whiteNumber !== 0
-			? { species, whiteType, whiteNumber, shown: true }
-			: ({ species, whiteType: "-", whiteNumber: "-", shown: false } as const),
+		whiteNumber !== 0 ? { species, whiteType, whiteNumber, shown: true } : ({ species, whiteType: "-", whiteNumber: "-", shown: false } as const),
 		species === "m" && accent && pattern ? { species, accent, pattern, shown: true } : { species, accent: "-", pattern: "-", shown: false },
 		{ eyes: bio.eyes as "neutral", albinoType: whiteNumber === 10 ? whiteType : "-", shown: true },
 	] as const;

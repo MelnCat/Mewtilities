@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useRef, Dispatch, SetStateAction, useEffect, useId } from "react";
+import { useState, useMemo, useRef, Dispatch, SetStateAction, useEffect, useId, MouseEventHandler } from "react";
 import styles from "./page.module.scss";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { CatImage, CatSheet } from "../components/CatImage";
@@ -78,6 +78,7 @@ export default function CatEditorPage() {
 	);
 	const [geneInput, setGeneInput] = useState("");
 	const [importInput, setImportInput] = useState("");
+	const [selected, setSelected] = useState<null | [number, number]>(null);
 
 	const [species, setSpecies] = useState("Any");
 	const [colorLayer, setColorLayer] = useState({ species: "c", color: sampleRandom(catColorList) as string, pattern: sampleRandom(catPatternList) as string, shown: false });
@@ -91,7 +92,7 @@ export default function CatEditorPage() {
 	const [accentLayer, setAccentLayer] = useState({ species: "c", accent: "-", pattern: "-", shown: false });
 	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: false });
 	const [clothing, setClothing] = useState<(ProcessedClothing & { keyId: number })[]>([]);
-	const [selected, setSelected] = useState<{ value: number } | null>(null);
+	const [selectedClothing, setSelectedClothing] = useState<{ value: number } | null>(null);
 	const [downloading, setDownloading] = useState(false);
 	const layers = useMemo(
 		() =>
@@ -137,6 +138,31 @@ export default function CatEditorPage() {
 		downloadFile(`cat.png`, await canvas.convertToBlob({ type: "image/png" }));
 		setDownloading(false);
 	};
+	const downloadSelected = async () => {
+		if (!selected) return;
+		setDownloading(true);
+		const canvas = new OffscreenCanvas(100, 100);
+		const ctx = canvas.getContext("2d")!;
+		for (const layer of layers.filter(x => x)) {
+			const image = new Image();
+			image.src = `https://corsproxy.io/?${layer}`; // Cat images dont have CORS :(
+			image.crossOrigin = "anonymous";
+			if (!image.complete) await new Promise(res => image.addEventListener("load", res));
+			ctx.drawImage(image, selected[0] * 100, selected[1] * 100 + 5, 100, 100, 0, 0, 100, 100);
+		}
+		downloadFile(`cat_selected.png`, await canvas.convertToBlob({ type: "image/png" }));
+		setDownloading(false);
+	};
+	const canvasClick: MouseEventHandler<HTMLCanvasElement> = event => {
+		const bounding = (event.target as HTMLCanvasElement).getBoundingClientRect();
+		const x = event.clientX - bounding.left;
+		const y = event.clientY - bounding.top;
+		const col = Math.floor((x / bounding.width) * 5);
+		const row = Math.floor((y / bounding.height) * 6);
+		if (col < 0 || col >= 5) return;
+		if (row < 0 || row >= 5) return;
+		setSelected(x => (x && x[0] === col && x[1] === row ? null : [col, row]));
+	};
 	const tryImport = (data: string) => {
 		let found = false;
 		const foundClothing = data.match(/Currently Wearing: (.+)/)?.[1];
@@ -149,7 +175,8 @@ export default function CatEditorPage() {
 						const item = clothingIndex?.find(y => y.id === x);
 						if (!item) return [];
 						return { ...item, keyId: Math.random() };
-					}).toReversed()
+					})
+					.toReversed()
 			);
 		}
 		const find = (header: string) => data.match(new RegExp(`${header}:\n(.+)`))?.[1];
@@ -218,11 +245,19 @@ export default function CatEditorPage() {
 				<section className={styles.output}>
 					{layers.length ? (
 						<>
-							<CatSheet gene={layers} />
+							<section className={styles.canvasWrapper}>
+								{selected && <div className={styles.selectedCanvas} style={{ "--row": selected[1], "--col": selected[0] }} />}
+								<CatSheet onClick={canvasClick} gene={layers} />
+							</section>
 							<section className={styles.outputRow}>
 								<button onClick={download} disabled={downloading}>
 									Download
 								</button>
+								{selected && (
+									<button onClick={downloadSelected} disabled={downloading}>
+										Download Selected
+									</button>
+								)}
 							</section>
 						</>
 					) : null}
@@ -287,14 +322,14 @@ export default function CatEditorPage() {
 							filterOption={createFilter({ ignoreAccents: false })}
 							options={(clothingIndex ?? []).map(x => ({ label: `(${x.id}) ${x.name}`, value: x.id }))}
 							instanceId={useId()}
-							onChange={x => setSelected((x as { value: number }) ?? null)}
-							value={selected}
+							onChange={x => setSelectedClothing((x as { value: number }) ?? null)}
+							value={selectedClothing}
 						/>
 						<button
 							onClick={() => {
-								if (!selected) return;
-								setClothing(x => [{ ...clothingIndex!.find(x => x.id === selected.value)!, keyId: Math.random() }].concat(x));
-								setSelected(null);
+								if (!selectedClothing) return;
+								setClothing(x => [{ ...clothingIndex!.find(x => x.id === selectedClothing.value)!, keyId: Math.random() }].concat(x));
+								setSelectedClothing(null);
 							}}
 						>
 							Add

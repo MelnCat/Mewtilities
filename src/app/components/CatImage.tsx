@@ -1,10 +1,10 @@
 "use client";
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MouseEventHandler, MutableRefObject, useEffect, useRef } from "react";
 import styles from "./CatImage.module.scss";
 import { CatEyes, PartialCatGene, deserializeCatGene, textureFromGene } from "@/util/cat";
 import { downloadFile } from "@/util/downloadFile";
 
-export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null)[]; eyes?: CatEyes }) => {
+export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (string | null)[]; eyes?: CatEyes; onClick?: MouseEventHandler<HTMLCanvasElement> }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	useEffect(() => {
 		if (!canvasRef.current) return;
@@ -40,7 +40,7 @@ export const CatSheet = ({ gene, eyes }: { gene: PartialCatGene | (string | null
 			shouldCancel = true;
 		};
 	}, [eyes, gene]);
-	return <canvas height={600} width={500} ref={canvasRef} />;
+	return <canvas onClick={onClick} height={600} width={500} ref={canvasRef} />;
 };
 
 export const CatImage = (
