@@ -34,6 +34,6 @@ export const weightedRandomKeys = <T extends string | number | symbol>(data: Rec
 	return weightedRandom(Object.entries(data).map(x => ({ data: x[0], weight: x[1] as number }))) as T;
 };
 
-export const pceLink = (path: string) => `https://cataas.com/cat?i=${createHash("sha256").update(path).digest("hex")}`; // `https://www.pixelcatsend.com/${path}`;
+export const pceLink = (path: string) => path.startsWith("https://") ? `https://pce.crab.trade${new URL(path).pathname}` : `https://pce.crab.trade/${path}`;
 
 export const sampleRandom = <T>(array: T[]) => array[Math.floor(Math.random() * array.length)];

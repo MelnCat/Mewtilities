@@ -8,7 +8,14 @@
 	width: fit-content;
 	grid-area: 1 / 1;
 }
+.normalItemContainer {
+    position: relative;
+	margin: 0.25em 0;
+	width: 6em;
+	height: 6em;
+}
 .imageContainer {
+    position: relative;
 	display: grid;
 	margin: 0.25em 0;
 	width: 6em;

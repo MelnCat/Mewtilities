@@ -6,7 +6,7 @@ import { PriceGraph } from "./PriceGraph";
 import { getCheapestEntries, getCheapestNote } from "@/db/dbUtil";
 import Link from "next/link";
 import { getNestorSources } from "@/util/nestor";
-import { smallNumberFormat } from "@/util/util";
+import { pceLink, smallNumberFormat } from "@/util/util";
 import { ItemImage } from "@/app/components/ItemImage";
 
 const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number }[]) => {
@@ -165,7 +165,7 @@ export const ItemView = async({ item }: { item: Awaited<ReturnType<typeof getIte
 													{x.count} {x.item.name}
 												</h4>
 												<Link href={`/item/${x.item.id}`}>
-													<img src={`https://cataas.com/cat?j=${encodeURIComponent(x.item.id)}`}/*{x.item.image} */ className={styles.icon} alt={x.item.name} />
+													<img src={pceLink(x.item.image)} className={styles.icon} alt={x.item.name} />
 												</Link>
 												{isFinite(cheapestNote) ? (
 													<div className={styles.ingredientPrice}>

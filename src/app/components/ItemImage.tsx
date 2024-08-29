@@ -1,5 +1,7 @@
+import { pceLink } from "@/util/util";
 import styles from "./ItemImage.module.scss";
 import { Item } from "@prisma/client";
+import Image from "next/image";
 
 export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "image" | "custom"> }) => {
 	if (item.custom) {
@@ -7,10 +9,15 @@ export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "
 		return (
 			<div className={styles.imageContainer}>
 				{item.customData!.model.image ? (
-					<img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`/*item.customData!.model.image*/} className={styles.modelImage} style={{ objectPosition: position }} alt="cat" />
+					<img loading="lazy" src={pceLink(item.customData!.model.image)} className={styles.modelImage} style={{ objectPosition: position }} alt="cat" />
 				) : null}
-				<img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`}/*{item.image} */className={styles.itemImage} style={{ objectPosition: position }} alt={item.name} />
+				<img loading="lazy" src={pceLink(item.image)} className={styles.itemImage} style={{ objectPosition: position }} alt={item.name} />
 			</div>
 		);
-	} else return <img loading="lazy" src={`https://cataas.com/cat?i=${encodeURIComponent(item.name)}`}/*{item.image} */ className={styles.itemImage} alt={item.name} />;
+	} else
+		return (
+			<div className={styles.normalItemContainer}>
+				<Image objectPosition="center center" fill loading="lazy" src={pceLink(item.image)} className={styles.itemImage} alt={item.name} />
+			</div>
+		);
 };

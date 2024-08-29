@@ -131,7 +131,7 @@ export default function CatEditorPage() {
 		const ctx = canvas.getContext("2d")!;
 		for (const layer of layers.filter(x => x)) {
 			const image = new Image();
-			image.src = `https://corsproxy.io/?${layer}`; // Cat images dont have CORS :(
+			image.src = layer!;
 			image.crossOrigin = "anonymous";
 			if (!image.complete) await new Promise(res => image.addEventListener("load", res));
 			ctx.drawImage(image, 0, 0);
@@ -146,7 +146,7 @@ export default function CatEditorPage() {
 		const ctx = canvas.getContext("2d")!;
 		for (const layer of layers.filter(x => x)) {
 			const image = new Image();
-			image.src = `https://corsproxy.io/?${layer}`; // Cat images dont have CORS :(
+			image.src = layer!;
 			image.crossOrigin = "anonymous";
 			if (!image.complete) await new Promise(res => image.addEventListener("load", res));
 			ctx.drawImage(image, selected[0] * 100, selected[1] * 100 + 5, 100, 100, 0, 0, 100, 100);
@@ -253,13 +253,14 @@ export default function CatEditorPage() {
 			if (data.white) setWhiteLayer(data.white);
 			if (data.accent) setAccentLayer(data.accent);
 			if (data.eyes) setEyesLayer(data.eyes);
-			if (data.clothing) setClothing(
-				data.clothing.map((x: number) => {
-					const item = clothingIndex?.find(y => y.id === x);
-					if (!item) return [];
-					return { ...item, keyId: Math.random() };
-				})
-			);
+			if (data.clothing)
+				setClothing(
+					data.clothing.map((x: number) => {
+						const item = clothingIndex?.find(y => y.id === x);
+						if (!item) return [];
+						return { ...item, keyId: Math.random() };
+					})
+				);
 		} catch {}
 	};
 
