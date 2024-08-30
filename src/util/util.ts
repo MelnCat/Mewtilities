@@ -35,6 +35,6 @@ export const weightedRandomKeys = <T extends string | number | symbol>(data: Rec
 };
 
 export const pceLink = (path: string) =>
-	path.startsWith("blob:") ? path : path.startsWith("https://") ? `https://pce.crab.trade${new URL(path).pathname}` : `https://pce.crab.trade/${path}`;
+	path.startsWith("blob:") || path.startsWith("data:") ? path : path.startsWith("https://") ? `https://pce.crab.trade${new URL(path).pathname}` : `https://pce.crab.trade/${path}`;
 
 export const sampleRandom = <T>(array: T[]) => array[Math.floor(Math.random() * array.length)];
