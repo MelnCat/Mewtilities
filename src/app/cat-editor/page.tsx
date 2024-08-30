@@ -218,7 +218,7 @@ export default function CatEditorPage() {
 					white: whiteLayer,
 					accent: accentLayer,
 					eyes: eyesLayer,
-					clothing: clothing.map(x => ("id" in x ? { id: x.id } : { data: x.data, name: x.name })),
+					clothing: clothing.map(x => ("id" in x ? { id: x.id, shown: x.shown } : { data: x.data, name: x.name, shown: x.shown })),
 				}),
 			])
 		);
@@ -242,7 +242,7 @@ export default function CatEditorPage() {
 			"export.notclothing",
 			new Blob([
 				JSON.stringify({
-					clothing: clothing.map(x => ("id" in x ? { id: x.id } : { data: x.data, name: x.name })),
+					clothing: clothing.map(x => ("id" in x ? { id: x.id, shown: x.shown } : { data: x.data, name: x.name, shown: x.shown })),
 				}),
 			])
 		);
