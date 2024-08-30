@@ -123,6 +123,9 @@
 		height: 1.4em;
 		flex-shrink: 0;
 	}
+	&[data-upload] {
+		background-color: #0d1bd822;
+	}
 }
 .clothingImage {
 	font-size: 0.4em;
@@ -153,4 +156,19 @@
 .saveLoad {
 	display: flex;
 	gap: 0.5em;
+}
+.uploadRow {
+	margin-top: auto;
+}
+.customUploadImage {
+	width: 6em;
+	height: 6em;
+	background-size: 6em;
+    background-size: 500%;
+}
+.showHide {
+	margin-left: 0.5em;
+	margin-right: 0.1em;
+	width: 1.25em;
+	height: 1.25em;
 }

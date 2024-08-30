@@ -17,7 +17,7 @@ export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "
 	} else
 		return (
 			<div className={styles.normalItemContainer}>
-				<Image objectPosition="center center" fill loading="lazy" src={pceLink(item.image)} className={styles.itemImage} alt={item.name} />
+				<Image style={{ objectPosition: "center center" }} fill loading="lazy" src={pceLink(item.image)} className={styles.itemImage} alt={item.name} />
 			</div>
 		);
 };

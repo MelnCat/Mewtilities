@@ -31,7 +31,7 @@ import { accentNames, colorNames, patternNames, whiteTypeKeys } from "@/util/cat
 import { ProcessedClothing } from "@/db/db";
 import { Reorder } from "framer-motion";
 import useSWR from "swr";
-import { downloadFile } from "@/util/downloadFile";
+import { blobToBase64, downloadFile } from "@/util/downloadFile";
 import { ItemImage } from "../components/ItemImage";
 import { showOpenFilePicker } from "file-system-access";
 
@@ -92,7 +92,9 @@ export default function CatEditorPage() {
 	});
 	const [accentLayer, setAccentLayer] = useState({ species: "c", accent: "-", pattern: "-", shown: false });
 	const [eyesLayer, setEyesLayer] = useState({ eyes: "neutral", albinoType: "-", shown: false });
-	const [clothing, setClothing] = useState<(ProcessedClothing & { keyId: number })[]>([]);
+	const [clothing, setClothing] = useState<
+		((ProcessedClothing & { keyId: number; shown: boolean }) | { shown: boolean; custom: true; image: string; keyId: number; data: string; name: string })[]
+	>([]);
 	const [selectedClothing, setSelectedClothing] = useState<{ value: number } | null>(null);
 	const [downloading, setDownloading] = useState(false);
 	const layers = useMemo(
@@ -111,7 +113,12 @@ export default function CatEditorPage() {
 				eyesLayer.shown && eyesLayer.eyes !== "-" ? `images/cats/eyes_${eyesLayer.eyes}${eyesLayer.albinoType === "-" ? "" : `_a_${eyesLayer.albinoType}`}.png` : null,
 			]
 				.map(x => (x ? pceLink(x) : x))
-				.concat(clothing.toReversed().map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))),
+				.concat(
+					clothing
+						.toReversed()
+						.filter(x => x.shown)
+						.map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))
+				),
 		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer, clothing]
 	);
 	useEffect(() => {
@@ -175,7 +182,7 @@ export default function CatEditorPage() {
 					.flatMap(x => {
 						const item = clothingIndex?.find(y => y.id === x);
 						if (!item) return [];
-						return { ...item, keyId: Math.random() };
+						return { ...item, keyId: Math.random(), shown: true };
 					})
 					.toReversed()
 			);
@@ -211,7 +218,7 @@ export default function CatEditorPage() {
 					white: whiteLayer,
 					accent: accentLayer,
 					eyes: eyesLayer,
-					clothing: clothing.map(x => x.id),
+					clothing: clothing.map(x => ("id" in x ? { id: x.id } : { data: x.data, name: x.name })),
 				}),
 			])
 		);
@@ -235,7 +242,7 @@ export default function CatEditorPage() {
 			"export.notclothing",
 			new Blob([
 				JSON.stringify({
-					clothing: clothing.map(x => x.id),
+					clothing: clothing.map(x => ("id" in x ? { id: x.id } : { data: x.data, name: x.name })),
 				}),
 			])
 		);
@@ -255,12 +262,28 @@ export default function CatEditorPage() {
 			if (data.eyes) setEyesLayer(data.eyes);
 			if (data.clothing)
 				setClothing(
-					data.clothing.map((x: number) => {
-						const item = clothingIndex?.find(y => y.id === x);
+					data.clothing.map((x: { id: number; shown: boolean } | { data: string; name: string; shown: boolean }) => {
+						if ("data" in x) return { custom: true, image: x.data, keyId: Math.random(), data: x.data, name: x.name, shown: x.shown };
+						const item = clothingIndex?.find(y => y.id === x.id);
 						if (!item) return [];
-						return { ...item, keyId: Math.random() };
+						return { ...item, keyId: Math.random(), shown: x.shown };
 					})
 				);
+		} catch {}
+	};
+	const uploadAsset = async () => {
+		try {
+			const files = await showOpenFilePicker({
+				types: [{ description: "Images", accept: { "image/png": [".png"] } }],
+				multiple: true,
+			});
+			const cl = clothing.slice(0);
+			for (const file of files) {
+				const f = await file.getFile();
+				const url = URL.createObjectURL(f);
+				cl.push({ keyId: Math.random(), data: await blobToBase64(f), image: url, custom: true, name: f.name, shown: true });
+			}
+			setClothing(cl);
 		} catch {}
 	};
 
@@ -397,7 +420,7 @@ export default function CatEditorPage() {
 						<button
 							onClick={() => {
 								if (!selectedClothing) return;
-								setClothing(x => [{ ...clothingIndex!.find(x => x.id === selectedClothing.value)!, keyId: Math.random() }].concat(x));
+								setClothing(x => [{ ...clothingIndex!.find(x => x.id === selectedClothing.value)!, keyId: Math.random(), shown: true }].concat(x as any));
 								setSelectedClothing(null);
 							}}
 						>
@@ -406,15 +429,25 @@ export default function CatEditorPage() {
 					</div>
 					<Reorder.Group axis="y" values={clothing} onReorder={setClothing} className={styles.clothingList}>
 						{clothing.map(item => (
-							<Reorder.Item key={item.keyId} value={item} className={styles.clothingItem}>
+							<Reorder.Item key={item.keyId} value={item} className={styles.clothingItem} {...("data" in item ? { "data-upload": true } : null)}>
+								<input className={styles.showHide} type="checkbox" checked={item.shown} onClick={() => setClothing(c => c.map(y => y.keyId === item.keyId ? {...y, shown: !y.shown} : y))} />
 								<section className={styles.clothingImage}>
-									<ItemImage item={item} />
+									{"id" in item ? <ItemImage item={item} /> : <article className={styles.customUploadImage} style={{ backgroundImage: `url("${item.image}")` }} />}
 								</section>
 								<p>{item.name}</p>
 								<button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>
 							</Reorder.Item>
 						))}
 					</Reorder.Group>
+					<div className={styles.uploadRow}>
+						<button
+							onClick={() => {
+								uploadAsset();
+							}}
+						>
+							Upload Asset
+						</button>
+					</div>
 				</section>
 			</article>
 		</main>

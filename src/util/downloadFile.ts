@@ -9,3 +9,12 @@ export const downloadFile = (name: string, blob: Blob) => {
 	URL.revokeObjectURL(url);
 	a.remove();
 };
+export const blobToBase64 = (blob: Blob) => {
+	const reader = new FileReader();
+	reader.readAsDataURL(blob);
+	return new Promise<string>(res => {
+		reader.onloadend = () => {
+			res(reader.result as string);
+		};
+	});
+};

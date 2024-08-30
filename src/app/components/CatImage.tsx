@@ -3,6 +3,7 @@ import { MouseEventHandler, MutableRefObject, useEffect, useRef } from "react";
 import styles from "./CatImage.module.scss";
 import { CatEyes, PartialCatGene, deserializeCatGene, textureFromGene } from "@/util/cat";
 import { downloadFile } from "@/util/downloadFile";
+import { pceLink } from "@/util/util";
 
 export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (string | null)[]; eyes?: CatEyes; onClick?: MouseEventHandler<HTMLCanvasElement> }) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -18,11 +19,10 @@ export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (stri
 				.filter(x => x)
 				.map(x => {
 					const img = new Image();
-					img.src = x!;
+					img.src = pceLink(x!);
 					img.crossOrigin = "anonymous";
 					return img;
 				});
-			if (!images.length) return;
 			for (const image of images) {
 				if (!image.complete) {
 					const success = await new Promise(res => {
