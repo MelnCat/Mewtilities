@@ -19,6 +19,7 @@ export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (stri
 				.map(x => {
 					const img = new Image();
 					img.src = x!;
+					img.crossOrigin = "anonymous";
 					return img;
 				});
 			if (!images.length) return;
