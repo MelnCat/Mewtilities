@@ -3,6 +3,9 @@
 }
 .chartContainer {
 	width: 50em;
+	flex-basis: 30em;
+	flex-grow: 1;
+	max-width: 33%;
 }
 .graphRow {
 	display: flex;
