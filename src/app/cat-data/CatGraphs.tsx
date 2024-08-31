@@ -8,9 +8,10 @@ import styles from "./page.module.scss";
 import { useState } from "react";
 import { calculateMendelianAlleles, calculateWindAlleles } from "./util";
 import { smallNumberFormat } from "@/util/util";
-import { geneFromColor, parseCatBio } from "@/util/cat";
+import { densityFromColor, dilutionFromColor, geneFromColor, geneFromPattern, parseCatBio } from "@/util/cat";
 
 const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | null)[]; name: string; percentage: boolean }) => {
+	data ??= [];
 	const grouped = Object.entries(
 		groupBy(
 			data.filter(x => x !== null),
@@ -23,6 +24,7 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 				if (grouped.every(x => !isNaN(+x[0]))) {
 					const min = Math.min(...grouped.map(x => +x[0]));
 					const max = Math.max(...grouped.map(x => +x[0]));
+					if (max - min + 1 < 1) return [];
 					return [...Array(max - min + 1)].map((x, i) => i + min).map(x => [x, grouped.find(y => +y[0] === x)?.[1]?.length ?? 0]);
 				} else {
 					return grouped.map(x => [x[0], x[1].length]);
@@ -90,6 +92,46 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	const parsed = filteredData.map(x =>
 		parseCatBio({ species: x.species, color: x.color, eyes: "neutral", pattern: x.pattern, white: x.whiteMarks, accent: x.accentColor ?? "" })
 	);
+	const dilutionData = Object.fromEntries(
+		Object.entries(
+			groupBy(
+				parsed.map(x => dilutionFromColor(x[0].color)),
+				x => x
+			)
+		).filter(x => x[0] !== "?")
+	);
+	const totalDilutionData = Object.values(dilutionData).reduce((l, c) => l + c.length, 0);
+	const dilutionAlleles = calculateMendelianAlleles({
+		dominant: dilutionData.F.length / totalDilutionData,
+		recessive: dilutionData.D.length / totalDilutionData,
+	});
+	const densityData = Object.fromEntries(
+		Object.entries(
+			groupBy(
+				parsed.map(x => densityFromColor(x[0].color)),
+				x => x
+			)
+		).filter(x => x[0] !== "?")
+	);
+	const totalDensityData = Object.values(dilutionData).reduce((l, c) => l + c.length, 0);
+	const patternData = Object.fromEntries(
+		Object.entries(
+			groupBy(
+				parsed
+					.map(x => x[0].pattern)
+					.filter(x => x !== "-")
+					.map(x => (x === "solid" ? "N" : "Y")),
+				x => x
+			)
+		)
+	);
+	const totalPatternData = Object.values(patternData).reduce((l, c) => l + c.length, 0);
+	const patternAlleles = calculateMendelianAlleles({
+		dominant: patternData.Y.length / totalPatternData,
+		recessive: patternData.N.length / totalPatternData,
+	});
+	const patternTypeData = groupBy(parsed.flatMap(x => geneFromPattern(x[0].pattern)), x => x);
+	const totalPatternTypeData = Object.values(patternTypeData).reduce((l, c) => l + c.length, 0);
 	return (
 		<>
 			<section>
@@ -129,6 +171,32 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 					<p>S: {smallNumberFormat.format(furAlleles.dominant * 100)}%</p>
 					<p>L: {smallNumberFormat.format(furAlleles.recessive * 100)}%</p>
 				</div>
+				<div>
+					<h2>Dilution Alleles</h2>
+					<p>F: {smallNumberFormat.format(dilutionAlleles.dominant * 100)}%</p>
+					<p>D: {smallNumberFormat.format(dilutionAlleles.recessive * 100)}%</p>
+				</div>
+				<div>
+					<h2>Density Alleles</h2>
+					{Object.entries(densityData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalDensityData) * 100)}%
+						</p>
+					))}
+				</div>
+				<div>
+					<h2>Pattern Alleles</h2>
+					<p>Y: {smallNumberFormat.format(patternAlleles.dominant * 100)}%</p>
+					<p>N: {smallNumberFormat.format(patternAlleles.recessive * 100)}%</p>
+				</div>
+				<div>
+					<h2>Pattern Type Alleles</h2>
+					{Object.entries(patternTypeData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalPatternTypeData) * 100)}%
+						</p>
+					))}
+				</div>
 			</section>
 			<section className={styles.graphRow}>
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.strength)} name="Strength" />
@@ -153,6 +221,9 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.wind)} name="Wind" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => x[0].color)} name="Main Color" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => geneFromColor(x[0].color) ?? "?")} name="Main Color Shade" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => dilutionFromColor(x[0].color) ?? "?")} name="Main Color Dilution" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => densityFromColor(x[0].color) ?? "?")} name="Main Color Density" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => x[0].pattern)} name="Pattern" />
 			</section>
 		</>
 	);
