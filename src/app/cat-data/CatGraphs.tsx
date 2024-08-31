@@ -53,7 +53,7 @@ const OccurrenceGraph = ({
 				options={{
 					indexAxis: horizontal ? "y" : "x",
 					scales: {
-						y: {
+						[horizontal ? "y" : "x"]: {
 							min: 0,
 							ticks: {
 								format: {
