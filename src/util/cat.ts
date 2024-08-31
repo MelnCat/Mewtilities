@@ -450,14 +450,14 @@ export const serializeCatGene = (gene: PartialCatGene, formatted: boolean = fals
 };
 
 const geneRegex = regex`
-	\[\s*?(?<species>[CM])\s*\]?\s*
-	\[\s*?(?<wind>[NSO?]{2})\s*\]?\s*
-	\[\s*?(?<fur>[SL?]{2})\s*\]?\s*
-	\[\s*?(?<color>[BO?]{2})(?<dilution>[FD?]{2})(?<density>[1234?])\s*\]?\s*
-	\[\s*?(?<pattern>[YN?]{2})(?<spotting>[TMSP]{2})\s*\]?\s*
-	\[\s*?(?<white>[YN?]{2})(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRI])\s*\]?\s*
-	\[\s*?(?<growth>[ABC?]{2})\s*\]?\s*
-	\[\s*?(?<accent>[BLRY?]{2})\s*\]?
+	\[?\s*(?<species>[CM])\s*\]?\s*
+	\[?\s*(?<wind>[NSO?]{2})\s*\]?\s*
+	\[?\s*(?<fur>[SL?]{2})\s*\]?\s*
+	\[?\s*(?<color>[BO?]{2})(?<dilution>[FD?]{2})(?<density>[1234?])\s*\]?\s*
+	\[?\s*(?<pattern>[YN?]{2})(?<spotting>[TMSP]{2})\s*\]?\s*
+	\[?\s*(?<white>[YN?]{2})(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRI])\s*\]?\s*
+	\[?\s*(?<growth>[ABC?]{2})\s*\]?\s*
+	\[?\s*(?<accent>[BLRY?]{2})\s*\]?
 `;
 
 export const deserializeCatGene = (text: string) => {
@@ -528,6 +528,15 @@ export const geneFromPattern = (pattern: string) => {
 	for (const [k, v] of Object.entries(catPatterns)) {
 		for (const [k2, p] of Object.entries(v))
 			if (p === pattern) return [k, k2];
+	}
+	return [];
+}
+export const geneFromAccentColor = (accentColor: string) => {
+	const accent = Object.entries(accentNames).find(x => x[1] === accentColor)?.[0];
+	if (!accent) return [];
+	for (const [k, v] of Object.entries(accents)) {
+		for (const [k2, p] of Object.entries(v))
+			if (p === accent) return [k, k2];
 	}
 	return [];
 }

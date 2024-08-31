@@ -104,11 +104,11 @@ export default function CatEditorPage() {
 				tradeColorLayer.shown && Object.values(tradeColorLayer).every(x => x !== "-")
 					? `images/cats/${tradeColorLayer.species}/${tradeColorLayer.color}_trade_${tradeColorLayer.pattern}.png`
 					: null,
-				whiteLayer.shown && Object.values(whiteLayer).every(x => x !== "-") && whiteLayer.whiteNumber !== 0
-					? `images/cats/${whiteLayer.species}/white_${whiteLayer.whiteType}_${whiteLayer.whiteNumber}.png`
-					: null,
 				accentLayer.shown && Object.values(accentLayer).every(x => x !== "-") && accentLayer.species !== "c"
 					? `images/cats/${accentLayer.species}/${accentLayer.accent}_accent_${accentLayer.pattern}.png`
+					: null,
+				whiteLayer.shown && Object.values(whiteLayer).every(x => x !== "-") && whiteLayer.whiteNumber !== 0
+					? `images/cats/${whiteLayer.species}/white_${whiteLayer.whiteType}_${whiteLayer.whiteNumber}.png`
 					: null,
 				eyesLayer.shown && eyesLayer.eyes !== "-" ? `images/cats/eyes_${eyesLayer.eyes}${eyesLayer.albinoType === "-" ? "" : `_a_${eyesLayer.albinoType}`}.png` : null,
 			]
@@ -430,9 +430,18 @@ export default function CatEditorPage() {
 					<Reorder.Group axis="y" values={clothing} onReorder={setClothing} className={styles.clothingList}>
 						{clothing.map(item => (
 							<Reorder.Item key={item.keyId} value={item} className={styles.clothingItem} {...("data" in item ? { "data-upload": true } : null)}>
-								<input className={styles.showHide} type="checkbox" checked={item.shown} onClick={() => setClothing(c => c.map(y => y.keyId === item.keyId ? {...y, shown: !y.shown} : y))} />
+								<input
+									className={styles.showHide}
+									type="checkbox"
+									checked={item.shown}
+									onClick={() => setClothing(c => c.map(y => (y.keyId === item.keyId ? { ...y, shown: !y.shown } : y)))}
+								/>
 								<section className={styles.clothingImage}>
-									{"id" in item ? <ItemImage item={item} /> : <article className={styles.customUploadImage} style={{ backgroundImage: `url("${item.image}")` }} />}
+									{"id" in item ? (
+										<ItemImage item={item} />
+									) : (
+										<article className={styles.customUploadImage} style={{ backgroundImage: `url("${item.image}")` }} />
+									)}
 								</section>
 								<p>{item.name}</p>
 								<button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>

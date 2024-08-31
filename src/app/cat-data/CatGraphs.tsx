@@ -2,15 +2,27 @@
 import { Cat } from "@prisma/client";
 import "chart.js/auto";
 import "chartjs-adapter-luxon";
-import { Line, Bar } from "react-chartjs-2";
+import { Line, Bar, Pie } from "react-chartjs-2";
 import { groupBy } from "remeda";
 import styles from "./page.module.scss";
 import { useState } from "react";
 import { calculateMendelianAlleles, calculateWindAlleles } from "./util";
 import { smallNumberFormat } from "@/util/util";
-import { densityFromColor, dilutionFromColor, geneFromColor, geneFromPattern, parseCatBio } from "@/util/cat";
+import { catSpeciesNames, densityFromColor, deserializeCatGene, dilutionFromColor, geneFromAccentColor, geneFromColor, geneFromPattern, parseCatBio } from "@/util/cat";
 
-const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | null)[]; name: string; percentage: boolean }) => {
+const OccurrenceGraph = ({
+	data,
+	name,
+	percentage,
+	type,
+	horizontal,
+}: {
+	data: (string | number | null)[];
+	name: string;
+	percentage: boolean;
+	type?: "bar" | "line";
+	horizontal?: boolean;
+}) => {
 	data ??= [];
 	const grouped = Object.entries(
 		groupBy(
@@ -18,7 +30,7 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 			x => x
 		)
 	).sort((a, b) => a[0].localeCompare(b[0]));
-	const Graph = !grouped.every(x => !isNaN(+x[0])) ? Bar : Line;
+	const Graph = type ? { bar: Bar, line: Line }[type] : !grouped.every(x => !isNaN(+x[0])) ? Bar : Line;
 	const values = data.length
 		? (() => {
 				if (grouped.every(x => !isNaN(+x[0]))) {
@@ -39,6 +51,7 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 					labels: values.map(x => x[0]),
 				}}
 				options={{
+					indexAxis: horizontal ? "y" : "x",
 					scales: {
 						y: {
 							min: 0,
@@ -55,7 +68,15 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 							display: true,
 							text: name,
 						},
+						legend: {
+							labels: {
+								font: {
+									size: 1,
+								},
+							},
+						},
 					},
+					maintainAspectRatio: false,
 				}}
 			/>
 		</div>
@@ -68,8 +89,12 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	const origins = ["Any", ...new Set(data.map(x => x.origin))];
 	const [age, setAge] = useState("Any");
 	const [percentage, setPercentage] = useState(true);
+	const [geneRevealed, setGeneRevealed] = useState("Any");
 	const ages = ["Any", ...new Set(data.map(x => x.ageType))];
-	const filteredData = data.filter(x => origin === "Any" || x.origin === origin).filter(x => age === "Any" || x.ageType === age);
+	const filteredData = data
+		.filter(x => origin === "Any" || x.origin === origin)
+		.filter(x => age === "Any" || x.ageType === age)
+		.filter(x => geneRevealed === "Any" || geneRevealed === (x.genetic ? "Yes" : "No"));
 	const windData = groupBy(
 		filteredData.map(x => x.wind),
 		x => x
@@ -130,8 +155,42 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 		dominant: patternData.Y.length / totalPatternData,
 		recessive: patternData.N.length / totalPatternData,
 	});
-	const patternTypeData = groupBy(parsed.flatMap(x => geneFromPattern(x[0].pattern)), x => x);
+	const patternTypeData = groupBy(
+		parsed.flatMap(x => geneFromPattern(x[0].pattern)),
+		x => x
+	);
 	const totalPatternTypeData = Object.values(patternTypeData).reduce((l, c) => l + c.length, 0);
+	const adjustedWhiteNumberData = groupBy(
+		(filteredData.map(x => x.whiteMarks.match(/ [a-zA-Z](\d+)/)?.[1] ?? null) as (string | number | null)[])
+			.flatMap(x => (x !== null && +x === 10 ? [0, 10] : x))
+			.filter(x => x !== null),
+		x => x
+	);
+	const totalWhiteNumberData = Object.values(adjustedWhiteNumberData).reduce((l, c) => l + c.length, 0);
+	const whiteData = groupBy(
+		filteredData.map(x => x.whiteMarks !== "None"),
+		x => String(x)
+	);
+	const totalWhiteData = Object.values(whiteData).reduce((l, c) => l + c.length, 0);
+	const whiteAlleles = calculateMendelianAlleles({
+		dominant: 1 - (whiteData.false.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
+		recessive: (whiteData.false.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
+	});
+	const whiteTypeData = groupBy(
+		filteredData.map(x => x.whiteMarks.match(/ ([a-zA-Z])\d+/)?.[1] ?? null).filter(x => x !== null),
+		x => x
+	);
+	const totalWhiteTypeData = Object.values(whiteTypeData).reduce((l, c) => l + c.length, 0);
+	const growthData = groupBy(
+		filteredData.filter(x => x.genetic !== null).flatMap(x => deserializeCatGene(x.genetic!).data?.growth),
+		x => x
+	);
+	const totalGrowthData = Object.values(growthData).reduce((l, c) => l + c.length, 0);
+	const accentData = groupBy(
+		filteredData.filter(x => x.accentColor !== null).flatMap(x => geneFromAccentColor(x.accentColor!)),
+		x => x
+	);
+	const totalAccentData = Object.values(accentData).reduce((l, c) => l + c.length, 0);
 	return (
 		<>
 			<section>
@@ -157,6 +216,16 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 				</div>
 				<div>
 					Percentages <input type="checkbox" checked={percentage} onChange={e => setPercentage(!percentage)} />
+				</div>
+				<div>
+					Gene Revealed
+					<select value={geneRevealed} onChange={e => setGeneRevealed(e.target.value)}>
+						{["Any", "Yes", "No"].map(x => (
+							<option key={x} value={x}>
+								{x}
+							</option>
+						))}
+					</select>
 				</div>
 			</section>
 			<section className={styles.allelesRow}>
@@ -197,7 +266,49 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 						</p>
 					))}
 				</div>
+				<div>
+					<h2>White Alleles</h2>
+					<p>Y: {smallNumberFormat.format(whiteAlleles.dominant * 100)}%</p>
+					<p>N: {smallNumberFormat.format(whiteAlleles.recessive * 100)}%</p>
+				</div>
+				<div>
+					<h2>White Number Alleles</h2>
+					{Object.entries(adjustedWhiteNumberData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalWhiteNumberData) * 100)}%
+						</p>
+					))}
+				</div>
+				<div>
+					<h2>White Type Alleles</h2>
+					{Object.entries(whiteTypeData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalWhiteTypeData) * 100)}%
+						</p>
+					))}
+				</div>
+				<div>
+					<h2>Growth Alleles</h2>
+					{Object.entries(growthData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalGrowthData) * 100)}%
+						</p>
+					))}
+				</div>
+				<div>
+					<h2>Accent Alleles</h2>
+					{Object.entries(accentData).map(x => (
+						<p key={x[0]}>
+							{x[0]}: {smallNumberFormat.format((x[1].length / totalAccentData) * 100)}%
+						</p>
+					))}
+				</div>
 			</section>
+			<h1>Demographics</h1>
+			<section className={styles.graphRow}>
+				<OccurrenceGraph horizontal percentage={percentage} data={filteredData.map(x => x.species)} name="Species" />
+			</section>
+			<h1>Data</h1>
 			<section className={styles.graphRow}>
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.strength)} name="Strength" />
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.agility)} name="Agility" />
@@ -217,13 +328,23 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.extroversion)} name="Extroversion" />
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.dedication)} name="Dedication" />
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.whiteMarks.match(/ ([a-zA-Z])\d+/)?.[1] ?? null)} name="White Type" />
-				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.whiteMarks.match(/ [a-zA-Z](\d+)/)?.[1] ?? 0)} name="White Number" />
+				<OccurrenceGraph horizontal percentage={percentage} type="bar" data={filteredData.map(x => x.whiteMarks.match(/ [a-zA-Z](\d+)/)?.[1] ?? 0)} name="White Number" />
+				<OccurrenceGraph
+					horizontal
+					type="bar"
+					percentage={percentage}
+					data={(filteredData.map(x => x.whiteMarks.match(/ [a-zA-Z](\d+)/)?.[1] ?? null) as (string | number | null)[]).flatMap(x =>
+						x !== null && +x === 10 ? [0, 10] : x
+					)}
+					name="Adjusted White Number"
+				/>
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.wind)} name="Wind" />
-				<OccurrenceGraph percentage={percentage} data={parsed.map(x => x[0].color)} name="Main Color" />
+				<OccurrenceGraph horizontal percentage={percentage} data={parsed.map(x => x[0].color)} name="Main Color" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => geneFromColor(x[0].color) ?? "?")} name="Main Color Shade" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => dilutionFromColor(x[0].color) ?? "?")} name="Main Color Dilution" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => densityFromColor(x[0].color) ?? "?")} name="Main Color Density" />
-				<OccurrenceGraph percentage={percentage} data={parsed.map(x => x[0].pattern)} name="Pattern" />
+				<OccurrenceGraph horizontal percentage={percentage} data={parsed.map(x => x[0].pattern)} name="Pattern" />
+				<OccurrenceGraph horizontal percentage={percentage} data={filteredData.map(x => x.accentColor)} name="Accent Color" />
 			</section>
 		</>
 	);
