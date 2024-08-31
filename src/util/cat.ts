@@ -486,8 +486,8 @@ export const deserializeCatGene = (text: string) => {
 export const parseCatBio = (bio: { species: string; color: string; pattern: string; white: string; accent?: string; eyes: string }): ReturnType<typeof getCatTextureProperties> => {
 	const species = bio.species === "Not-cat" ? "c" : "m";
 	const whiteData = bio.white.match(/\/ ([a-zA-Z]+)(\d+)/)!;
-	const whiteType = whiteTypes[whiteData[1] as keyof typeof whiteTypes];
-	const whiteNumber = +whiteData[2] as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+	const whiteType = whiteData ? whiteTypes[whiteData[1] as keyof typeof whiteTypes] : null;
+	const whiteNumber = whiteData ? +whiteData[2] as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 : null;
 	const colorData =
 		bio.color === "-hidden-" ? null : bio.color.includes("Standard") ? bio.color.match(/(\w+) Standard/)?.[1] ?? null : bio.color.match(/(\w+)-(\w+) \w+/)?.slice(1);
 	const mainColorText = colorData ? (colorData instanceof Array ? colorData[0] : colorData) : null;
@@ -498,9 +498,10 @@ export const parseCatBio = (bio: { species: string; color: string; pattern: stri
 	return [
 		whiteNumber !== 10 && mainColor && pattern ? { species, color: mainColor, pattern, shown: true } : { species, color: "-", pattern: "-", shown: false },
 		tradeColor && pattern ? { species: species, color: tradeColor, pattern: pattern, shown: true } : { species: species, color: "-", pattern: "-", shown: false },
-		whiteNumber !== 0 ? { species, whiteType, whiteNumber, shown: true } : ({ species, whiteType: "-", whiteNumber: "-", shown: false } as const),
+		whiteNumber !== 0 && whiteType && whiteNumber ? { species, whiteType, whiteNumber, shown: true } : ({ species, whiteType: "-", whiteNumber: "-", shown: false } as const),
 		species === "m" && accent && pattern ? { species, accent, pattern, shown: true } : { species, accent: "-", pattern: "-", shown: false },
-		{ eyes: bio.eyes as "neutral", albinoType: whiteNumber === 10 ? whiteType : "-", shown: true },
+		{ eyes: bio.eyes as "neutral", albinoType: whiteNumber === 10 && whiteType ? whiteType : "-", shown: true },
 	] as const;
 };
 
+export const geneFromColor = (color: string) => color === "snow" ? "?" : Object.entries(catColors).find(x => Object.values(x[1]).some(y => Object.values(y).some(z => z === color)))?.[0];

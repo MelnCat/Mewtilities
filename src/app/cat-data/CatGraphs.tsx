@@ -6,6 +6,9 @@ import { Line, Bar } from "react-chartjs-2";
 import { groupBy } from "remeda";
 import styles from "./page.module.scss";
 import { useState } from "react";
+import { calculateMendelianAlleles, calculateWindAlleles } from "./util";
+import { smallNumberFormat } from "@/util/util";
+import { geneFromColor, parseCatBio } from "@/util/cat";
 
 const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | null)[]; name: string; percentage: boolean }) => {
 	const grouped = Object.entries(
@@ -30,7 +33,7 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 		<div className={styles.chartContainer}>
 			<Graph
 				data={{
-					datasets: [{ data: values.map(x => x[1]).map(x => percentage ? +x / values.reduce((l, c) => l + +c[1], 0) : x), label: "Count", fill: true }],
+					datasets: [{ data: values.map(x => x[1]).map(x => (percentage ? +x / values.reduce((l, c) => l + +c[1], 0) : x)), label: "Count", fill: true }],
 					labels: values.map(x => x[0]),
 				}}
 				options={{
@@ -40,7 +43,7 @@ const OccurrenceGraph = ({ data, name, percentage }: { data: (string | number | 
 							ticks: {
 								format: {
 									style: percentage ? "percent" : "decimal",
-									maximumFractionDigits: 10
+									maximumFractionDigits: 10,
 								},
 							},
 						},
@@ -65,6 +68,28 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	const [percentage, setPercentage] = useState(true);
 	const ages = ["Any", ...new Set(data.map(x => x.ageType))];
 	const filteredData = data.filter(x => origin === "Any" || x.origin === origin).filter(x => age === "Any" || x.ageType === age);
+	const windData = groupBy(
+		filteredData.map(x => x.wind),
+		x => x
+	);
+	const totalWindData = Object.values(windData).reduce((l, c) => l + c.length, 0);
+	const windAlleles = calculateWindAlleles({
+		north: windData.North.length / totalWindData,
+		south: windData.South.length / totalWindData,
+		trade: windData.Trade.length / totalWindData,
+	});
+	const furData = groupBy(
+		filteredData.map(x => x.fur),
+		x => x
+	);
+	const totalFurData = Object.values(furData).reduce((l, c) => l + c.length, 0);
+	const furAlleles = calculateMendelianAlleles({
+		dominant: furData.Shorthair.length / totalFurData,
+		recessive: furData.Longhair.length / totalFurData,
+	});
+	const parsed = filteredData.map(x =>
+		parseCatBio({ species: x.species, color: x.color, eyes: "neutral", pattern: x.pattern, white: x.whiteMarks, accent: x.accentColor ?? "" })
+	);
 	return (
 		<>
 			<section>
@@ -87,8 +112,22 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 							</option>
 						))}
 					</select>
-				</div><div>
+				</div>
+				<div>
 					Percentages <input type="checkbox" checked={percentage} onChange={e => setPercentage(!percentage)} />
+				</div>
+			</section>
+			<section className={styles.allelesRow}>
+				<div>
+					<h2>Wind Alleles</h2>
+					<p>N: {smallNumberFormat.format(windAlleles.N * 100)}%</p>
+					<p>S: {smallNumberFormat.format(windAlleles.S * 100)}%</p>
+					<p>O: {smallNumberFormat.format(windAlleles.O * 100)}%</p>
+				</div>
+				<div>
+					<h2>Fur Alleles</h2>
+					<p>S: {smallNumberFormat.format(furAlleles.dominant * 100)}%</p>
+					<p>L: {smallNumberFormat.format(furAlleles.recessive * 100)}%</p>
 				</div>
 			</section>
 			<section className={styles.graphRow}>
@@ -112,6 +151,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.whiteMarks.match(/ ([a-zA-Z])\d+/)?.[1] ?? null)} name="White Type" />
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.whiteMarks.match(/ [a-zA-Z](\d+)/)?.[1] ?? 0)} name="White Number" />
 				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.wind)} name="Wind" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => x[0].color)} name="Main Color" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => geneFromColor(x[0].color) ?? "?")} name="Main Color Shade" />
 			</section>
 		</>
 	);
