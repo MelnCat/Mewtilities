@@ -37,6 +37,6 @@
 	margin: 0.25em;
 	text-decoration: none;
 	&[data-visited] {
-		background-color: #b3b3b3;
+		display: none;
 	}
 }

@@ -16,7 +16,7 @@ export const CatLinkPanel = () => {
 				Range <input value={range} onChange={e => setRange(e.target.value)} placeholder="1-5" />
 			</p>
 			<p>
-				{isNaN(parsedRange[0]) || isNaN(parsedRange[1]) || !range || parsedRange[1] - parsedRange[0] > 200
+				{isNaN(parsedRange[0]) || isNaN(parsedRange[1]) || !range || parsedRange[1] - parsedRange[0] > 2000
 					? null
 					: [...Array(parsedRange[1] - parsedRange[0] + 1)]
 							.map((x, i) => i + parsedRange[0])
