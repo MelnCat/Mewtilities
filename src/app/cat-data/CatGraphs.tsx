@@ -9,6 +9,7 @@ import { useState } from "react";
 import { calculateMendelianAlleles, calculateWindAlleles } from "./util";
 import { smallNumberFormat } from "@/util/util";
 import { catSpeciesNames, densityFromColor, deserializeCatGene, dilutionFromColor, geneFromAccentColor, geneFromColor, geneFromPattern, parseCatBio } from "@/util/cat";
+import { accentNames, colorNames, patternNames } from "@/util/catData";
 
 const OccurrenceGraph = ({
 	data,
@@ -16,12 +17,14 @@ const OccurrenceGraph = ({
 	percentage,
 	type,
 	horizontal,
+	order,
 }: {
 	data: (string | number | null)[];
 	name: string;
 	percentage: boolean;
 	type?: "bar" | "line";
 	horizontal?: boolean;
+	order?: (string | number)[] | "count";
 }) => {
 	data ??= [];
 	const grouped = Object.entries(
@@ -29,7 +32,7 @@ const OccurrenceGraph = ({
 			data.filter(x => x !== null),
 			x => x
 		)
-	).sort((a, b) => a[0].localeCompare(b[0]));
+	).sort((a, b) => (order === "count" ? b[1].length - a[1].length : order ? order.indexOf(a[0]) - order.indexOf(b[0]) : a[0].localeCompare(b[0])));
 	const Graph = type ? { bar: Bar, line: Line }[type] : !grouped.every(x => !isNaN(+x[0])) ? Bar : Line;
 	const values = data.length
 		? (() => {
@@ -53,7 +56,7 @@ const OccurrenceGraph = ({
 				options={{
 					indexAxis: horizontal ? "y" : "x",
 					scales: {
-						[horizontal ? "y" : "x"]: {
+						[horizontal ? "x" : "y"]: {
 							min: 0,
 							ticks: {
 								format: {
@@ -306,7 +309,7 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 			</section>
 			<h1>Demographics</h1>
 			<section className={styles.graphRow}>
-				<OccurrenceGraph horizontal percentage={percentage} data={filteredData.map(x => x.species)} name="Species" />
+				<OccurrenceGraph horizontal percentage={percentage} data={filteredData.map(x => x.species)} order="count" name="Species" />
 			</section>
 			<h1>Data</h1>
 			<section className={styles.graphRow}>
@@ -338,13 +341,31 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 					)}
 					name="Adjusted White Number"
 				/>
-				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.wind)} name="Wind" />
-				<OccurrenceGraph horizontal percentage={percentage} data={parsed.map(x => x[0].color)} name="Main Color" />
+				<OccurrenceGraph percentage={percentage} data={filteredData.map(x => x.wind)} order={["North", "South", "Wind", "Trade"]} name="Wind" />
+				<OccurrenceGraph
+					horizontal
+					percentage={percentage}
+					data={parsed.map(x => x[0].color).map(x => colorNames[x as "charc"] ?? "?")}
+					order={Object.values(colorNames).concat("?")}
+					name="Main Color"
+				/>
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => geneFromColor(x[0].color) ?? "?")} name="Main Color Shade" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => dilutionFromColor(x[0].color) ?? "?")} name="Main Color Dilution" />
 				<OccurrenceGraph percentage={percentage} data={parsed.map(x => densityFromColor(x[0].color) ?? "?")} name="Main Color Density" />
-				<OccurrenceGraph horizontal percentage={percentage} data={parsed.map(x => x[0].pattern)} name="Pattern" />
-				<OccurrenceGraph horizontal percentage={percentage} data={filteredData.map(x => x.accentColor)} name="Accent Color" />
+				<OccurrenceGraph
+					horizontal
+					percentage={percentage}
+					data={parsed.map(x => x[0].pattern).map(x => patternNames[x as "colorpoint"] ?? "?")}
+					order={Object.values(patternNames).concat("?")}
+					name="Pattern"
+				/>
+				<OccurrenceGraph
+					horizontal
+					percentage={percentage}
+					data={filteredData.map(x => x.accentColor)}
+					order={Object.values(accentNames).concat("-hidden-")}
+					name="Accent Color"
+				/>
 			</section>
 		</>
 	);
