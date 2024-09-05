@@ -232,7 +232,7 @@ export default function GeneTestPage() {
 					pushyNorth={ignorePush ? null : pushyNorth}
 				/>
 			) : null}
-			{!compatible ? <p>Incompatible Cats!</p> : null}
+			{first && second && !compatible ? <p>Incompatible Cats!</p> : null}
 		</main>
 	);
 }
