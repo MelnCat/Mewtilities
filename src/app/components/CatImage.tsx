@@ -9,7 +9,7 @@ export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (stri
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	useEffect(() => {
 		if (!canvasRef.current) return;
-		const canvas = new OffscreenCanvas(600, 500);
+		const canvas = new OffscreenCanvas(500, 600);
 		const context = canvas.getContext("2d");
 		if (!context) return;
 		let shouldCancel = false;
@@ -34,7 +34,7 @@ export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (stri
 				if (shouldCancel) return;
 			}
 			const ctx = canvasRef.current!.getContext("2d")!;
-			ctx.clearRect(0, 0, 600, 500);
+			ctx.clearRect(0, 0, 500, 600);
 			ctx.drawImage(canvas, 0, 0);
 		})();
 		return () => {

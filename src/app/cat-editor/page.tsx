@@ -17,6 +17,7 @@ import {
 	deserializeCatGene,
 	getCatTextureProperties,
 	getGenePhenotype,
+	offsetList,
 	parseCatBio,
 	PartialCatGene,
 	randomCatGene,
@@ -121,6 +122,20 @@ export default function CatEditorPage() {
 				),
 		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer, clothing]
 	);
+	const speciesVal = useMemo(
+		() => [colorLayer, tradeColorLayer, accentLayer, whiteLayer].find(x => x.shown && x.species !== "-")?.species ?? "c",
+		[colorLayer, tradeColorLayer, accentLayer, whiteLayer]
+	);
+	useEffect(() => {
+		setSelected(x => {
+			if (!x) return x;
+			const found = offsetList.filter(o => o.position.x === -x[0] && o.position.y === -x[1]);
+			if (!found.length) return x;
+			const replacement = offsetList.find(x => x.key === [speciesVal, ...found[0].key.split("_").slice(1)].join("_"));
+			if (replacement) return [-replacement.position.x, -replacement.position.y];
+			else return x;
+		});
+	}, [speciesVal]);
 	useEffect(() => {
 		loadFromGene(randomCatGene(species === "Any" ? undefined : species === "Not-Cat" ? "C" : "M"));
 	}, [species]);
@@ -156,7 +171,7 @@ export default function CatEditorPage() {
 			image.src = layer!;
 			image.crossOrigin = "anonymous";
 			if (!image.complete) await new Promise(res => image.addEventListener("load", res));
-			ctx.drawImage(image, selected[0] * 100, selected[1] * 100 + 5, 100, 100, 0, 0, 100, 100);
+			ctx.drawImage(image, selected[0], selected[1], 100, 100, 0, 0, 100, 100);
 		}
 		downloadFile(`cat_selected.png`, await canvas.convertToBlob({ type: "image/png" }));
 		setDownloading(false);
@@ -165,11 +180,17 @@ export default function CatEditorPage() {
 		const bounding = (event.target as HTMLCanvasElement).getBoundingClientRect();
 		const x = event.clientX - bounding.left;
 		const y = event.clientY - bounding.top;
-		const col = Math.floor((x / bounding.width) * 5);
-		const row = Math.floor((y / bounding.height) * 6);
-		if (col < 0 || col >= 5) return;
-		if (row < 0 || row >= 5) return;
-		setSelected(x => (x && x[0] === col && x[1] === row ? null : [col, row]));
+		const list = offsetList.filter(x => x.key.startsWith(speciesVal));
+		const found = list.find(
+			o =>
+				-o.position.x / 500 <= x / bounding.width &&
+				-o.position.y / 600 <= y / bounding.height &&
+				x / bounding.width < (-o.position.x + 100) / 500 &&
+				y / bounding.height < (-o.position.y + 100) / 600
+		);
+		if (!found) return;
+		const pos = found.position;
+		setSelected(x => (x && x[0] === -pos.x && x[1] === -pos.y ? null : [-pos.x, -pos.y]));
 	};
 	const tryImport = (data: string) => {
 		let found = false;
@@ -338,7 +359,7 @@ export default function CatEditorPage() {
 					{layers.length ? (
 						<>
 							<section className={styles.canvasWrapper}>
-								{selected && <div className={styles.selectedCanvas} style={{ "--row": selected[1], "--col": selected[0] }} />}
+								{selected && <div className={styles.selectedCanvas} style={{ "--y": selected[1], "--x": selected[0] }} />}
 								<CatSheet onClick={canvasClick} gene={layers} />
 							</section>
 							<section className={styles.outputRow}>

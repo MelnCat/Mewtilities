@@ -25,6 +25,7 @@
 	align-items: center;
 	flex-direction: column;
 	padding: 0.5em;
+	gap: 1em;
 	width: 120em;
 	max-width: 500px;
 	canvas {
@@ -144,9 +145,8 @@
 	position: absolute;
 	width: 20%;
 	height: calc(100% / 6);
-	left: calc(var(--col) * 20%);
-	top: calc(var(--row) * 100% / 6);
-	translate: 0 4%;
+	left: calc(var(--x) / 500 * 100%);
+	top: calc(var(--y) / 600 * 100%);
 	background-color: #8a8a8a44;
 	pointer-events: none;
 }

@@ -6,6 +6,9 @@ import { regex } from "regex";
 import { failure, success } from "./result";
 import { accentNames, colorNames, patternNames } from "./catData";
 
+export const offsetList = Object.entries(offsets).flatMap(([k, v]) =>
+	Object.entries(v).flatMap(([n, l]) => Object.entries(l).flatMap(([m, q]) => Object.entries(q).flatMap(([key, data]) => ({ position: data, key: [k, n, m, key].join("_") }))))
+);
 const speciesType = z.enum(["C", "M"]);
 const windType = z.enum(["O", "N", "S"]);
 const furType = z.enum(["S", "L"]);
@@ -526,17 +529,15 @@ export const densityFromColor = (color: string) => {
 };
 export const geneFromPattern = (pattern: string) => {
 	for (const [k, v] of Object.entries(catPatterns)) {
-		for (const [k2, p] of Object.entries(v))
-			if (p === pattern) return [k, k2];
+		for (const [k2, p] of Object.entries(v)) if (p === pattern) return [k, k2];
 	}
 	return [];
-}
+};
 export const geneFromAccentColor = (accentColor: string) => {
 	const accent = Object.entries(accentNames).find(x => x[1] === accentColor)?.[0];
 	if (!accent) return [];
 	for (const [k, v] of Object.entries(accents)) {
-		for (const [k2, p] of Object.entries(v))
-			if (p === accent) return [k, k2];
+		for (const [k2, p] of Object.entries(v)) if (p === accent) return [k, k2];
 	}
 	return [];
-}
+};
