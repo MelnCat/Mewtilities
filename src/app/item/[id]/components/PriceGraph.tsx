@@ -15,19 +15,17 @@ export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] 
 					labels: data.map(x => x[0]).map(x => dayjs(x).format("MMM-DD")),
 				}}
 				options={{
-					scales: {
-						y: {
-							min: 0,
-						},
-					},
+					minStats: "whiskerMin",
+					maxStats: "whiskerMax",
 					elements: {
 						boxandwhiskers: {
 							itemRadius: 1,
 							itemHitRadius: 1,
-							outlierRadius: 0,
+							outlierRadius: 0.1,
 							outlierHitRadius: 0,
+							meanRadius: 0
 						},
-					},
+					}
 				}}
 			/>
 		</div>
