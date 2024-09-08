@@ -15,7 +15,7 @@ const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCoun
 	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
 	const end = Math.min(Date.now(), +dateSorted.at(-1)!.expiryTime);
-	const slices = 10;
+	const slices = 50;
 	const data: [Date, number[], string, string][] = [];
 	let lastMedian = -1;
 	for (let i = 0; i <= slices; i++) {
@@ -24,12 +24,16 @@ const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCoun
 		const values = valid
 			//.filter((x, i, a) => a.findIndex(y => y.sellerId === x.sellerId && x.itemCount === y.itemCount && x.priceCount === y.priceCount) === i)
 			.map(x => x.priceCount / x.itemCount);
+		if (!values.length) {
+			data.push([new Date(time), [], "", ""]);
+			continue;
+		}
 		const med = min(values);
 		data.push([
 			new Date(time),
 			values,
 			lastMedian === med ? "#ffff00aa" : lastMedian < med ? "#00ff00aa" : "#ff0000aa",
-			lastMedian === med ? "#c7c721" : lastMedian < med ? "#20c520" : "#ce1c1c"
+			lastMedian === med ? "#c7c721" : lastMedian < med ? "#20c520" : "#ce1c1c",
 		]);
 		lastMedian = med;
 	}

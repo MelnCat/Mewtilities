@@ -22,8 +22,10 @@ export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] 
 					},
 					elements: {
 						boxandwhiskers: {
-							itemRadius: 2,
-							itemHitRadius: 4,
+							itemRadius: 1,
+							itemHitRadius: 1,
+							outlierRadius: 0,
+							outlierHitRadius: 0,
 						},
 					},
 				}}
