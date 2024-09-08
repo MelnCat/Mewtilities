@@ -1,6 +1,5 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { Season } from "@prisma/client";
-import { JSDOM } from "jsdom";
 import { parseItemCubeId } from "./parserUtil";
 
 export interface RawResourceGatherEntry {
@@ -12,14 +11,13 @@ export interface RawResourceGatherEntry {
 	id: string;
 	time: string;
 	results: {
-		type: number,
-		count: number
-	}[]
+		type: number;
+		count: number;
+	}[];
 }
 
 export const parseGatherResourcesPage = (content: string): Result<RawResourceGatherEntry[]> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forumwide-content-area");
 	if (!form) return failure("Invalid page layout");
 	const rows = [...form.querySelectorAll(".forum-post-group")];
@@ -34,7 +32,7 @@ export const parseGatherResourcesPage = (content: string): Result<RawResourceGat
 		if (!skillBonus || isNaN(+skillBonus)) return failure("Skill bonus missing");
 		builder.skillBonus = +skillBonus;
 
-		const catLink = row.querySelector(".cat-head h4 a")
+		const catLink = row.querySelector(".cat-head h4 a");
 		if (!catLink) return failure("Cat link missing");
 		const catName = catLink.textContent?.trim();
 		if (!catName) return failure("Cat name missing");
@@ -47,7 +45,10 @@ export const parseGatherResourcesPage = (content: string): Result<RawResourceGat
 		if (!catRoll || isNaN(+catRoll)) return failure("Roll missing or invalid");
 		builder.roll = +catRoll;
 
-		const timeText = doc.querySelector("#weatherlink")?.textContent?.trim().match(/.+?\| (\w+) (.+)?, Year (.+?) \|/);
+		const timeText = doc
+			.querySelector("#weatherlink")
+			?.textContent?.trim()
+			.match(/.+?\| (\w+) (.+)?, Year (.+?) \|/);
 		if (!timeText || !timeText[1] || !timeText[2] || !timeText[3]) return failure("Time missing or invalid");
 		const formatted = `${timeText[3]}-${timeText[1]}-${timeText[2]}`;
 		builder.time = formatted;
@@ -62,7 +63,7 @@ export const parseGatherResourcesPage = (content: string): Result<RawResourceGat
 			if (!quantity || isNaN(+quantity)) return failure("Quantity missing or invalid");
 			builder.results.push({ type: type.data, count: +quantity });
 		}
-		
+
 		entries.push(builder as RawResourceGatherEntry);
 	}
 	return success(entries);

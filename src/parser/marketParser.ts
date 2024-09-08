@@ -1,6 +1,5 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { readFileSync } from "fs";
-import { JSDOM } from "jsdom";
 import { Temporal } from "temporal-polyfill";
 
 export interface RawMarketEntry {
@@ -14,8 +13,7 @@ export interface RawMarketEntry {
 }
 
 export const parseMarketPage = (content: string): Result<RawMarketEntry[]> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return failure("Invalid page layout");
 	if (!form.getAttribute("action")?.includes("/market")) return failure("Not a marketplace page");

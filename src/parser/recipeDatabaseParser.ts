@@ -1,6 +1,6 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { RecipeCategory, Season } from "@prisma/client";
-import { JSDOM } from "jsdom";
+import { RecipeCategory } from "@prisma/client";
 import { parseItemCubeId } from "./parserUtil";
 
 export interface RawRecipeDatabaseEntries {
@@ -14,8 +14,7 @@ export interface RawRecipeDatabaseEntry {
 }
 
 export const parseRecipeDatabasePage = (content: string): Result<RawRecipeDatabaseEntries> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return failure("Invalid page layout");
 	if (!form.getAttribute("action")?.includes("/crafts")) return failure("Not a crafting database page");

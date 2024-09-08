@@ -1,6 +1,6 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
 import { Season } from "@prisma/client";
-import { JSDOM } from "jsdom";
 
 export interface RawItemDatabaseEntry {
 	id: number;
@@ -16,8 +16,7 @@ export interface RawItemDatabaseEntry {
 }
 
 export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEntry[]> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return failure("Invalid page layout");
 	if (!form.getAttribute("action")?.includes("/items")) return failure("Not an item database page");

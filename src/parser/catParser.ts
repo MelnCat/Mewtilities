@@ -1,14 +1,14 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
 import { Cat, Season } from "@prisma/client";
+import { readFileSync } from "fs";
 import { HTML2BBCode } from "html2bbcode";
-import { JSDOM } from "jsdom";
 import { chunk } from "remeda";
 
 export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[] };
 
 export const parseCatPage = (content: string): Result<RawCat> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forum-post-group");
 	if (!form) return failure("Invalid page layout");
 	const builder = {} as Partial<RawCat>;
@@ -67,7 +67,6 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	builder.sizeLb = +size?.[1];
 	builder.sizeKg = +size?.[2];
 
-
 	const fur = findColumn("Fur");
 	if (!fur) return failure("Fur missing");
 	builder.fur = fur;
@@ -91,27 +90,27 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!eyeColor) return failure("Eye color missing");
 	builder.eyeColor = eyeColor;
 
-
-	const mayorBonusText = form.querySelector("#base-stats + .genes-code")?.textContent?.matchAll(/([+-]\d+) (\w+)/g);
+	const mayorBonusText = form.querySelector(":where(#base-stats, #total-stats) + .genes-code")?.textContent?.matchAll(/([+-]\d+) (\w+)/g);
 	const statBonuses: Record<string, number> = {};
 	const trinketBonusText = form.querySelector(".trinket-subgroup .bio-group-label")?.textContent?.matchAll(/(\w+) ([+-]\d+)/g);
-	if (mayorBonusText) 
+	if (mayorBonusText)
 		for (const bonus of mayorBonusText) {
 			statBonuses[bonus[2].toLowerCase()] = +bonus[1];
-	}
-	if (trinketBonusText) 
+		}
+	if (trinketBonusText)
 		for (const bonus of trinketBonusText) {
 			const name = bonus[1].toLowerCase();
 			if (name in statBonuses) statBonuses[name] += +bonus[2];
 			else statBonuses[name] = +bonus[2];
-	}
+		}
 
 	const reverseBonus = (data: string | null | undefined, name: string) => {
-		if (data === null || data === undefined) return null;
+		if (data === null || data === undefined || data.trim() === "") return null;
 		if (name in statBonuses) return +data - statBonuses[name];
 		return +data;
-	}
+	};
 
+	console.log(statBonuses)
 	const bravery = findColumn("Bravery");
 	//if (!bravery || isNaN(+bravery)) return failure("Bravery missing");
 	builder.bravery = reverseBonus(bravery, "bravery");
@@ -131,13 +130,14 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	const jobLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Day Job"));
 	const toNumberOrUndefined = (str: string | undefined) => (str === undefined ? undefined : +str);
 	if (jobLoop) {
-		const job = jobLoop.childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
+		const childNodes = [...jobLoop.childNodes].filter(x => x.textContent?.trim());
+		const job = childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
 		if (!job) return failure("Job missing or invalid");
 		builder.job = job;
 		const jobCol = jobLoop.querySelector(".bio-group-column");
 		if (!jobCol) return failure("Job column missing or invalid");
 		const jobXp = [...jobCol.childNodes]
-			.filter(x => x.nodeType === x.TEXT_NODE)
+			.filter(x => x.nodeType === x.TEXT_NODE && x.textContent?.trim())
 			.map(
 				x =>
 					[
@@ -157,17 +157,18 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 
 	const classLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Adventuring Class"));
 	if (classLoop) {
-		const clazz = classLoop?.childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
+		const childNodes = [...classLoop.childNodes].filter(x => x.textContent?.trim());
+		const clazz = childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
 		if (!clazz) return failure("Class missing or invalid");
 		builder.class = clazz;
 		const classCol = classLoop.querySelector(".bio-group-column");
 		if (!classCol) return failure("class column missing or invalid");
 		const classXp = [...classCol.childNodes]
-			.filter(x => x.nodeType === x.TEXT_NODE)
+			.filter(x => x.nodeType === x.TEXT_NODE && x.textContent?.trim())
 			.map(
 				x =>
 					[
-						x.textContent?.match(/(.+) Level/)?.[1],
+						x.textContent?.match(/(.+?) Level/)?.[1],
 						{
 							level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
 							xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
@@ -181,30 +182,36 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 		builder.classXp = null;
 	}
 	// todo check if city
-	const getStat = (id: string) => {
-		const content = form.querySelector(`#base-stats #${id}-num`)?.textContent;
-		if (!content || isNaN(+content)) return null;
-		return +content;
+	const getStat = (id: string, name: string) => {
+		if (form.querySelector("#base-stats")) {
+			const content = form.querySelector(`#base-stats #${id}-num`)?.textContent;
+			if (!content || isNaN(+content)) return null;
+			return +content;
+		} else if (form.querySelector("#total-stats")) {
+			const content = form.querySelector(`#total-stats #${id}-num`)?.textContent;
+			if (!content || isNaN(+content)) return null;
+			return reverseBonus(content, name);
+		} else return null;
 	};
-	const strength = getStat("str");
+	const strength = getStat("str", "strength");
 	builder.strength = strength;
 
-	const agility = getStat("agi");
+	const agility = getStat("agi", "agility");
 	builder.agility = agility;
 
-	const health = getStat("hlth");
+	const health = getStat("hlth", "health");
 	builder.health = health;
 
-	const finesse = getStat("fin");
+	const finesse = getStat("fin", "finesse");
 	builder.finesse = finesse;
 
-	const cleverness = getStat("clev");
+	const cleverness = getStat("clev", "cleverness");
 	builder.cleverness = cleverness;
 
-	const perception = getStat("per");
+	const perception = getStat("per", "perception");
 	builder.perception = perception;
 
-	const luck = getStat("luck");
+	const luck = getStat("luck", "luck");
 	builder.luck = luck;
 
 	const centerMessage = doc.querySelector(".formlike-content-area.center")?.textContent;
@@ -221,8 +228,11 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!friends) return failure("Friends missing");
 	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
-		const found = chunk([...friends.childNodes], 3).map(x => [
-			(x[0].childNodes[0] as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+		const found = chunk(
+			[...friends.childNodes].filter(x => x?.textContent?.trim()),
+			2
+		).map(x => [
+			([...x[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
 			x[1]?.textContent?.replace("- ", "").trim(),
 		]);
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
@@ -232,7 +242,10 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!family) return failure("Family missing");
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
-		const found = chunk([...family.childNodes], 3).map(x => [
+		const found = chunk(
+			[...family.childNodes].filter(x => x?.textContent?.trim()),
+			2
+		).map(x => [
 			((x[0] as HTMLElement).tagName === "A" ? (x[0] as HTMLElement) : (x[0].childNodes[0] as HTMLElement))?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
 			x[1]?.textContent?.replace("- ", "").trim(),
 		]);

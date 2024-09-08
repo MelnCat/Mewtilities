@@ -1,6 +1,5 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { JSDOM } from "jsdom";
-import { RawMarketEntry } from "./marketParser";
 
 export interface RawShop {
 	url: string;
@@ -11,8 +10,7 @@ export interface RawShop {
 }
 
 export const parseShopListPage = (content: string): Result<RawShop[]> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const list = doc.querySelector(".forumwide-content-area > .horizontalflex.wrapflex.justify");
 	if (!list) return failure("Invalid page layout");
 	const lines = list.children;

@@ -1,9 +1,7 @@
+import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
 import { parsePriceType } from "@/util/util";
 import { Currency } from "@prisma/client";
-import { readFileSync } from "fs";
-import { JSDOM } from "jsdom";
-import { Temporal } from "temporal-polyfill";
 
 export interface RawQuickSellEntry {
 	itemId: number;
@@ -12,8 +10,7 @@ export interface RawQuickSellEntry {
 }
 
 export const parseQuickSellPage = (content: string): Result<RawQuickSellEntry[]> => {
-	const dom = new JSDOM(content);
-	const doc = dom.window.document;
+	const doc = parseDom(content);
 	const form = doc.querySelector(".forumwide-content-area form");
 	if (!form) return failure("Invalid page layout");
 	if (!form.getAttribute("action")?.includes("/quick-sales")) return failure("Not a marketplace page");
