@@ -8,33 +8,35 @@ import Link from "next/link";
 import { getNestorSources } from "@/util/nestor";
 import { pceLink, smallNumberFormat } from "@/util/util";
 import { ItemImage } from "@/app/components/ItemImage";
+import { median, min } from "simple-statistics";
 
-const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number }[]) => {
-	if (entries.length === 0) return [[], []];
+const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number; sellerId: number }[]) => {
+	if (entries.length === 0) return [];
 	const dateSorted = entries.toSorted((a, b) => +a.creationTime - +b.creationTime);
 	const begin = +dateSorted[0].creationTime;
 	const end = Math.min(Date.now(), +dateSorted.at(-1)!.expiryTime);
-	const slices = 50;
-	let lastPrice = -1;
-	const times: [Date, number][] = [];
-	const realTimes: [Date, number][] = [];
-	let lastClosest = -1;
+	const slices = 10;
+	const data: [Date, number[], string, string][] = [];
+	let lastMedian = -1;
 	for (let i = 0; i <= slices; i++) {
 		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
-		const lowest = valid.length ? valid.reduce((l, c) => (l > c.priceCount / c.itemCount ? c.priceCount / c.itemCount : l), Infinity) : lastPrice;
-		const price = lastPrice !== -1 && lowest > lastPrice * 2 ? lastPrice : lowest;
-		lastPrice = price;
-		times.push([new Date(time), price]);
-		const closest = dateSorted.findLast(x => +x.creationTime <= time);
-		const c = closest ? (lastClosest === -1 || closest.priceCount / closest.itemCount / lastClosest < 4 ? closest.priceCount / closest.itemCount : lastClosest) : null;
-		if (c && c > lastClosest) lastClosest = c;
-		realTimes.push([new Date(time), c ?? realTimes.at(-1)?.[1] ?? lastPrice]);
+		const values = valid
+			//.filter((x, i, a) => a.findIndex(y => y.sellerId === x.sellerId && x.itemCount === y.itemCount && x.priceCount === y.priceCount) === i)
+			.map(x => x.priceCount / x.itemCount);
+		const med = min(values);
+		data.push([
+			new Date(time),
+			values,
+			lastMedian === med ? "#ffff00aa" : lastMedian < med ? "#00ff00aa" : "#ff0000aa",
+			lastMedian === med ? "#c7c721" : lastMedian < med ? "#20c520" : "#ce1c1c"
+		]);
+		lastMedian = med;
 	}
-	return [times, realTimes];
+	return data;
 };
 
-export const ItemView = async({ item }: { item: Awaited<ReturnType<typeof getItemData>> }) => {
+export const ItemView = async ({ item }: { item: Awaited<ReturnType<typeof getItemData>> }) => {
 	const nestor = await getNestorSources();
 	if (!item) return <h1>404</h1>;
 	const market = item.marketEntries.toSorted((a, b) => a.unitPrice - b.unitPrice);
@@ -107,7 +109,7 @@ export const ItemView = async({ item }: { item: Awaited<ReturnType<typeof getIte
 								? item.quickSellEntries.map((x, i) => (
 										<>
 											{i === 0 ? "" : " / "}
-											{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType!}>{x.priceCount}</CurrencyValue>}
+											{x.priceCount === -1 ? "None" : <CurrencyValue type={x.priceType}>{x.priceCount}</CurrencyValue>}
 										</>
 								  ))
 								: "?"}

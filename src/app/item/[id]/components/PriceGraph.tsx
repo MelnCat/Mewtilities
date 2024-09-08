@@ -1,33 +1,33 @@
 "use client";
 import styles from "../item.module.scss";
-import "chart.js/auto";
-import "chartjs-adapter-luxon";
-import { Line } from "react-chartjs-2";
+import { Chart } from "@/util/chartjs";
+import dayjs from "dayjs";
 
-export const PriceGraph = ({ data }: { data: [Date, number][][] }) => {
-	return <div className={styles.chartContainer}>
-		<Line
-			data={{
-				datasets: [{ data: data[0].map(x => x[1]), label: "Lowest Price" }, { data: data[1].map(x => x[1]), label: "Listing Price" }],
-				labels: data[0].map(x => x[0]),
-			}}
-			options={{
-				scales: {
-					y: {
-						min: 0,
-					},
-					x: {
-						type: "time",
-						time: {
-							tooltipFormat: "DD T",
-						},
-						title: {
-							display: true,
-							text: "Date",
+export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] }) => {
+	return (
+		<div className={styles.chartContainer}>
+			<Chart
+				type="boxplot"
+				data={{
+					datasets: [
+						{ data: data.map(x => x[1]), label: "Price", backgroundColor: data.map(x => x[2]), borderColor: data.map(x => x[3]), outlierBorderColor: "#555555" },
+					],
+					labels: data.map(x => x[0]).map(x => dayjs(x).format("MMM-DD")),
+				}}
+				options={{
+					scales: {
+						y: {
+							min: 0,
 						},
 					},
-				},
-			}}
-		/>
-	</div>
+					elements: {
+						boxandwhiskers: {
+							itemRadius: 2,
+							itemHitRadius: 4,
+						},
+					},
+				}}
+			/>
+		</div>
+	);
 };
