@@ -29,7 +29,7 @@ export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] 
 					},
 					scales: {
 						y: {
-							min: min(data.flatMap(x => x[1]))
+							min: data.length ? min(data.flatMap(x => x[1])) : 0
 						}
 					}
 				}}
