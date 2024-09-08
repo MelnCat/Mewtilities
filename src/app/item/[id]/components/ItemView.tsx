@@ -22,7 +22,7 @@ const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCoun
 		const time = begin + ((end - begin) / slices) * i;
 		const valid = dateSorted.filter(x => +x.creationTime <= time && time <= +x.expiryTime);
 		const values = valid
-			//.filter((x, i, a) => a.findIndex(y => y.sellerId === x.sellerId && x.itemCount === y.itemCount && x.priceCount === y.priceCount) === i)
+			.filter((x, i, a) => a.findIndex(y => y.sellerId === x.sellerId && x.itemCount === y.itemCount && x.priceCount === y.priceCount) === i)
 			.map(x => x.priceCount / x.itemCount);
 		if (!values.length) {
 			data.push([new Date(time), [], "", ""]);

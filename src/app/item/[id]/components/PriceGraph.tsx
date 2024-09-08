@@ -2,6 +2,7 @@
 import styles from "../item.module.scss";
 import { Chart } from "@/util/chartjs";
 import dayjs from "dayjs";
+import { min } from "simple-statistics";
 
 export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] }) => {
 	return (
@@ -25,6 +26,11 @@ export const PriceGraph = ({ data }: { data: [Date, number[], string, string][] 
 							outlierHitRadius: 0,
 							meanRadius: 0
 						},
+					},
+					scales: {
+						y: {
+							min: min(data.flatMap(x => x[1]))
+						}
 					}
 				}}
 			/>
