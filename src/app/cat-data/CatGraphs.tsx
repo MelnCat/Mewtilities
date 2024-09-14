@@ -104,9 +104,9 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalWindData = Object.values(windData).reduce((l, c) => l + c.length, 0);
 	const windAlleles = calculateWindAlleles({
-		north: windData.North.length / totalWindData,
-		south: windData.South.length / totalWindData,
-		trade: windData.Trade.length / totalWindData,
+		north: windData.North?.length / totalWindData,
+		south: windData.South?.length / totalWindData,
+		trade: windData.Trade?.length / totalWindData,
 	});
 	const furData = groupBy(
 		filteredData.map(x => x.fur),
@@ -114,8 +114,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalFurData = Object.values(furData).reduce((l, c) => l + c.length, 0);
 	const furAlleles = calculateMendelianAlleles({
-		dominant: furData.Shorthair.length / totalFurData,
-		recessive: furData.Longhair.length / totalFurData,
+		dominant: furData.Shorthair?.length / totalFurData,
+		recessive: furData.Longhair?.length / totalFurData,
 	});
 	const parsed = filteredData.map(x =>
 		parseCatBio({ species: x.species, color: x.color, eyes: "neutral", pattern: x.pattern, white: x.whiteMarks, accent: x.accentColor ?? "" })
@@ -130,8 +130,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalDilutionData = Object.values(dilutionData).reduce((l, c) => l + c.length, 0);
 	const dilutionAlleles = calculateMendelianAlleles({
-		dominant: dilutionData.F.length / totalDilutionData,
-		recessive: dilutionData.D.length / totalDilutionData,
+		dominant: dilutionData.F?.length / totalDilutionData,
+		recessive: dilutionData.D?.length / totalDilutionData,
 	});
 	const densityData = Object.fromEntries(
 		Object.entries(
@@ -155,8 +155,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalPatternData = Object.values(patternData).reduce((l, c) => l + c.length, 0);
 	const patternAlleles = calculateMendelianAlleles({
-		dominant: patternData.Y.length / totalPatternData,
-		recessive: patternData.N.length / totalPatternData,
+		dominant: patternData.Y?.length / totalPatternData,
+		recessive: patternData.N?.length / totalPatternData,
 	});
 	const patternTypeData = groupBy(
 		parsed.flatMap(x => geneFromPattern(x[0].pattern)),
@@ -176,8 +176,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalWhiteData = Object.values(whiteData).reduce((l, c) => l + c.length, 0);
 	const whiteAlleles = calculateMendelianAlleles({
-		dominant: 1 - (whiteData.false.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
-		recessive: (whiteData.false.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
+		dominant: 1 - (whiteData.false?.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
+		recessive: (whiteData.false?.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
 	});
 	const whiteTypeData = groupBy(
 		filteredData.map(x => x.whiteMarks.match(/ ([a-zA-Z])\d+/)?.[1] ?? null).filter(x => x !== null),
