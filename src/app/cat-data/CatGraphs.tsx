@@ -176,8 +176,8 @@ export const CatGraphs = ({ data }: { data: Cat[] }) => {
 	);
 	const totalWhiteData = Object.values(whiteData).reduce((l, c) => l + c.length, 0);
 	const whiteAlleles = calculateMendelianAlleles({
-		dominant: 1 - (whiteData.false?.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
-		recessive: (whiteData.false?.length - adjustedWhiteNumberData[0].length) / (totalWhiteData - adjustedWhiteNumberData[0].length),
+		dominant: 1 - (whiteData.false?.length - adjustedWhiteNumberData[0]?.length) / (totalWhiteData - adjustedWhiteNumberData[0]?.length),
+		recessive: (whiteData.false?.length - adjustedWhiteNumberData[0]?.length) / (totalWhiteData - adjustedWhiteNumberData[0]?.length),
 	});
 	const whiteTypeData = groupBy(
 		filteredData.map(x => x.whiteMarks.match(/ ([a-zA-Z])\d+/)?.[1] ?? null).filter(x => x !== null),
