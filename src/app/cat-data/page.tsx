@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import styles from "./page.module.scss";
 import { CatGraphs } from "./CatGraphs";
 import prisma from "@/db/prisma";
+import { getProcessedItems } from "@/db/db";
 
 const Login = () => {
 	const submit = async(formData: FormData) => {
@@ -22,5 +23,6 @@ const Login = () => {
 export default async function Admin() {
 	const adminState = await getAdminState();
 	const catData = await prisma.cat.findMany();
-	return <main className={styles.main}>{adminState ? <CatGraphs data={catData} /> : <Login />}</main>;
+	const itemData = await getProcessedItems();
+	return <main className={styles.main}>{adminState ? <CatGraphs data={catData} items={itemData} /> : <Login />}</main>;
 }

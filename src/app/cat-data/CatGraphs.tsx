@@ -10,6 +10,7 @@ import { calculateMendelianAlleles, calculateWindAlleles } from "./util";
 import { smallNumberFormat } from "@/util/util";
 import { catSpeciesNames, densityFromColor, deserializeCatGene, dilutionFromColor, geneFromAccentColor, geneFromColor, geneFromPattern, parseCatBio } from "@/util/cat";
 import { accentNames, colorNames, patternNames } from "@/util/catData";
+import { ProcessedItem } from "@/db/db";
 
 const OccurrenceGraph = ({
 	data,
@@ -86,8 +87,9 @@ const OccurrenceGraph = ({
 	);
 };
 
-export const CatGraphs = ({ data }: { data: Cat[] }) => {
+export const CatGraphs = ({ data, items }: { data: Cat[]; items: ProcessedItem[] }) => {
 	(globalThis as any).cats = data;
+	(globalThis as any).items = items;
 	const [origin, setOrigin] = useState("Any");
 	const origins = ["Any", ...new Set(data.map(x => x.origin))];
 	const [age, setAge] = useState("Any");
