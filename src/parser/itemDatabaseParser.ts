@@ -59,7 +59,7 @@ export const parseItemDatabasePage = (content: string): Result<RawItemDatabaseEn
 			if (!hr) return failure("Custom hr missing");
 			const hrIndex = nodes.indexOf(hr);
 			if (hrIndex === -1) return failure("Custom hr index missing");
-			const text = (nodes.slice(hrIndex + 1) as HTMLElement[]).filter(x => x.nodeType !== x.ELEMENT_NODE || x.hasAttribute("href") || !x.getAttribute("href")!.includes("report")).map(x => x.textContent).join("");
+			const text = (nodes.slice(hrIndex + 1) as HTMLElement[]).filter(x => x.nodeType !== x.ELEMENT_NODE || (x.hasAttribute("href") && !x.getAttribute("href")!.includes("report"))).map(x => x.textContent).join("");
 			builder.extraText = [text];
 			const displayContainer = cube.querySelector("div[class^='custom-jail']");
 			if (!displayContainer) return failure("Display container missing");
