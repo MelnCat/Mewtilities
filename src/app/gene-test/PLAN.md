@@ -166,6 +166,8 @@ You don't
 
 ## White Marks
 
+Presence check with NN
+
 Use your eyes maybe
 
 ## White Marks (Hidden)
@@ -181,7 +183,7 @@ Test cat with a `NN10`.
 - {YN}: 50% has white
 - YY: 100% has white
 
-Test cat with a `YY4`, needs LOTS of data!!
+Test cat with a `YY4`, needs LOTS of data!! (do this if unknown number or NN0)
 - 0: You already know
 - 1: [1, 2, 3, 4]
 - 2: [2, 3, 4]
@@ -196,7 +198,7 @@ Test cat with a `YY4`, needs LOTS of data!!
 
 Maybe check with a `YY10` too?
 
-Test cat with a `YY10I` (good luck finding one).
+Test cat with a `YY10I` (good luck finding one). Or use one of the above cats
 - C: 50% C 50% I
 - P: 50% P 50% I
 - L: 50% L 50% I

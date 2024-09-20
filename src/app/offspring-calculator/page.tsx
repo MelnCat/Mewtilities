@@ -5,11 +5,7 @@ import { deserializeCatGene, getGenePhenotype, PartialCatGene } from "@/util/cat
 import { numberFormat, smallNumberFormat } from "@/util/util";
 import { groupBy, range } from "remeda";
 import Fraction from "fraction.js";
-
-interface ResultProbability {
-	result: string;
-	probability: number;
-}
+import { combineResults, calculateMendelian, composite } from "@/util/gene";
 
 const GeneTestProbability = ({ result, probability, fractions }: { result: string; probability: number; fractions: boolean }) => {
 	return (
@@ -19,24 +15,6 @@ const GeneTestProbability = ({ result, probability, fractions }: { result: strin
 	);
 };
 
-const combineResults = (results: ResultProbability[]) =>
-	Object.values(groupBy(results, x => x.result)).map(x => (x.length === 1 ? x[0] : { result: x[0].result, probability: x.reduce((l, c) => l + c.probability, 0) }));
-
-const calculateMendelian = (first: string[], second: string[], pushyNorth: 0 | 1 | null) => {
-	const values = first.flatMap(x => second.map(y => `${x}${y}`));
-	const results = combineResults(values.map(x => ({ result: x, probability: 1 / values.length })));
-	// Assumes 1% pushy north
-	return pushyNorth === null
-		? results
-		: combineResults(
-				results
-					.map(x => ({ ...x, probability: x.probability - 0.01 / results.length }))
-					.concat({ result: pushyNorth === 0 ? first[0].repeat(2) : second[0].repeat(2), probability: 0.01 / 2 })
-					.concat({ result: pushyNorth === 0 ? first[1].repeat(2) : second[1].repeat(2), probability: 0.01 / 2 })
-		  );
-};
-const composite = (...resultLists: ResultProbability[][]) =>
-	resultLists.reduce((l, c) => l.flatMap(x => c.map(y => ({ result: `${x.result}${y.result}`, probability: x.probability * y.probability }))), [{ result: "", probability: 1 }]);
 const GeneTestResults = ({
 	first,
 	second,
