@@ -10,3 +10,7 @@ export const parseItemCubeId = (element: Element | null) => {
 	if (isNaN(id)) return failure("Item id invalid");
 	return success(id);
 };
+
+export const parseCatJail = (element: Element | null) => {
+	if (!element) return failure("Missing catjail element");
+}

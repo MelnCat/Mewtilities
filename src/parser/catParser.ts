@@ -1,11 +1,12 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { Cat, Season } from "@prisma/client";
-import { readFileSync } from "fs";
+import type { Cat, Season } from "@prisma/client";
 import { HTML2BBCode } from "html2bbcode";
 import { chunk } from "remeda";
 
 export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[] };
+
+const seasons = ["SPRING", "SUMMER", "AUTUMN", "WINTER"];
 
 export const parseCatPage = (content: string): Result<RawCat> => {
 	const doc = parseDom(content);
@@ -28,13 +29,13 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 		!birthdayComponents?.[1] ||
 		!birthdayComponents?.[2] ||
 		!birthdayComponents?.[3] ||
-		!(birthdayComponents?.[1]?.toUpperCase() in Season) ||
+		!seasons.includes(birthdayComponents?.[1]?.toUpperCase()) ||
 		isNaN(+birthdayComponents?.[2]) ||
 		isNaN(+birthdayComponents?.[3])
 	)
 		return failure("Birthday text missing or invalid");
 	builder.birthYear = +birthdayComponents?.[3];
-	builder.birthSeason = Season[birthdayComponents?.[1]?.toUpperCase() as keyof typeof Season];
+	builder.birthSeason = birthdayComponents?.[1]?.toUpperCase() as Season;
 	builder.birthDay = +birthdayComponents?.[2];
 
 	const wind = findColumn("Wind");
@@ -110,7 +111,7 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 		return +data;
 	};
 
-	console.log(statBonuses)
+	console.log(statBonuses);
 	const bravery = findColumn("Bravery");
 	//if (!bravery || isNaN(+bravery)) return failure("Bravery missing");
 	builder.bravery = reverseBonus(bravery, "bravery");

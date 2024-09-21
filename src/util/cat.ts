@@ -541,3 +541,13 @@ export const geneFromAccentColor = (accentColor: string) => {
 	}
 	return [];
 };
+
+export interface CatAppearance {
+	species: CatSpecies;
+	mainColor: CatColor;
+	pattern: CatPattern;
+	tradeColor: CatColor | null; 
+	accent: CatAccent;
+	whiteNumber: number;
+	whiteType: CatWhiteType | null;
+}
