@@ -8,12 +8,12 @@ export default function GeneTestPage() {
 	const onPaste: ClipboardEventHandler<HTMLInputElement> = e => {
 		setPasted(e.clipboardData.getData("text/html"));
 	};
-	const cat = useMemo(() => pasted ? parseCatPage(pasted) : "", [pasted]);
+	const cat = useMemo(() => pasted ? parseCatPage(pasted) : null, [pasted]);
 	return (
 		<main className={styles.main}>
 			<input placeholder="paste here" onPaste={onPaste} />
 			<pre>
-				<code>{cat.ok ? JSON.stringify(cat.data, null, "\t") : cat.message}</code>
+				<code>{cat?.ok ? JSON.stringify(cat.data, null, "\t") : cat?.message}</code>
 			</pre>
 			<pre>
 				<code>{pasted}</code>
