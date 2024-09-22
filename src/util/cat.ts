@@ -634,7 +634,10 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 				? [geneFromColor(parsed.mainColor.color!), "?"]
 				: data.wind === "South"
 				? ["?", geneFromColor(parsed.mainColor.color!)]
-				: [geneFromColor(parsed.mainColor.color!), geneFromColor(parsed.tradeColor.color)],
+				: [
+						geneFromColor(parsed.mainColor.color!),
+						geneFromColor(parsed.tradeColor.color) === "?" ? geneFromColor(parsed.mainColor.color!) : geneFromColor(parsed.tradeColor.color),
+				  ],
 		dilution: dilution === "F" ? ["F", "?"] : dilution === "D" ? ["D", "D"] : ["?", "?"],
 		density: parsed.mainColor.shown ? densityFromColor(parsed.mainColor.color!) : "?",
 		pattern: parsed.mainColor.shown ? (parsed.mainColor.pattern === "solid" ? ["N", "N"] : ["Y", "?"]) : ["?", "?"],
