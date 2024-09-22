@@ -139,47 +139,49 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 		return geneFromColor(appearance.mainColor!);
 	};
 	const matchedColor = initialGuess.color.includes("?")
-		? matchProbabilities(
-				nonAlbino.map(x => getColor(x.result)),
-				nonAlbino.map(
-					x =>
-						new Map(
-							possible.color.map(y => [
-								y,
-								combineResults(
-									(matchedWind ? [...matchedWind.entries()] : [[initialGuess.wind, 1]])
-										.map(([k, v]) =>
-											calculateMendelian(k as ["O", "O"], x.tester.wind, determinePushy(k as ["O", "O"], x.tester.wind)).map(x => ({
-												...x,
-												probability: x.probability * (v as number),
-											}))
-										)
-										.flatMap(q =>
-											q.flatMap(z =>
-												calculateMendelian(y, x.tester.color, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind))
-													.map(p => {
-														const wind = getWind(z.result.split("") as ["O", "O"]);
-														return {
-															result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
-															probability: p.probability * z.probability,
-														};
-													})
-													.concat(
-														calculateMendelian(x.tester.color, y, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
+		? nonAlbino.length === 0
+			? new Map(combineResults(possible.color.map(x => ({ result: x.join(""), probability: 1 }))).map(x => [x.result.split(""), x.probability]))
+			: matchProbabilities(
+					nonAlbino.map(x => getColor(x.result)),
+					nonAlbino.map(
+						x =>
+							new Map(
+								possible.color.map(y => [
+									y,
+									combineResults(
+										(matchedWind ? [...matchedWind.entries()] : [[initialGuess.wind, 1]])
+											.map(([k, v]) =>
+												calculateMendelian(k as ["O", "O"], x.tester.wind, determinePushy(k as ["O", "O"], x.tester.wind)).map(x => ({
+													...x,
+													probability: x.probability * (v as number),
+												}))
+											)
+											.flatMap(q =>
+												q.flatMap(z =>
+													calculateMendelian(y, x.tester.color, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind))
+														.map(p => {
 															const wind = getWind(z.result.split("") as ["O", "O"]);
 															return {
 																result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
 																probability: p.probability * z.probability,
 															};
 														})
-													)
+														.concat(
+															calculateMendelian(x.tester.color, y, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
+																const wind = getWind(z.result.split("") as ["O", "O"]);
+																return {
+																	result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
+																	probability: p.probability * z.probability,
+																};
+															})
+														)
+												)
 											)
-										)
-								),
-							])
-						)
-				)
-		  )
+									),
+								])
+							)
+					)
+			  )
 		: null;
 	const matchedDilution = initialGuess.dilution.includes("?")
 		? matchGene(
@@ -190,25 +192,27 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 		: null;
 	const matchedDensity =
 		initialGuess.density === "?"
-			? matchProbabilities(
-					nonAlbino.map(x => densityFromColor(x.result.mainColor!).toString()),
-					nonAlbino.map(
-						x =>
-							new Map(
-								possible.density.map(y => {
-									const testDensity = x.tester.density as number;
-									return [
-										y,
-										combineResults(
-											[...Array(Math.abs(y - testDensity) + 1)]
-												.map((_, i) => i + Math.min(y, testDensity))
-												.map(t => ({ result: t.toString(), probability: 1 }))
-										),
-									];
-								})
-							)
-					)
-			  )
+			? nonAlbino.length === 0
+				? new Map(combineResults(possible.density.map(x => ({ result: x.toString(), probability: 1 }))).map(x => [+x.result, x.probability]))
+				: matchProbabilities(
+						nonAlbino.map(x => densityFromColor(x.result.mainColor!).toString()),
+						nonAlbino.map(
+							x =>
+								new Map(
+									possible.density.map(y => {
+										const testDensity = x.tester.density as number;
+										return [
+											y,
+											combineResults(
+												[...Array(Math.abs(y - testDensity) + 1)]
+													.map((_, i) => i + Math.min(y, testDensity))
+													.map(t => ({ result: t.toString(), probability: 1 }))
+											),
+										];
+									})
+								)
+						)
+				  )
 			: null;
 	const matchedPattern = initialGuess.pattern.includes("?")
 		? matchGene(
@@ -225,70 +229,53 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 				nonAlbino.filter(x => x.result.pattern && x.result.pattern !== "solid")
 		  )
 		: null;
-	console.log(
-		results.map(
-			x =>
-				new Map(
-					possible.white.map(y => {
-						return [
-							y,
-							combineResults(
-								calculateMendelian(y[0], x.tester.white, determinePushy(initialGuess.wind, x.tester.wind)).flatMap(p =>
-									combineResults(
-										[...Array(Math.abs(+x.tester.whiteNumber - y[1]) + 1)]
-											.map((_, i) => i + Math.min(+x.tester.whiteNumber, y[1]))
-											.map(n => ({ probability: p.probability * 1, result: p.result.includes("Y") ? n.toString() : "0" }))
-									)
-								)
-							),
-						];
-					})
-				)
-		)
-	);
 	const matchedWhite = initialGuess.white.includes("?")
-		? matchProbabilities(
-				results.map(x => (x.result.whiteNumber ?? 0).toString()),
-				results.map(
-					x =>
-						new Map(
-							possible.white.map(y => {
-								return [
-									y,
-									combineResults(
-										calculateMendelian(y[0], x.tester.white, determinePushy(initialGuess.wind, x.tester.wind)).flatMap(p =>
-											combineResults(
-												[...Array(Math.abs(+x.tester.whiteNumber - y[1]) + 1)]
-													.map((_, i) => i + Math.min(+x.tester.whiteNumber, y[1]))
-													.map(n => ({ probability: p.probability * 1, result: p.result.includes("Y") ? n.toString() : "0" }))
+		? results.length === 0
+			? new Map(combineResults(possible.white.map(x => ({ result: JSON.stringify(x), probability: 1 }))).map(x => [JSON.parse(x.result), x.probability]))
+			: matchProbabilities(
+					results.map(x => (x.result.whiteNumber ?? 0).toString()),
+					results.map(
+						x =>
+							new Map(
+								possible.white.map(y => {
+									return [
+										y,
+										combineResults(
+											calculateMendelian(y[0], x.tester.white, determinePushy(initialGuess.wind, x.tester.wind)).flatMap(p =>
+												combineResults(
+													[...Array(Math.abs(+x.tester.whiteNumber - y[1]) + 1)]
+														.map((_, i) => i + Math.min(+x.tester.whiteNumber, y[1]))
+														.map(n => ({ probability: p.probability * 1, result: p.result.includes("Y") ? n.toString() : "0" }))
+												)
 											)
-										)
-									),
-								];
-							})
-						)
-				)
-		  )
+										),
+									];
+								})
+							)
+					)
+			  )
 		: null;
 	const matchedWhiteType =
 		initialGuess.whiteType === "?"
-			? matchProbabilities(
-					results.filter(x => x.result.whiteNumber !== null).map(x => x.result.whiteType!),
-					results
-						.filter(x => x.result.whiteNumber !== null)
-						.map(
-							x =>
-								new Map(
-									possible.whiteType.map(y => [
-										y,
-										combineResults([
-											{ probability: 0.5, result: whiteTypes[y] },
-											{ probability: 0.5, result: x.tester.whiteType === "?" ? "?" : whiteTypes[x.tester.whiteType!] },
-										]),
-									])
-								)
-						)
-			  )
+			? results.filter(x => x.result.whiteNumber !== null).length === 0
+				? new Map(combineResults(possible.whiteType.map(x => ({ result: x, probability: 1 }))).map(x => [x.result, x.probability]))
+				: matchProbabilities(
+						results.filter(x => x.result.whiteNumber !== null).map(x => x.result.whiteType!),
+						results
+							.filter(x => x.result.whiteNumber !== null)
+							.map(
+								x =>
+									new Map(
+										possible.whiteType.map(y => [
+											y,
+											combineResults([
+												{ probability: 0.5, result: whiteTypes[y] },
+												{ probability: 0.5, result: x.tester.whiteType === "?" ? "?" : whiteTypes[x.tester.whiteType!] },
+											]),
+										])
+									)
+							)
+				  )
 			: null;
 	const matchedAccent = initialGuess.accent.includes("?")
 		? matchGene(

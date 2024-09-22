@@ -161,7 +161,7 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 				) : (
 					<>
 						[
-						<Bracketed type={g.unknownOrder?.dilution ? "brace" : "none"}>
+						<Bracketed type={g.unknownOrder?.pattern ? "brace" : "none"}>
 							<CatGeneContent content={g.pattern} />
 						</Bracketed>
 						<Bracketed type={g.unknownOrder?.spotting ? "brace" : "none"}>

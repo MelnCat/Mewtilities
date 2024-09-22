@@ -647,11 +647,11 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 		unknownOrder: {
 			wind: data.wind !== "Null",
 			fur: data.fur === "Shorthair",
-			dilution: dilution === "F",
-			pattern: parsed.mainColor.shown && parsed.mainColor.pattern !== "solid",
-			spotting: spotting[0] !== spotting[1],
-			white: parsed.white.shown,
-			accent: accent[0] !== accent[1],
+			dilution: dilution !== "D",
+			pattern: !parsed.mainColor.shown || parsed.mainColor.pattern !== "solid",
+			spotting: spotting[0] !== spotting[1] || spotting.every(x => x === "?"),
+			white: true,
+			accent: accent[0] !== accent[1] || accent.every(x => x === "?"),
 		},
 	};
 };
