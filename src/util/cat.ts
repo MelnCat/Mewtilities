@@ -406,14 +406,14 @@ export const getCatTextures = (p: GenePhenotype) => ({
 export const getCatTextureProperties = (p: GenePhenotype) =>
 	[
 		p.whiteNumber !== 10 && p.whiteNumber !== "?"
-			? { species: p.species, color: p.mainColor, pattern: p.pattern, shown: true }
+			? { species: p.species, color: p.mainColor!, pattern: p.pattern!, shown: true }
 			: { species: p.species, color: "-", pattern: "-", shown: false },
-		p.tradeColor !== null ? { species: p.species, color: p.tradeColor, pattern: p.pattern, shown: true } : { species: p.species, color: "-", pattern: "-", shown: false },
+		p.tradeColor !== null ? { species: p.species, color: p.tradeColor!, pattern: p.pattern!, shown: true } : { species: p.species, color: "-", pattern: "-", shown: false },
 		p.whiteNumber !== 0
 			? { species: p.species, whiteType: p.whiteType, whiteNumber: p.whiteNumber === "?" ? 10 : p.whiteNumber, shown: true }
 			: ({ species: p.species, whiteType: "-", whiteNumber: "-", shown: false } as const),
 		p.species === "m"
-			? { species: p.species, accent: p.accent, pattern: p.pattern, shown: true }
+			? { species: p.species, accent: p.accent, pattern: p.pattern!, shown: true }
 			: { species: p.species as "c" | "m", accent: "-", pattern: "-", shown: false },
 		{ eyes: "neutral", albinoType: p.whiteNumber === 10 ? p.whiteType : "-", shown: true },
 	] as const;

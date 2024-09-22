@@ -1,16 +1,10 @@
 "use client";
-import { useState, useMemo, useRef, Dispatch, SetStateAction, useEffect, useId, MouseEventHandler } from "react";
-import styles from "./page.module.scss";
-import { CatGeneDisplay } from "../components/CatGeneDisplay";
-import { CatImage, CatSheet } from "../components/CatImage";
+import { ProcessedClothing } from "@/db/db";
 import {
 	accentTypeList,
-	CatColor,
 	catColorList,
 	catEyes,
-	CatEyes,
 	catEyesNames,
-	CatPattern,
 	catPatternList,
 	catSpeciesList,
 	catSpeciesNames,
@@ -21,20 +15,20 @@ import {
 	parseCatBio,
 	PartialCatGene,
 	randomCatGene,
-	serializeCatGene,
-	textureFromGene,
-	whiteTypeList,
+	whiteTypeList
 } from "@/util/cat";
-import Select, { createFilter } from "react-windowed-select";
-import { randomInteger, sample } from "remeda";
-import { pceLink, sampleRandom } from "@/util/util";
 import { accentNames, colorNames, patternNames, whiteTypeKeys } from "@/util/catData";
-import { ProcessedClothing } from "@/db/db";
-import { Reorder } from "framer-motion";
-import useSWR from "swr";
 import { blobToBase64, downloadFile } from "@/util/downloadFile";
-import { ItemImage } from "../components/ItemImage";
+import { pceLink, sampleRandom } from "@/util/util";
 import { showOpenFilePicker } from "file-system-access";
+import { Reorder } from "framer-motion";
+import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useId, useMemo, useState } from "react";
+import Select, { createFilter } from "react-windowed-select";
+import { randomInteger } from "remeda";
+import useSWR from "swr";
+import { CatSheet } from "../components/CatImage";
+import { ItemImage } from "../components/ItemImage";
+import styles from "./page.module.scss";
 
 const EditorLayer = <T extends { shown: boolean }>({
 	layer,
