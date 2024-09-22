@@ -32,7 +32,7 @@ const GeneTestResults = ({
 }) => {
 	const species = first.species === second.species ? [{ result: first.species, probability: 1 }] : [first.species, second.species].map(x => ({ result: x, probability: 0.5 }));
 	const mendelian = ignoreOrder
-		? (first: string[], second: string[], pushyNorth: 0 | 1 | null) =>
+		? (first: readonly string[], second: readonly string[], pushyNorth: 0 | 1 | null) =>
 				combineResults(
 					calculateMendelian(first, second, pushyNorth).map(x => ({ result: [...x.result].sort((a, b) => a.localeCompare(b)).join(""), probability: x.probability }))
 				)

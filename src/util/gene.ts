@@ -29,7 +29,7 @@ export const composite = <T extends string>(...resultLists: readonly ResultProba
 	resultLists.reduce((l, c) => l.flatMap(x => c.map(y => ({ result: `${x.result}${y.result}`, probability: x.probability * y.probability }))), [{ result: "", probability: 1 }]);
 
 export const matchProbabilities = <T extends string, K>(outputs: readonly T[], probabilities: Map<K, readonly ResultProbability<T>[]>[]) => {
-	const firstKeys = probabilities[0].keys();
+	const firstKeys = [...probabilities[0].keys()];
 	const total = firstKeys.map(x => probabilities.reduce((l, c, i) => l * (c.get(x)?.find(y => y.result === outputs[i])?.probability ?? 0), 1)).reduce((l, c) => l + c, 0);
 	const results: Map<K, number> = new Map();
 	for (const [i, output] of outputs.entries()) {
@@ -38,7 +38,7 @@ export const matchProbabilities = <T extends string, K>(outputs: readonly T[], p
 			if (i === 0) results.set(k, probability);
 			else if (results.has(k)) results.set(k, results.get(k)! * probability);
 		}
-		for (const k of results.keys().filter(x => !probabilities[i].has(x))) results.delete(k);
+		for (const k of [...results.keys()].filter(x => !probabilities[i].has(x))) results.delete(k);
 	}
 	return new Map([...results.entries()].filter(x => x[1] !== 0).map(x => [x[0], (x[1] as number) / total]));
 };
