@@ -122,9 +122,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "Color",
 					content: (
 						<>
-							{p.tradeColor
+							{p.tradeColor && p.mainColor
 								? `${colorNames[p.mainColor]}-${colorNames[p.tradeColor]} ${g.color.every(x => x === g.color[0]) ? "Watercolor" : "Tortoiseshell"}`
-								: colorNames[p.mainColor]}
+								: p.mainColor ? colorNames[p.mainColor] : "Unknown"}
 							<CatImage gene={g} layer={[0, 1]} />
 						</>
 					),
@@ -145,7 +145,7 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "Pattern",
 					content: (
 						<>
-							{patternNames[p.pattern]}
+							{p.pattern ? patternNames[p.pattern] : "Unknown"}
 							<CatImage gene={g} layer={[0, 1]} />
 						</>
 					),

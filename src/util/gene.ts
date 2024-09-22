@@ -1,14 +1,16 @@
 import { groupBy } from "remeda";
-import { CatAppearance, deserializeCatGene, geneFromColor, PartialCatGene, possibleGenes } from "./cat";
+import { accents, CatAppearance, catPatterns, densityFromColor, dilutionFromColor, geneFromColor, getGenePhenotype, PartialCatGene, possibleGenes, whiteTypes } from "./cat";
 
-export interface ResultProbability<T = string> {
+export interface ResultProbability<T extends string> {
 	result: T;
 	probability: number;
 }
 
-export const combineResults = (results: readonly ResultProbability[]) => {
+export const combineResults = <T extends string>(results: readonly ResultProbability<T>[]) => {
 	const total = results.map(x => x.probability).reduce((l, c) => l + c, 0);
-	return Object.values(groupBy(results, x => x.result)).map(x => (x.length === 1 ? x[0] : { result: x[0].result, probability: x.reduce((l, c) => l + c.probability, 0) / total }))
+	return (Object.values(groupBy(results, x => x.result)) as ResultProbability<T>[][]).map(x =>
+		x.length === 1 ? { result: x[0].result, probability: x[0].probability / total } : { result: x[0].result, probability: x.reduce((l, c) => l + c.probability, 0) / total }
+	);
 };
 export const calculateMendelian = (first: readonly string[], second: readonly string[], pushyNorth: 0 | 1 | null) => {
 	const values = first.flatMap(x => second.map(y => `${x}${y}`));
@@ -23,10 +25,10 @@ export const calculateMendelian = (first: readonly string[], second: readonly st
 					.concat({ result: pushyNorth === 0 ? first[1].repeat(2) : second[1].repeat(2), probability: 0.01 / 2 })
 		  );
 };
-export const composite = (...resultLists: readonly ResultProbability[][]) =>
+export const composite = <T extends string>(...resultLists: readonly ResultProbability<T>[][]) =>
 	resultLists.reduce((l, c) => l.flatMap(x => c.map(y => ({ result: `${x.result}${y.result}`, probability: x.probability * y.probability }))), [{ result: "", probability: 1 }]);
 
-export const matchProbabilities = <T, K>(outputs: readonly T[], probabilities: Map<K, readonly ResultProbability<T>[]>[]) => {
+export const matchProbabilities = <T extends string, K>(outputs: readonly T[], probabilities: Map<K, readonly ResultProbability<T>[]>[]) => {
 	const firstKeys = probabilities[0].keys();
 	const total = firstKeys.map(x => probabilities.reduce((l, c, i) => l * (c.get(x)?.find(y => y.result === outputs[i])?.probability ?? 0), 1)).reduce((l, c) => l + c, 0);
 	const results: Map<K, number> = new Map();
@@ -82,19 +84,22 @@ const determinePushy = (first: PartialCatGene["wind"], second: PartialCatGene["w
 
 export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { result: CatAppearance; tester: PartialCatGene }[]) => {
 	const possible = possibleGenes(initialGuess);
-	const nonAlbino = results.filter(x => x.result.whiteNumber !== 10);
+	const nonAlbino = results.filter(x => x.result.whiteNumber !== 10 && x.result.mainColor && x.result.mainColor !== "snow");
 	const matchGene = <T extends string>(
-		albino: boolean,
 		key: keyof ReturnType<typeof possibleGenes>,
 		appearanceMapper: (appearance: CatAppearance) => T,
-		resultMapper: (gene: string) => T
+		resultMapper: (gene: string) => T,
+		source = nonAlbino
 	) => {
+		const value = possible[key];
+		if (!(value instanceof Array)) return null;
+		if (source.length === 0) return new Map(value.map(x => [x, 1 / value.length]));
 		return matchProbabilities(
-			(albino ? results : nonAlbino).map(x => appearanceMapper(x.result)),
-			(albino ? results : nonAlbino).map(
+			source.map(x => appearanceMapper(x.result)),
+			source.map(
 				x =>
 					new Map(
-						possible[key].map(y => [
+						value.map(y => [
 							y,
 							combineResults(
 								calculateMendelian(
@@ -107,13 +112,12 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 								}))
 							),
 						])
-					)
+					) as Map<unknown, readonly ResultProbability<T>[]>
 			)
 		);
 	};
 	const matchedWind = initialGuess.wind.includes("?")
 		? matchGene(
-				false,
 				"wind",
 				x => (x.tradeColor ? "Trade" : x.mainColor === "snow" ? "Null" : "NorthSouth"),
 				z => (z === "NS" || z === "SN" ? "Trade" : z === "OO" ? "Null" : "NorthSouth")
@@ -121,15 +125,22 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 		: null;
 	const matchedFur = initialGuess.fur.includes("?")
 		? matchGene(
-				true,
 				"fur",
 				x => (x.pose.includes("shorthair") ? "Shorthair" : "Longhair"),
-				x => (x === "LL" ? "Longhair" : "Shorthair")
+				x => (x === "LL" ? "Longhair" : "Shorthair"),
+				results
 		  )
 		: null;
+	const getColor = (appearance: CatAppearance) => {
+		if (appearance.tradeColor) {
+			if (appearance.tradeColor === "snow") return geneFromColor(appearance.mainColor!).repeat(2);
+			return `${geneFromColor(appearance.mainColor!)}${geneFromColor(appearance.tradeColor)}`;
+		}
+		return geneFromColor(appearance.mainColor!);
+	};
 	const matchedColor = initialGuess.color.includes("?")
 		? matchProbabilities(
-				nonAlbino.map(x => (x.result.tradeColor ? `${geneFromColor(x.result.mainColor)}${geneFromColor(x.result.tradeColor)}` : geneFromColor(x.result.mainColor))),
+				nonAlbino.map(x => getColor(x.result)),
 				nonAlbino.map(
 					x =>
 						new Map(
@@ -145,19 +156,23 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 										)
 										.flatMap(q =>
 											q.flatMap(z =>
-												calculateMendelian(y, x.tester.color, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
-													const wind = getWind(z.result.split("") as ["O", "O"]);
-													return {
-														result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
-														probability: p.probability * z.probability,
-													};
-												}).concat(calculateMendelian(x.tester.color, y, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
-													const wind = getWind(z.result.split("") as ["O", "O"]);
-													return {
-														result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
-														probability: p.probability * z.probability,
-													};
-												}))
+												calculateMendelian(y, x.tester.color, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind))
+													.map(p => {
+														const wind = getWind(z.result.split("") as ["O", "O"]);
+														return {
+															result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
+															probability: p.probability * z.probability,
+														};
+													})
+													.concat(
+														calculateMendelian(x.tester.color, y, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
+															const wind = getWind(z.result.split("") as ["O", "O"]);
+															return {
+																result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
+																probability: p.probability * z.probability,
+															};
+														})
+													)
 											)
 										)
 								),
@@ -166,5 +181,133 @@ export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { r
 				)
 		  )
 		: null;
-	return matchedFur;
+	const matchedDilution = initialGuess.dilution.includes("?")
+		? matchGene(
+				"dilution",
+				x => dilutionFromColor(x.mainColor!),
+				x => (x === "DD" ? "D" : "F")
+		  )
+		: null;
+	const matchedDensity =
+		initialGuess.density === "?"
+			? matchProbabilities(
+					nonAlbino.map(x => densityFromColor(x.result.mainColor!).toString()),
+					nonAlbino.map(
+						x =>
+							new Map(
+								possible.density.map(y => {
+									const testDensity = x.tester.density as number;
+									return [
+										y,
+										combineResults(
+											[...Array(Math.abs(y - testDensity) + 1)]
+												.map((_, i) => i + Math.min(y, testDensity))
+												.map(t => ({ result: t.toString(), probability: 1 }))
+										),
+									];
+								})
+							)
+					)
+			  )
+			: null;
+	const matchedPattern = initialGuess.pattern.includes("?")
+		? matchGene(
+				"pattern",
+				x => (x.pattern === "solid" ? "N" : "Y"),
+				x => (x.includes("Y") ? "Y" : "N")
+		  )
+		: null;
+	const matchedSpotting = initialGuess.spotting.includes("?")
+		? matchGene(
+				"spotting",
+				x => x.pattern!,
+				x => catPatterns[x[0] as keyof typeof catPatterns][x[1] as keyof typeof catPatterns],
+				nonAlbino.filter(x => x.result.pattern && x.result.pattern !== "solid")
+		  )
+		: null;
+	console.log(
+		results.map(
+			x =>
+				new Map(
+					possible.white.map(y => {
+						return [
+							y,
+							combineResults(
+								calculateMendelian(y[0], x.tester.white, determinePushy(initialGuess.wind, x.tester.wind)).flatMap(p =>
+									combineResults(
+										[...Array(Math.abs(+x.tester.whiteNumber - y[1]) + 1)]
+											.map((_, i) => i + Math.min(+x.tester.whiteNumber, y[1]))
+											.map(n => ({ probability: p.probability * 1, result: p.result.includes("Y") ? n.toString() : "0" }))
+									)
+								)
+							),
+						];
+					})
+				)
+		)
+	);
+	const matchedWhite = initialGuess.white.includes("?")
+		? matchProbabilities(
+				results.map(x => (x.result.whiteNumber ?? 0).toString()),
+				results.map(
+					x =>
+						new Map(
+							possible.white.map(y => {
+								return [
+									y,
+									combineResults(
+										calculateMendelian(y[0], x.tester.white, determinePushy(initialGuess.wind, x.tester.wind)).flatMap(p =>
+											combineResults(
+												[...Array(Math.abs(+x.tester.whiteNumber - y[1]) + 1)]
+													.map((_, i) => i + Math.min(+x.tester.whiteNumber, y[1]))
+													.map(n => ({ probability: p.probability * 1, result: p.result.includes("Y") ? n.toString() : "0" }))
+											)
+										)
+									),
+								];
+							})
+						)
+				)
+		  )
+		: null;
+	const matchedWhiteType =
+		initialGuess.whiteType === "?"
+			? matchProbabilities(
+					results.filter(x => x.result.whiteNumber !== null).map(x => x.result.whiteType!),
+					results
+						.filter(x => x.result.whiteNumber !== null)
+						.map(
+							x =>
+								new Map(
+									possible.whiteType.map(y => [
+										y,
+										combineResults([
+											{ probability: 0.5, result: whiteTypes[y] },
+											{ probability: 0.5, result: x.tester.whiteType === "?" ? "?" : whiteTypes[x.tester.whiteType!] },
+										]),
+									])
+								)
+						)
+			  )
+			: null;
+	const matchedAccent = initialGuess.accent.includes("?")
+		? matchGene(
+				"accent",
+				x => x.accent,
+				x => accents[x[0] as keyof typeof accents][x[1] as keyof typeof accents],
+				results.filter(x => x.result.accent)
+		  )
+		: null;
+	return {
+		wind: matchedWind,
+		fur: matchedFur,
+		color: matchedColor,
+		dilution: matchedDilution,
+		density: matchedDensity,
+		pattern: matchedPattern,
+		spotting: matchedSpotting,
+		white: matchedWhite,
+		whiteType: matchedWhiteType,
+		accent: matchedAccent,
+	};
 };

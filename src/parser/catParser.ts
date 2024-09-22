@@ -111,7 +111,6 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 		return +data;
 	};
 
-	console.log(statBonuses);
 	const bravery = findColumn("Bravery");
 	//if (!bravery || isNaN(+bravery)) return failure("Bravery missing");
 	builder.bravery = reverseBonus(bravery, "bravery");

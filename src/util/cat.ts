@@ -253,7 +253,7 @@ const catColors = {
 
 export const catColorList = [...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x))))] as CatColor[];
 
-const catPatterns = {
+export const catPatterns = {
 	T: { T: "mackerel", M: "classic", S: "broken", P: "lynxpoint" },
 	M: { T: "classic", M: "clouded", S: "rosette", P: "cloudpoint" },
 	S: { T: "broken", M: "rosette", S: "spotted", P: "mink" },
@@ -267,7 +267,7 @@ export type CatSpecies = "c" | "m";
 export const catSpeciesList: CatSpecies[] = ["c", "m"];
 export const catSpeciesNames = { c: "Not-Cat", m: "Mercat" };
 
-const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
+export const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
 	I: "inverse",
 	R: "right",
 	L: "left",
@@ -277,7 +277,7 @@ const whiteTypes: Record<z.TypeOf<typeof whitePatternType>, CatWhiteType> = {
 
 export const whiteTypeList = Object.values(whiteTypes) as CatWhiteType[];
 
-const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accentType>, CatAccent>> = {
+export const accents: Record<z.TypeOf<typeof accentType>, Record<z.TypeOf<typeof accentType>, CatAccent>> = {
 	B: { B: "blue", L: "indigo", R: "violet", Y: "green" },
 	L: { B: "indigo", L: "black", R: "pink", Y: "teal" },
 	R: { B: "violet", L: "pink", R: "ruby", Y: "amber" },
@@ -337,9 +337,9 @@ export const randomCatTexture = (species: "C" | "M" = "C") => {
 export interface GenePhenotype {
 	wind: "North" | "South" | "Null" | "Trade";
 	fur: "shorthair" | "longhair";
-	mainColor: CatColor;
+	mainColor: CatColor | null;
 	tradeColor: CatColor | null;
-	pattern: CatPattern;
+	pattern: CatPattern | null;
 	accent: CatAccent | "?";
 	whiteType: CatWhiteType | "?";
 	whiteNumber: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | "?";
@@ -360,6 +360,7 @@ export const getGenePhenotype = (gene: PartialCatGene): GenePhenotype => {
 	const fur = gene.fur.includes("S") ? "shorthair" : "longhair";
 
 	const mainColor = (() => {
+		if (gene.color.every(x => x === "?")) return null;
 		if (wind === "Null") return "snow";
 		const g = gene as PartialCatGene;
 		const dilution = g.dilution.includes("F") ? "F" : "D";
@@ -367,6 +368,7 @@ export const getGenePhenotype = (gene: PartialCatGene): GenePhenotype => {
 		else return catColors[g.color[1] === "?" ? (g.color[0] as "O") : g.color[1]][dilution as "F"][g.density as 1];
 	})();
 	const tradeColor = (() => {
+		if (gene.color.every(x => x === "?")) return null;
 		if (wind !== "Trade") return null;
 		const g = gene as PartialCatGene;
 		const dilution = g.dilution.includes("F") ? "F" : "D";
@@ -375,6 +377,7 @@ export const getGenePhenotype = (gene: PartialCatGene): GenePhenotype => {
 	})();
 
 	const pattern = (() => {
+		if (gene.pattern.every(x => x === "?")) return null;
 		if (!gene.pattern.includes("Y") || gene.spotting[0] === "?" || gene.spotting[1] === "?") return "solid";
 		return catPatterns[gene.spotting[0]][gene.spotting[1]];
 	})();
@@ -586,11 +589,11 @@ export const geneFromAccentColor = (accentColor: string): ["L" | "R" | "B" | "Y"
 
 export interface CatAppearance {
 	species: CatSpecies;
-	mainColor: CatColor;
-	pattern: CatPattern;
+	mainColor: CatColor | null;
+	pattern: CatPattern | null;
 	tradeColor: CatColor | null;
 	accent: CatAccent;
-	whiteNumber: number;
+	whiteNumber: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | null;
 	whiteType: CatWhiteType | null;
 	pose: string;
 }
@@ -605,8 +608,8 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 		white: data.whiteMarks,
 		accent: data.accentColor ?? "-hidden-",
 	});
-	const dilution = parsed.mainColor.shown ? dilutionFromColor(parsed.mainColor.color) : "?";
-	const spotting = parsed.mainColor.shown ? geneFromPattern(parsed.mainColor.pattern) : (["?", "?"] as const);
+	const dilution = parsed.mainColor.shown ? dilutionFromColor(parsed.mainColor.color!) : "?";
+	const spotting = parsed.mainColor.shown ? geneFromPattern(parsed.mainColor.pattern!) : (["?", "?"] as const);
 	const accent = parsed.accent.shown ? geneFromAccentColor(parsed.accent.accent) : (["?", "?"] as const);
 	return {
 		species: ({ c: "C", m: "M" } as const)[parsed.mainColor.shown ? parsed.mainColor.species : parsed.white.species],
@@ -628,12 +631,12 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 			data.wind === "Null" || !parsed.mainColor.shown
 				? ["?", "?"]
 				: data.wind === "North"
-				? [geneFromColor(parsed.mainColor.color), "?"]
+				? [geneFromColor(parsed.mainColor.color!), "?"]
 				: data.wind === "South"
-				? ["?", geneFromColor(parsed.mainColor.color)]
-				: [geneFromColor(parsed.mainColor.color), geneFromColor(parsed.tradeColor.color)],
+				? ["?", geneFromColor(parsed.mainColor.color!)]
+				: [geneFromColor(parsed.mainColor.color!), geneFromColor(parsed.tradeColor.color)],
 		dilution: dilution === "F" ? ["F", "?"] : dilution === "D" ? ["D", "D"] : ["?", "?"],
-		density: parsed.mainColor.shown ? densityFromColor(parsed.mainColor.color) : "?",
+		density: parsed.mainColor.shown ? densityFromColor(parsed.mainColor.color!) : "?",
 		pattern: parsed.mainColor.shown ? (parsed.mainColor.pattern === "solid" ? ["N", "N"] : ["Y", "?"]) : ["?", "?"],
 		spotting,
 		white: parsed.white.shown ? ["Y", "?"] : ["?", "?"], // it could be from 0
@@ -652,8 +655,20 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 		},
 	};
 };
+export interface PossibleGenes {
+	wind: readonly ["N" | "S" | "O", "N" | "S" | "O"][];
+	fur: readonly ["S" | "L", "S" | "L"][];
+	color: readonly ["O" | "B", "O" | "B"][];
+	dilution: readonly ["F" | "D", "F" | "D"][];
+	density: readonly (1 | 2 | 3 | 4)[];
+	pattern: readonly ["Y" | "N", "Y" | "N"][];
+	spotting: readonly ["T" | "M" | "S" | "P", "T" | "M" | "S" | "P"][];
+	white: readonly [["Y" | "N", "Y" | "N"], 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10][];
+	whiteType: readonly ("C" | "P" | "L" | "R" | "I")[];
+	accent: readonly ["B" | "L" | "R" | "Y", "B" | "L" | "R" | "Y"][];
+}
 
-export const possibleGenes = (gene: PartialCatGene) => {
+export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 	return {
 		wind: (gene.wind.includes("?")
 			? [gene.wind.map(x => (x === "?" ? "O" : x)), gene.wind.map(x => (x === "?" ? gene.wind.find(x => x !== "?")! : x))]
@@ -685,6 +700,16 @@ export const possibleGenes = (gene: PartialCatGene) => {
 					["P", "P"],
 			  ]
 			: [gene.spotting],
+		white: gene.white.every(x => x === "?")
+			? [
+					["Y", "N"],
+					["Y", "Y"],
+			  ]
+					.map(x => [x, 0])
+					.concat([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(x => [["N", "N"], x]))
+			: gene.white.includes("?")
+			? [gene.white.map(x => (x === "?" ? "Y" : x)), gene.white.map(x => (x === "?" ? "N" : x))].map(x => [x, gene.whiteNumber])
+			: [[gene.white, gene.whiteNumber]],
 		whiteNumber: gene.whiteNumber === "?" ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [gene.whiteNumber],
 		whiteType: gene.whiteType === "?" ? ["C", "P", "L", "R", "I"] : [gene.whiteType],
 		accent: gene.accent.every(x => x === "?")
@@ -701,5 +726,5 @@ export const possibleGenes = (gene: PartialCatGene) => {
 					["Y", "Y"],
 			  ]
 			: [gene.accent],
-	};
+	} as unknown as PossibleGenes;
 };

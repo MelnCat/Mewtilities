@@ -125,7 +125,7 @@ export const CatGraphs = ({ data, items }: { data: Cat[]; items: ProcessedItem[]
 	const dilutionData = Object.fromEntries(
 		Object.entries(
 			groupBy(
-				parsed.map(x => dilutionFromColor(x[0].color)),
+				parsed.filter(x => x[0].color).map(x => dilutionFromColor(x[0].color!)),
 				x => x
 			)
 		).filter(x => x[0] !== "?")
@@ -138,7 +138,7 @@ export const CatGraphs = ({ data, items }: { data: Cat[]; items: ProcessedItem[]
 	const densityData = Object.fromEntries(
 		Object.entries(
 			groupBy(
-				parsed.map(x => densityFromColor(x[0].color)),
+				parsed.filter(x => x[0].color).map(x => densityFromColor(x[0].color!)),
 				x => x
 			)
 		).filter(x => x[0] !== "?")
@@ -161,7 +161,7 @@ export const CatGraphs = ({ data, items }: { data: Cat[]; items: ProcessedItem[]
 		recessive: patternData.N?.length / totalPatternData,
 	});
 	const patternTypeData = groupBy(
-		parsed.flatMap(x => geneFromPattern(x[0].pattern)),
+		parsed.filter(x => x[0].pattern).flatMap(x => geneFromPattern(x[0].pattern!)),
 		x => x
 	);
 	const totalPatternTypeData = Object.values(patternTypeData).reduce((l, c) => l + c.length, 0);
@@ -351,9 +351,9 @@ export const CatGraphs = ({ data, items }: { data: Cat[]; items: ProcessedItem[]
 					order={Object.values(colorNames).concat("?")}
 					name="Main Color"
 				/>
-				<OccurrenceGraph percentage={percentage} data={parsed.map(x => geneFromColor(x[0].color) ?? "?")} name="Main Color Shade" />
-				<OccurrenceGraph percentage={percentage} data={parsed.map(x => dilutionFromColor(x[0].color) ?? "?")} name="Main Color Dilution" />
-				<OccurrenceGraph percentage={percentage} data={parsed.map(x => densityFromColor(x[0].color) ?? "?")} name="Main Color Density" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => ((x[0].color ? geneFromColor(x[0].color) : "?") ?? "?"))} name="Main Color Shade" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => ((x[0].color ? dilutionFromColor(x[0].color) : "?") ?? "?"))} name="Main Color Dilution" />
+				<OccurrenceGraph percentage={percentage} data={parsed.map(x => ((x[0].color ? densityFromColor(x[0].color) : "?") ?? "?"))} name="Main Color Density" />
 				<OccurrenceGraph
 					horizontal
 					percentage={percentage}
