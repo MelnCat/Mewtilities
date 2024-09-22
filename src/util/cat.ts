@@ -5,6 +5,7 @@ import offsets from "./catOffsets.json";
 import { regex } from "regex";
 import { failure, success } from "./result";
 import { accentNames, colorNames, patternNames } from "./catData";
+import type { Cat } from "@prisma/client";
 
 export const offsetList = Object.entries(offsets).flatMap(([k, v]) =>
 	Object.entries(v).flatMap(([n, l]) => Object.entries(l).flatMap(([m, q]) => Object.entries(q).flatMap(([key, data]) => ({ position: data, key: [k, n, m, key].join("_") }))))
@@ -42,44 +43,51 @@ const optional = <T>(type: z.ZodType<T>) => {
 
 export const catGeneSchema = z.object({
 	species: speciesType,
-	wind: z.tuple([windType, windType]),
-	fur: z.tuple([furType, furType]),
-	color: z.tuple([colorType, colorType]),
-	dilution: z.tuple([dilutionType, dilutionType]),
+	wind: z.tuple([windType, windType]).readonly(),
+	fur: z.tuple([furType, furType]).readonly(),
+	color: z.tuple([colorType, colorType]).readonly(),
+	dilution: z.tuple([dilutionType, dilutionType]).readonly(),
 	density: density,
-	pattern: z.tuple([patternType, patternType]),
-	spotting: z.tuple([spottingType, spottingType]),
-	white: z.tuple([whiteType, whiteType]),
+	pattern: z.tuple([patternType, patternType]).readonly(),
+	spotting: z.tuple([spottingType, spottingType]).readonly(),
+	white: z.tuple([whiteType, whiteType]).readonly(),
 	whiteNumber: whiteNumberType,
 	whiteType: whitePatternType,
-	accent: z.tuple([accentType, accentType]),
-	growth: z.tuple([growthType, growthType]),
+	accent: z.tuple([accentType, accentType]).readonly(),
+	growth: z.tuple([growthType, growthType]).readonly(),
 });
 
-export type CatGene = z.TypeOf<typeof catGeneSchema>;
+export type CatGene = Readonly<z.TypeOf<typeof catGeneSchema>>;
 
-const coloredPartialCatGeneSchema = catGeneSchema.extend({
-	wind: z.tuple([windType, z.union([windType, unknownType])]),
-	fur: z.tuple([furType, optional(furType)]),
-	pattern: z.tuple([patternType, optional(patternType)]),
-	white: z.tuple([whiteType, optional(whiteType)]),
+const partialCatGeneSchema = catGeneSchema.extend({
+	wind: z.tuple([windType, z.union([windType, unknownType])]).readonly(),
+	fur: z.tuple([furType, optional(furType)]).readonly(),
+	pattern: z.tuple([optional(patternType), optional(patternType)]).readonly(),
+	color: z.tuple([optional(colorType), optional(colorType)]).readonly(),
+	dilution: z.tuple([optional(dilutionType), optional(dilutionType)]).readonly(),
+	density: optional(density),
+	spotting: z.tuple([optional(spottingType), optional(spottingType)]).readonly(),
+	white: z.tuple([optional(whiteType), optional(whiteType)]).readonly(),
 	whiteNumber: optional(whiteNumberType),
 	whiteType: optional(whitePatternType),
-	growth: z.tuple([optional(growthType), optional(growthType)]),
-	accent: z.tuple([optional(accentType), optional(accentType)]),
+	growth: z.tuple([optional(growthType), optional(growthType)]).readonly(),
+	accent: z.tuple([optional(accentType), optional(accentType)]).readonly(),
+	unknownOrder: z
+		.object({
+			wind: z.boolean().optional(),
+			fur: z.boolean().optional(),
+			color: z.boolean().optional(),
+			dilution: z.boolean().optional(),
+			pattern: z.boolean().optional(),
+			spotting: z.boolean().optional(),
+			white: z.boolean().optional(),
+			growth: z.boolean().optional(),
+			accent: z.boolean().optional(),
+		})
+		.readonly()
+		.optional(),
 });
 
-export const partialCatGeneSchema = z.union([
-	coloredPartialCatGeneSchema,
-	coloredPartialCatGeneSchema.extend({
-		color: z.tuple([unknownType, unknownType]),
-		dilution: z.tuple([unknownType, unknownType]),
-		density: unknownType,
-		wind: z.tuple([z.literal("O"), z.literal("O")]),
-	}),
-]);
-
-export type ColoredPartialCatGene = z.TypeOf<typeof coloredPartialCatGeneSchema>;
 export type PartialCatGene = z.TypeOf<typeof partialCatGeneSchema>;
 
 export const randomCatGene = (species: "C" | "M" = R.sample(["C", "M"] as const, 1)[0]): CatGene => {
@@ -255,7 +263,7 @@ const catPatterns = {
 export const catPatternList = ["solid" as CatPattern].concat([...new Set(Object.values(catPatterns).flatMap(x => Object.values(x)))] as CatPattern[]);
 
 export type CatSpecies = "c" | "m";
-8;
+
 export const catSpeciesList: CatSpecies[] = ["c", "m"];
 export const catSpeciesNames = { c: "Not-Cat", m: "Mercat" };
 
@@ -353,21 +361,21 @@ export const getGenePhenotype = (gene: PartialCatGene): GenePhenotype => {
 
 	const mainColor = (() => {
 		if (wind === "Null") return "snow";
-		const g = gene as ColoredPartialCatGene;
+		const g = gene as PartialCatGene;
 		const dilution = g.dilution.includes("F") ? "F" : "D";
-		if (wind === "North" || wind === "Trade") return catColors[g.color[0]][dilution][g.density];
-		else return catColors[g.color[1]][dilution][g.density];
+		if (wind === "North" || wind === "Trade") return catColors[g.color[0] === "?" ? (g.color[1] as "O") : g.color[0]][dilution as "F"][g.density as 1];
+		else return catColors[g.color[1] === "?" ? (g.color[0] as "O") : g.color[1]][dilution as "F"][g.density as 1];
 	})();
 	const tradeColor = (() => {
 		if (wind !== "Trade") return null;
-		const g = gene as ColoredPartialCatGene;
+		const g = gene as PartialCatGene;
 		const dilution = g.dilution.includes("F") ? "F" : "D";
-		if (g.color[0] === g.color[1]) return catColors[g.color[0]][dilution][(g.density - 1) as 0 | 1 | 2 | 3 | 4];
-		else return catColors[g.color[1]][dilution][g.density];
+		if (g.color[0] === g.color[1]) return catColors[g.color[0] as "O"][dilution][((g.density as 1) - 1) as 0 | 1 | 2 | 3 | 4];
+		else return catColors[g.color[1] as "O"][dilution][g.density as 1];
 	})();
 
 	const pattern = (() => {
-		if (!gene.pattern.includes("Y")) return "solid";
+		if (!gene.pattern.includes("Y") || gene.spotting[0] === "?" || gene.spotting[1] === "?") return "solid";
 		return catPatterns[gene.spotting[0]][gene.spotting[1]];
 	})();
 
@@ -439,28 +447,30 @@ export const textureFromGene = (age: "adult" | "kitten" | "bean", pose: "upsided
 export const serializeCatGene = (gene: PartialCatGene, formatted: boolean = false) => {
 	const components = [
 		gene.species,
-		gene.wind,
-		gene.fur,
-		[...gene.color, ...gene.dilution, gene.density],
-		[...gene.pattern, ...gene.spotting],
-		[...gene.white, gene.whiteNumber, gene.whiteType],
-		gene.growth,
-		gene.accent,
+		gene.unknownOrder?.wind ? `{${gene.wind.join("")}}` : gene.wind,
+		gene.unknownOrder?.fur ? `{${gene.fur.join("")}}` : gene.fur,
+		[...(gene.unknownOrder?.color ? `{${gene.color.join("")}}` : gene.color), ...(gene.unknownOrder?.dilution ? `{${gene.dilution.join("")}}` : gene.dilution), gene.density],
+		gene.unknownOrder?.pattern && gene.unknownOrder?.spotting
+			? `{${gene.pattern.join("")}${gene.spotting.join("")}}`
+			: [...(gene.unknownOrder?.pattern ? `{${gene.pattern.join("")}}` : gene.pattern), ...(gene.unknownOrder?.spotting ? `{${gene.spotting.join("")}}` : gene.spotting)],
+		[...(gene.unknownOrder?.white ? `{${gene.white.join("")}}` : gene.white), gene.whiteNumber, gene.whiteType],
+		gene.unknownOrder?.growth ? `{${gene.growth.join("")}}` : gene.growth,
+		gene.unknownOrder?.accent ? `{${gene.accent.join("")}}` : gene.accent,
 	].map(x => (x instanceof Array ? x.join("") : x));
 
-	if (formatted) return components.map(x => `[${x}]`).join(" ");
+	if (formatted) return components.map(x => x.startsWith("{") && x.endsWith("}") ? x : `[${x}]`).join(" ");
 	return components.join("");
 };
 
 const geneRegex = regex`
 	\[?\s*(?<species>[CM])\s*\]?\s*
-	\[?\s*(?<wind>[NSO?]{2})\s*\]?\s*
-	\[?\s*(?<fur>[SL?]{2})\s*\]?\s*
-	\[?\s*(?<color>[BO?]{2})(?<dilution>[FD?]{2})(?<density>[1234?])\s*\]?\s*
-	\[?\s*(?<pattern>[YN?]{2})(?<spotting>[TMSP]{2})\s*\]?\s*
-	\[?\s*(?<white>[YN?]{2})(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRI])\s*\]?\s*
-	\[?\s*(?<growth>[ABC?]{2})\s*\]?\s*
-	\[?\s*(?<accent>[BLRY?]{2})\s*\]?
+	(?<windBracket>\[|\{)?\s*(?<wind>[NSO?]{2})\s*(\]|\})?\s*
+	(?<furBracket>\[|\{)?\s*(?<fur>[SL?]{2})\s*(\]|\})?\s*
+	\[?\s*(?<colorBracket>\{)?\s*(?<color>[BO?]{2})\s*\}?\s*(?<dilutionBracket>\{)?\s*(?<dilution>[FD?]{2})\s*\}?\s*(?<density>[1234?])\s*\]?\s*
+	(?<patternSectionBracket>\[|\{)?\s*(?<patternBracket>\{)?\s*(?<pattern>[YN?]{2})\s*(?<patternEndBracket>\})?\s*(?<spottingBracket>\{)?\s*(?<spotting>[TMSP]{2})\s*\}?\s*(\]|\})?\s*
+	\[?\s*(?<whiteBracket>\{)?\s*(?<white>[YN?]{2})\s*\}?\s*(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRI])\s*\]?\s*
+	(?<growthBracket>\[|\{)?\s*(?<growth>[ABC?]{2})\s*(\]|\})?\s*
+	(?<accentBracket>\[|\{)?\s*(?<accent>[BLRY?]{2})\s*(\]|\})?
 `;
 
 export const deserializeCatGene = (text: string) => {
@@ -481,9 +491,27 @@ export const deserializeCatGene = (text: string) => {
 		whiteType: g.whitePattern,
 		accent: g.accent.split(""),
 		growth: g.growth.split(""),
+		unknownOrder: {
+			wind: g.windBracket === "{",
+			fur: g.furBracket === "{",
+			color: g.colorBracket === "{",
+			dilution: g.dilutionBracket === "{",
+			pattern: g.patternBracket === "{" || g.patternSectionBracket === "{",
+			spotting: g.spottingBracket === "{" || (g.patternSectionBracket === "{" && g.patternEndBracket !== "}"),
+			white: g.whiteBracket === "{",
+			growth: g.growthBracket === "{",
+			accent: g.accentBracket === "{",
+		},
 	});
 	if (data.error) return failure(data.error.message);
 	return success(data.data);
+};
+const eyeColorToType: Record<string, CatWhiteType> = {
+	"Pale Red": "classic",
+	"Pale Violet": "piebald",
+	"Pale Blue": "left",
+	"Pale Green": "right",
+	"Pale Gold": "inverse",
 };
 
 export const parseCatBio = (bio: { species: string; color: string; pattern: string; white: string; accent?: string; eyes: string }): ReturnType<typeof getCatTextureProperties> => {
@@ -506,9 +534,13 @@ export const parseCatBio = (bio: { species: string; color: string; pattern: stri
 		{ eyes: bio.eyes as "neutral", albinoType: whiteNumber === 10 && whiteType ? whiteType : "-", shown: true },
 	] as const;
 };
+export const parseCatBioObj = (...args: Parameters<typeof parseCatBio>) => {
+	const [mainColor, tradeColor, white, accent] = parseCatBio(...args);
+	return { mainColor, tradeColor, white, accent };
+};
 
-export const geneFromColor = (color: string) =>
-	color === "snow" ? "?" : Object.entries(catColors).find(x => Object.values(x[1]).some(y => Object.values(y).some(z => z === color)))?.[0];
+export const geneFromColor = (color: string): "B" | "O" | "?" =>
+	color === "snow" ? "?" : (Object.entries(catColors).find(x => Object.values(x[1]).some(y => Object.values(y).some(z => z === color)))?.[0] as "B") ?? "?";
 export const dilutionFromColor = (color: string) => {
 	if (color === "snow") return "?";
 	for (const list of Object.values(catColors)) {
@@ -518,36 +550,105 @@ export const dilutionFromColor = (color: string) => {
 	return "?";
 };
 
-export const densityFromColor = (color: string) => {
+export const densityFromColor = (color: string): 1 | 2 | 3 | 4 | "?" => {
 	if (color === "snow") return "?";
 	for (const list of Object.values(catColors)) {
 		for (const obj of Object.values(list)) {
-			if (Object.values(obj).includes(color)) return Object.entries(obj).find(x => x[1] === color)?.[0];
+			if (Object.values(obj).includes(color)) {
+				const n = Object.entries(obj).find(x => x[1] === color)?.[0];
+				if (n === undefined) return "?";
+				return +n as 1 | 2 | 3 | 4;
+			}
 		}
 	}
 	return "?";
 };
-export const geneFromPattern = (pattern: string) => {
+export const geneFromPattern = (pattern: string): ["T" | "M" | "S" | "P" | "?", "T" | "M" | "S" | "P" | "?"] => {
 	for (const [k, v] of Object.entries(catPatterns)) {
-		for (const [k2, p] of Object.entries(v)) if (p === pattern) return [k, k2];
+		for (const [k2, p] of Object.entries(v)) if (p === pattern) return [k as "T", k2 as "T"];
 	}
-	return [];
+	return ["?", "?"];
 };
-export const geneFromAccentColor = (accentColor: string) => {
-	const accent = Object.entries(accentNames).find(x => x[1] === accentColor)?.[0];
-	if (!accent) return [];
-	for (const [k, v] of Object.entries(accents)) {
-		for (const [k2, p] of Object.entries(v)) if (p === accent) return [k, k2];
+export const geneFromWhiteType = (type: string): "C" | "P" | "L" | "R" | "I" | "?" => {
+	for (const [k, v] of Object.entries(whiteTypes)) {
+		if (type === v) return k as "C";
 	}
-	return [];
+	return "?";
+};
+export const geneFromAccentColor = (accentColor: string): ["L" | "R" | "B" | "Y" | "?", "L" | "R" | "B" | "Y" | "?"] => {
+	const accent = Object.entries(accentNames).find(x => x[1] === accentColor)?.[0];
+	if (!accent) return ["?", "?"];
+	for (const [k, v] of Object.entries(accents)) {
+		for (const [k2, p] of Object.entries(v)) if (p === accent) return [k, k2] as ["L", "L"];
+	}
+	return ["?", "?"];
 };
 
 export interface CatAppearance {
 	species: CatSpecies;
 	mainColor: CatColor;
 	pattern: CatPattern;
-	tradeColor: CatColor | null; 
+	tradeColor: CatColor | null;
 	accent: CatAccent;
 	whiteNumber: number;
 	whiteType: CatWhiteType | null;
 }
+
+export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): PartialCatGene => {
+	if (data.genetic) return deserializeCatGene(data.genetic).data!;
+	const parsed = parseCatBioObj({
+		color: data.color,
+		eyes: data.eyeColor,
+		pattern: data.pattern,
+		species: data.species,
+		white: data.whiteMarks,
+		accent: data.accentColor ?? "-hidden-",
+	});
+	const dilution = parsed.mainColor.shown ? dilutionFromColor(parsed.mainColor.color) : "?";
+	const spotting = parsed.mainColor.shown ? geneFromPattern(parsed.mainColor.pattern) : (["?", "?"] as const);
+	const accent = parsed.accent.shown ? geneFromAccentColor(parsed.accent.accent) : (["?", "?"] as const);
+	return {
+		species: ({ c: "C", m: "M" } as const)[parsed.mainColor.shown ? parsed.mainColor.species : parsed.white.species],
+		wind: (
+			{
+				North: ["N", "?"],
+				South: ["S", "?"],
+				Trade: ["N", "S"],
+				Null: ["O", "O"],
+			} as const
+		)[data.wind]!,
+		fur: (
+			{
+				Longhair: ["L", "L"],
+				Shorthair: ["S", "?"],
+			} as const
+		)[data.fur]!,
+		color:
+			data.wind === "Null" || !parsed.mainColor.shown
+				? ["?", "?"]
+				: data.wind === "North"
+				? [geneFromColor(parsed.mainColor.color), "?"]
+				: data.wind === "South"
+				? ["?", geneFromColor(parsed.mainColor.color)]
+				: [geneFromColor(parsed.mainColor.color), geneFromColor(parsed.tradeColor.color)],
+		dilution: dilution === "F" ? ["F", "?"] : dilution === "D" ? ["D", "D"] : ["?", "?"],
+		density: parsed.mainColor.shown ? densityFromColor(parsed.mainColor.color) : "?",
+		pattern: parsed.mainColor.shown ? (parsed.mainColor.pattern === "solid" ? ["N", "N"] : ["Y", "?"]) : ["?", "?"],
+		spotting,
+		white: parsed.white.shown ? ["Y", "?"] : ["?", "?"], // it could be from 0
+		whiteNumber: parsed.white.shown ? parsed.white.whiteNumber : "?",
+		whiteType: parsed.white.shown ? geneFromWhiteType(parsed.white.whiteType) : "?",
+		accent: accent,
+		growth: ["?", "?"],
+		unknownOrder: {
+			wind: data.wind !== "Null",
+			fur: data.fur === "Shorthair",
+			color: data.wind === "Trade" && geneFromColor(parsed.mainColor.color) !== geneFromColor(parsed.tradeColor.color),
+			dilution: dilution === "F",
+			pattern: parsed.mainColor.shown && parsed.mainColor.pattern !== "solid",
+			spotting: spotting[0] !== spotting[1],
+			white: parsed.white.shown,
+			accent: accent[0] !== accent[1],
+		},
+	};
+};

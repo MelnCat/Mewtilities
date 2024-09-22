@@ -19,12 +19,12 @@ const CatGeneSection = ({ category, children, tooltip }: { category: string; chi
 					<div>{tooltip.content}</div>
 				</div>
 			) : null}
-			[{children}]
+			{children}
 		</div>
 	);
 };
 
-const CatGeneContent = ({ content }: { content: number | string | string[] }) => {
+const CatGeneContent = ({ content }: { content: number | string | readonly string[] }) => {
 	return content instanceof Array ? (
 		content.map((x, i) => (
 			<span className={styles.geneContent} data-content={x} key={i}>
@@ -38,6 +38,19 @@ const CatGeneContent = ({ content }: { content: number | string | string[] }) =>
 	);
 };
 export const WindIcon = ({ wind }: { wind: string }) => <img className={styles.windIcon} src={pceLink(`main_assets/runes/wind_${wind.toLowerCase()}.png`)} alt={wind} />;
+
+const Bracketed = ({ children, type }: { children: React.ReactNode; type: "bracket" | "brace" | "none" }) => {
+	if (type === "none") return children;
+	else if (type === "bracket") return <>[{children}]</>;
+	else
+		return (
+			<>
+				{"{"}
+				{children}
+				{"}"}
+			</>
+		);
+};
 
 export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }) => {
 	if (typeof data.gene === "string") {
@@ -61,7 +74,7 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.species} />
+				[<CatGeneContent content={g.species} />]
 			</CatGeneSection>
 			<CatGeneSection
 				category="wind"
@@ -83,7 +96,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.wind} />
+				<Bracketed type={g.unknownOrder?.wind ? "brace" : "bracket"}>
+					<CatGeneContent content={g.wind} />
+				</Bracketed>
 			</CatGeneSection>
 			<CatGeneSection
 				category="fur"
@@ -97,7 +112,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.fur} />
+				<Bracketed type={g.unknownOrder?.fur ? "brace" : "bracket"}>
+					<CatGeneContent content={g.fur} />
+				</Bracketed>
 			</CatGeneSection>
 			<CatGeneSection
 				category="color"
@@ -113,9 +130,14 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.color} />
-				<CatGeneContent content={g.dilution} />
-				<CatGeneContent content={g.density} />
+				[
+				<Bracketed type={g.unknownOrder?.color ? "brace" : "none"}>
+					<CatGeneContent content={g.color} />
+				</Bracketed>
+				<Bracketed type={g.unknownOrder?.dilution ? "brace" : "none"}>
+					<CatGeneContent content={g.dilution} />
+				</Bracketed>
+				<CatGeneContent content={g.density} />]
 			</CatGeneSection>
 			<CatGeneSection
 				category="pattern"
@@ -129,8 +151,25 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.pattern} />
-				<CatGeneContent content={g.spotting} />
+				{g.unknownOrder?.pattern && g.unknownOrder?.spotting ? (
+					<>
+						{"{"}
+						<CatGeneContent content={g.pattern} />
+						<CatGeneContent content={g.spotting} />
+						{"}"}
+					</>
+				) : (
+					<>
+						[
+						<Bracketed type={g.unknownOrder?.dilution ? "brace" : "none"}>
+							<CatGeneContent content={g.pattern} />
+						</Bracketed>
+						<Bracketed type={g.unknownOrder?.spotting ? "brace" : "none"}>
+							<CatGeneContent content={g.spotting} />
+						</Bracketed>
+						]
+					</>
+				)}
 			</CatGeneSection>
 			<CatGeneSection
 				category="white"
@@ -138,18 +177,23 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "White",
 					content: (
 						<>
-							{p.whiteType === "?" || p.whiteNumber === "?" ? "Albino" : whiteTypeNames[p.whiteType][p.whiteNumber]}
+							{p.whiteNumber === 10 ? "Albino" : p.whiteNumber === "?" || p.whiteType === "?" ? "Unknown" : whiteTypeNames[p.whiteType][p.whiteNumber]}
 							<CatImage gene={g} layer={2} />
 						</>
 					),
 				}}
 			>
-				<CatGeneContent content={g.white} />
+				[
+				<Bracketed type={g.unknownOrder?.white ? "brace" : "none"}>
+					<CatGeneContent content={g.white} />
+				</Bracketed>
 				<CatGeneContent content={g.whiteNumber} />
-				<CatGeneContent content={g.whiteType} />
+				<CatGeneContent content={g.whiteType} />]
 			</CatGeneSection>
 			<CatGeneSection category="growth" tooltip={{ title: "Growth", content: p.growthType === "?" ? "Unknown" : p.growthType }}>
-				<CatGeneContent content={g.growth} />
+				<Bracketed type={g.unknownOrder?.growth ? "brace" : "bracket"}>
+					<CatGeneContent content={g.growth} />
+				</Bracketed>
 			</CatGeneSection>
 			<CatGeneSection
 				category="accent"
@@ -164,7 +208,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					),
 				}}
 			>
-				<CatGeneContent content={g.accent} />
+				<Bracketed type={g.unknownOrder?.accent ? "brace" : "bracket"}>
+					<CatGeneContent content={g.accent} />
+				</Bracketed>
 			</CatGeneSection>
 		</div>
 	);
