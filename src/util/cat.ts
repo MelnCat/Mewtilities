@@ -458,7 +458,7 @@ export const serializeCatGene = (gene: PartialCatGene, formatted: boolean = fals
 		gene.unknownOrder?.accent ? `{${gene.accent.join("")}}` : gene.accent,
 	].map(x => (x instanceof Array ? x.join("") : x));
 
-	if (formatted) return components.map(x => x.startsWith("{") && x.endsWith("}") ? x : `[${x}]`).join(" ");
+	if (formatted) return components.map(x => (x.startsWith("{") && x.endsWith("}") ? x : `[${x}]`)).join(" ");
 	return components.join("");
 };
 
@@ -650,5 +650,56 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 			white: parsed.white.shown,
 			accent: accent[0] !== accent[1],
 		},
+	};
+};
+
+export const possibleGenes = (gene: PartialCatGene) => {
+	return {
+		wind: (gene.wind.includes("?")
+			? [gene.wind.map(x => (x === "?" ? "O" : x)), gene.wind.map(x => (x === "?" ? gene.wind.find(x => x !== "?")! : x))]
+			: [gene.wind]) as unknown as readonly ["N" | "S" | "O", "N" | "S" | "O"][],
+		fur: gene.fur.includes("?") ? [gene.fur.map(x => (x === "?" ? "S" : x)), gene.fur.map(x => (x === "?" ? "L" : x))] : [gene.fur],
+		color: gene.color.includes("?") ? [gene.color.map(x => (x === "?" ? "O" : x)), gene.color.map(x => (x === "?" ? "B" : x))] : [gene.color],
+		dilution: gene.dilution.includes("?") ? [gene.dilution.map(x => (x === "?" ? "F" : x)), gene.dilution.map(x => (x === "?" ? "D" : x))] : [gene.dilution],
+		density: gene.density === "?" ? [1, 2, 3, 4] : [gene.density],
+		pattern: gene.pattern.every(x => x === "?")
+			? [
+					["Y", "N"],
+					["Y", "Y"],
+					["N", "N"],
+			  ]
+			: gene.pattern.includes("?")
+			? [gene.pattern.map(x => (x === "?" ? "Y" : x)), gene.pattern.map(x => (x === "?" ? "N" : x))]
+			: [gene.pattern],
+		spotting: gene.spotting.every(x => x === "?")
+			? [
+					["T", "T"],
+					["T", "M"],
+					["T", "S"],
+					["T", "P"],
+					["M", "M"],
+					["M", "S"],
+					["M", "P"],
+					["S", "S"],
+					["S", "P"],
+					["P", "P"],
+			  ]
+			: [gene.spotting],
+		whiteNumber: gene.whiteNumber === "?" ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [gene.whiteNumber],
+		whiteType: gene.whiteType === "?" ? ["C", "P", "L", "R", "I"] : [gene.whiteType],
+		accent: gene.accent.every(x => x === "?")
+			? [
+					["B", "B"],
+					["B", "L"],
+					["B", "R"],
+					["B", "Y"],
+					["L", "L"],
+					["L", "R"],
+					["L", "Y"],
+					["R", "R"],
+					["R", "Y"],
+					["Y", "Y"],
+			  ]
+			: [gene.accent],
 	};
 };
