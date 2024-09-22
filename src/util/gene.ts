@@ -1,14 +1,15 @@
 import { groupBy } from "remeda";
-import { CatAppearance, deserializeCatGene, PartialCatGene, possibleGenes } from "./cat";
+import { CatAppearance, deserializeCatGene, geneFromColor, PartialCatGene, possibleGenes } from "./cat";
 
 export interface ResultProbability<T = string> {
 	result: T;
 	probability: number;
 }
 
-export const combineResults = (results: readonly ResultProbability[]) =>
-	Object.values(groupBy(results, x => x.result)).map(x => (x.length === 1 ? x[0] : { result: x[0].result, probability: x.reduce((l, c) => l + c.probability, 0) }));
-
+export const combineResults = (results: readonly ResultProbability[]) => {
+	const total = results.map(x => x.probability).reduce((l, c) => l + c, 0);
+	return Object.values(groupBy(results, x => x.result)).map(x => (x.length === 1 ? x[0] : { result: x[0].result, probability: x.reduce((l, c) => l + c.probability, 0) / total }))
+};
 export const calculateMendelian = (first: readonly string[], second: readonly string[], pushyNorth: 0 | 1 | null) => {
 	const values = first.flatMap(x => second.map(y => `${x}${y}`));
 	const results = combineResults(values.map(x => ({ result: x, probability: 1 / values.length })));
@@ -82,28 +83,88 @@ const determinePushy = (first: PartialCatGene["wind"], second: PartialCatGene["w
 export const calculateUnknownGenes = (initialGuess: PartialCatGene, results: { result: CatAppearance; tester: PartialCatGene }[]) => {
 	const possible = possibleGenes(initialGuess);
 	const nonAlbino = results.filter(x => x.result.whiteNumber !== 10);
+	const matchGene = <T extends string>(
+		albino: boolean,
+		key: keyof ReturnType<typeof possibleGenes>,
+		appearanceMapper: (appearance: CatAppearance) => T,
+		resultMapper: (gene: string) => T
+	) => {
+		return matchProbabilities(
+			(albino ? results : nonAlbino).map(x => appearanceMapper(x.result)),
+			(albino ? results : nonAlbino).map(
+				x =>
+					new Map(
+						possible[key].map(y => [
+							y,
+							combineResults(
+								calculateMendelian(
+									y as string[],
+									x.tester[key] as readonly string[],
+									determinePushy(key === "wind" ? (y as readonly ["O", "O"]) : initialGuess.wind, x.tester.wind)
+								).map(z => ({
+									result: resultMapper(z.result),
+									probability: z.probability,
+								}))
+							),
+						])
+					)
+			)
+		);
+	};
 	const matchedWind = initialGuess.wind.includes("?")
+		? matchGene(
+				false,
+				"wind",
+				x => (x.tradeColor ? "Trade" : x.mainColor === "snow" ? "Null" : "NorthSouth"),
+				z => (z === "NS" || z === "SN" ? "Trade" : z === "OO" ? "Null" : "NorthSouth")
+		  )
+		: null;
+	const matchedFur = initialGuess.fur.includes("?")
+		? matchGene(
+				true,
+				"fur",
+				x => (x.pose.includes("shorthair") ? "Shorthair" : "Longhair"),
+				x => (x === "LL" ? "Longhair" : "Shorthair")
+		  )
+		: null;
+	const matchedColor = initialGuess.color.includes("?")
 		? matchProbabilities(
-				nonAlbino.map(x => (x.result.tradeColor ? "Trade" : x.result.mainColor === "snow" ? "Null" : "NorthSouth")),
+				nonAlbino.map(x => (x.result.tradeColor ? `${geneFromColor(x.result.mainColor)}${geneFromColor(x.result.tradeColor)}` : geneFromColor(x.result.mainColor))),
 				nonAlbino.map(
 					x =>
 						new Map(
-							possible.wind.map(y => [
+							possible.color.map(y => [
 								y,
 								combineResults(
-									calculateMendelian(y, x.tester.wind, determinePushy(y, x.tester.wind)).map(z => ({
-										result: z.result === "NS" || z.result === "SN" ? "Trade" : z.result === "OO" ? "Null" : "NorthSouth",
-										probability: z.probability,
-									}))
+									(matchedWind ? [...matchedWind.entries()] : [[initialGuess.wind, 1]])
+										.map(([k, v]) =>
+											calculateMendelian(k as ["O", "O"], x.tester.wind, determinePushy(k as ["O", "O"], x.tester.wind)).map(x => ({
+												...x,
+												probability: x.probability * (v as number),
+											}))
+										)
+										.flatMap(q =>
+											q.flatMap(z =>
+												calculateMendelian(y, x.tester.color, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
+													const wind = getWind(z.result.split("") as ["O", "O"]);
+													return {
+														result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
+														probability: p.probability * z.probability,
+													};
+												}).concat(calculateMendelian(x.tester.color, y, determinePushy(z.result.split("") as ["O", "O"], x.tester.wind)).map(p => {
+													const wind = getWind(z.result.split("") as ["O", "O"]);
+													return {
+														result: wind === "North" ? p.result[0] : wind === "South" ? p.result[1] : wind === "Trade" ? p.result : "what",
+														probability: p.probability * z.probability,
+													};
+												}))
+											)
+										)
 								),
 							])
 						)
 				)
 		  )
-		: initialGuess.wind;
-
-	
-	return matchedWind;
+		: null;
+	return matchedFur;
 };
-
-console.log(calculateUnknownGenes(deserializeCatGene("[C] {S?} {S?} [{BO}{F?}4] {Y?TP} [{Y?}2C] [??] [??]").data!, [{ result: { mainColor: "a" }, tester: { wind: ["N", "N"] } }]));

@@ -592,6 +592,7 @@ export interface CatAppearance {
 	accent: CatAccent;
 	whiteNumber: number;
 	whiteType: CatWhiteType | null;
+	pose: string;
 }
 
 export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): PartialCatGene => {
@@ -643,7 +644,6 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 		unknownOrder: {
 			wind: data.wind !== "Null",
 			fur: data.fur === "Shorthair",
-			color: data.wind === "Trade" && geneFromColor(parsed.mainColor.color) !== geneFromColor(parsed.tradeColor.color),
 			dilution: dilution === "F",
 			pattern: parsed.mainColor.shown && parsed.mainColor.pattern !== "solid",
 			spotting: spotting[0] !== spotting[1],
