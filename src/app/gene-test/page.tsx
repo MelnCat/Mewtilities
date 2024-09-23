@@ -49,19 +49,79 @@ const testerGenes = {
 	92856: deserializeCatGene(`[ C ] [ NS ] [ LL ] [ BOFD3 ] [ NNPT ] [ NN6C ] [ CB ] [ LL ]`).data!,
 	96891: deserializeCatGene(`[C] {NS} {SL} [BBDD3] [{YN}TT] [{YN}4L] [??] [LL]`).data!,
 	97754: deserializeCatGene(`[ C ] [ NS ] [ LL ] [ OBDD4 ] [ NYMT ] [ NY7I ] [ CB ] [ RL ]`).data!,
-	114019: deserializeCatGene(`[C] {NS} [SS] [BO{FD}2] [YY{TS}] [NN10C] [??] [LL]`).data!
+	114019: deserializeCatGene(`[C] {NS} [SS] [BO{FD}2] [YY{TS}] [NN10C] [??] [LL]`).data!,
 };
-
 
 const certain = <T,>(value: T) => [{ result: value, probability: 1 }];
 const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b[1] - a[1]).map(x => ({ result: x[0], probability: x[1] }));
 
+type ForumColor = "red" | "orange" | "yellow" | "green" | "blue" | "purple" | "pink" | "brown" | "grey" | "teal";
+
+const color = (color: ForumColor, content: string) => `[color=${color}]${content}[/color]`;
+
+const defaultColors = { "[": "grey", "]": "grey", "{": "grey", "}": "grey", "?": "black" } as const;
+const replaceColors = (str: string, rules: Record<string, ForumColor | "black">) => {
+	let out = "";
+	let currentColor = "black";
+	for (const char of str) {
+		const color = rules[char] ?? defaultColors[char as keyof typeof defaultColors] ?? "black";
+		if (currentColor !== color) {
+			if (currentColor !== "black") out += `[/color]`;
+			if (color !== "black") out += `[color=${color}]`;
+			currentColor = color;
+		}
+		out += char;
+	}
+	if (currentColor !== "black") out += "[/color]";
+	return out;
+};
+const brackets = (text: string, braces: boolean = false) => (braces ? `{${text}}` : `[${text}]`);
+const optionalBrackets = (text: string, braces: boolean = false) => (braces ? `{${text}}` : text);
+
+const generateBBCode = (gene: PartialCatGene) => {
+	const species = replaceColors(brackets(gene.species), { C: "brown", M: "teal" });
+	const wind = replaceColors(brackets(gene.wind.join(""), gene.unknownOrder?.wind), { N: "blue", S: "red", O: "black" });
+	const fur = replaceColors(brackets(gene.fur.join(""), gene.unknownOrder?.fur), { S: "orange", L: "brown" });
+	const colorType = optionalBrackets(gene.color.join(""), gene.unknownOrder?.color);
+	const dilution = optionalBrackets(gene.dilution.join(""), gene.unknownOrder?.dilution);
+	const density = gene.density.toString();
+	const color = replaceColors(brackets(`${colorType}${dilution}${density}`), { 1: "green", 2: "teal", 3: "blue", 4: "purple", D: "pink", F: "red", O: "orange", B: "black" });
+	const YN = { Y: "green", N: "red" } as const;
+	const patternColors = {...YN, /*T: "green", M: "blue", S: "red", P: "yellow"*/} as const;
+	const pattern = gene.pattern.join("");
+	const spotting = gene.spotting.join("");
+	const patternSection =
+		gene.unknownOrder?.pattern && gene.unknownOrder?.spotting
+			? replaceColors(brackets(`${pattern}${spotting}`, true), patternColors)
+			: replaceColors(brackets(`${optionalBrackets(pattern, gene.unknownOrder?.pattern)}${optionalBrackets(spotting, gene.unknownOrder?.spotting)}`), patternColors);
+	const white = replaceColors(optionalBrackets(gene.white.join(""), gene.unknownOrder?.white), YN);
+	const whiteNumber = gene.whiteNumber === 0 || gene.whiteNumber === "?" ? "0" : `[color=${{
+		0: "black",
+		1: "teal",
+		2: "teal",
+		3: "teal",
+		4: "blue",
+		5: "blue",
+		6: "blue",
+		7: "purple",
+		8: "purple",
+		9: "purple",
+		10: "yellow"
+	}[gene.whiteNumber]}]${gene.whiteNumber}[/color]`;
+	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow" });
+	const whiteSection = `${replaceColors("[", {})}${white}${whiteNumber}${whiteType}${replaceColors("]", {})}`;
+	const growth = replaceColors(brackets(gene.growth.join(""), gene.unknownOrder?.growth), { A: "green", B:"yellow", C:"red" });
+	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), { B: "blue", L: "black", R: "red", Y: "yellow" })
+	const content = `${species} ${wind} ${fur} ${color} ${patternSection} ${whiteSection} ${growth} ${accent}`.replaceAll(" ", " ");
+	return `[center][table][tr][td][b][size=4][font='Nimbus Mono PS', 'Courier New', monospace]${content}[/font][/size][/b][/td][/tr][/table][/center]`;
+};
+
 const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 	const [gene, setGene] = useState(geneFromImported(cat));
 	const [tests, setTests] = useState<{ parents: [number, number]; result: CatAppearance }[]>([]);
-	const copy = async() => {
-		await navigator.clipboard.writeText("")
-	}
+	const copy = async () => {
+		await navigator.clipboard.writeText("");
+	};
 	const matched = useMemo(
 		() =>
 			calculateUnknownGenes(
@@ -165,9 +225,13 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 					<input value={cat.wind === "South" ? 572 : cat.id} readOnly />
 					<input value={cat.wind === "South" ? cat.id : 572} readOnly />
 				</div>
-				<a href="https://www.pixelcatsend.com/sandbox/beans" target="_blank">Open Sandbox</a>
+				<a href="https://www.pixelcatsend.com/sandbox/beans" target="_blank">
+					Open Sandbox
+				</a>
 				<button onClick={copy}>Copy Tester ID</button>
 				<p>{serializeCatGene(outputGene, true)}</p>
+				<h2>BBCode</h2>
+				<textarea readOnly value={generateBBCode(outputGene)} />
 			</article>
 		</>
 	);
