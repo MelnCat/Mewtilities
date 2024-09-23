@@ -8,6 +8,7 @@ import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { calculateUnknownGenes } from "@/util/gene";
 import { parseBeanSandboxPage } from "@/parser/beanSandboxParser";
 import { smallNumberFormat } from "@/util/util";
+import SignIn from "../components/SignIn";
 
 const usePaste = (cb: (html: string) => void | Promise<void>) => {
 	useEventListener("paste", event => {
@@ -32,11 +33,12 @@ const Title = ({ setCat }: { setCat: (cat: RawCat) => void }) => {
 	});
 	return (
 		<>
-			<h1 className={styles.title}>GATO</h1>
+			<h1 className={styles.title}>[GATO]</h1>
 			<p className={styles.lowertitle}>Genetic Allele Test Operator</p>
 			<p>Paste a cat to begin.</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>
+			<SignIn />
 		</>
 	);
 };
