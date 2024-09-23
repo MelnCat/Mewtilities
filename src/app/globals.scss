@@ -5,27 +5,25 @@
 }
 
 button {
+	color: inherit;
 	width: fit-content;
 	padding: 0.3em 0.7em;
 	font-size: 1em;
 	border: 1px solid #77777777;
 	cursor: pointer;
-	background-color: #ddddddcc;
+	background-color: #cecece22;
 	transition: background-color 0.1s;
 	&:hover {
-		background-color: #cecececc;
+		background-color: #cecece2e;
 	}
 	&:active {
-		background-color: #c1c1c1cc;
+		background-color: #cecece44;
 	}
 	&:disabled {
 		cursor: not-allowed;
 		border-color: #77777733;
-		background-color: #ddddddcc;
+		background-color: #cecece77;
 	}
-}
-input {
-	font-size: 0.91em;
 }
 img, canvas {
 	image-rendering: pixelated;
@@ -35,4 +33,25 @@ img, canvas {
 	text-align: center;
 	padding: 1em 0;
 	width: 100%;
+}
+
+:root {
+	--light: #eeeeee;
+	--dark: #111111;
+}
+body {
+	background-color: var(--dark);
+	color: var(--light);
+}
+
+a {
+	color: #6b90d6;
+}
+
+input, textarea {
+	font-size: 0.91em;
+	background-color: #eeeeee11;
+	color: inherit;
+	padding: 0.4em 0.8em;
+	border: 1px solid #bbbbbb;
 }

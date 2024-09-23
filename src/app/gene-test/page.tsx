@@ -38,7 +38,6 @@ const Title = ({ setCat }: { setCat: (cat: RawCat) => void }) => {
 			<p>Paste a cat to begin.</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>
-			<SignIn />
 		</>
 	);
 };
@@ -175,7 +174,7 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 					growth: gene.unknownOrder?.growth,
 				},
 			} satisfies PartialCatGene),
-		[probableGene]
+		[probableGene, gene]
 	);
 	const [seen, setSeen] = useState<string[]>([]);
 	usePaste(data => {
@@ -202,14 +201,14 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 						style={{
 							backgroundColor:
 								v[0].probability < 0.6
-									? "#ff000044"
+									? "#f8131344"
 									: v[0].probability < 0.9
 									? "#ffff0033"
 									: v[0].probability < 0.95
-									? "#1bc91b33"
+									? "#1bc91b55"
 									: v[0].probability === 1
 									? "#36f1369d"
-									: "#0cdd0c53",
+									: "#0cdd0c88",
 						}}
 					>
 						<div className={styles.geneValue}>{v[0].result}</div>
@@ -233,6 +232,7 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 				<p>{serializeCatGene(outputGene, true)}</p>
 				<h2>BBCode</h2>
 				<textarea readOnly value={generateBBCode(outputGene)} />
+				<button onClick={() => navigator.clipboard.writeText(generateBBCode(outputGene))}>Copy BBCode</button>
 			</article>
 		</>
 	);
