@@ -57,8 +57,6 @@ const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b
 
 type ForumColor = "red" | "orange" | "yellow" | "green" | "blue" | "purple" | "pink" | "brown" | "grey" | "teal";
 
-const color = (color: ForumColor, content: string) => `[color=${color}]${content}[/color]`;
-
 const defaultColors = { "[": "grey", "]": "grey", "{": "grey", "}": "grey", "?": "black" } as const;
 const replaceColors = (str: string, rules: Record<string, ForumColor | "black">) => {
 	let out = "";
@@ -229,6 +227,7 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 					Open Sandbox
 				</a>
 				<button onClick={copy}>Copy Tester ID</button>
+				<p>Stuck on the white YN? Use <input readOnly value="114019" /></p>
 				<p>{serializeCatGene(outputGene, true)}</p>
 				<h2>BBCode</h2>
 				<textarea readOnly value={generateBBCode(outputGene)} />
