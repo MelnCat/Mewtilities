@@ -43,7 +43,15 @@ const Title = ({ setCat }: { setCat: (cat: RawCat) => void }) => {
 
 const testerGenes = {
 	572: deserializeCatGene(`[ M ] [ NS ] [ SL ] [ BBDF2 ] [ NYMT ] [ NY3C ] [ BC ] [ BB ]`).data!,
+	77688: deserializeCatGene(`[ C ] [ SO ] [ SS ] [ BBFD3 ] [ YYTT ] [ YY1C ] [ BC ] [ BL ]`).data!,
+	77444: deserializeCatGene(`[C] {NS} [LL] [BOFF4] [YY{TM}] [{YN}10C] [??] {BY}`).data!,
+	85612: deserializeCatGene(`[C] {NS} {SL} [BO{FD}2] [{YN}TT] [{YN}1C] [??] [BB]`).data!,
+	92856: deserializeCatGene(`[ C ] [ NS ] [ LL ] [ BOFD3 ] [ NNPT ] [ NN6C ] [ CB ] [ LL ]`).data!,
+	96891: deserializeCatGene(`[C] {NS} {SL} [BBDD3] [{YN}TT] [{YN}4L] [??] [LL]`).data!,
+	97754: deserializeCatGene(`[ C ] [ NS ] [ LL ] [ OBDD4 ] [ NYMT ] [ NY7I ] [ CB ] [ RL ]`).data!,
+	114019: deserializeCatGene(`[C] {NS} [SS] [BO{FD}2] [YY{TS}] [NN10C] [??] [LL]`).data!
 };
+
 
 const certain = <T,>(value: T) => [{ result: value, probability: 1 }];
 const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b[1] - a[1]).map(x => ({ result: x[0], probability: x[1] }));
@@ -51,6 +59,9 @@ const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b
 const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 	const [gene, setGene] = useState(geneFromImported(cat));
 	const [tests, setTests] = useState<{ parents: [number, number]; result: CatAppearance }[]>([]);
+	const copy = async() => {
+		await navigator.clipboard.writeText("")
+	}
 	const matched = useMemo(
 		() =>
 			calculateUnknownGenes(
@@ -155,6 +166,7 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 					<input value={cat.wind === "South" ? cat.id : 572} readOnly />
 				</div>
 				<a href="https://www.pixelcatsend.com/sandbox/beans" target="_blank">Open Sandbox</a>
+				<button onClick={copy}>Copy Tester ID</button>
 				<p>{serializeCatGene(outputGene, true)}</p>
 			</article>
 		</>

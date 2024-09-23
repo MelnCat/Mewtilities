@@ -248,7 +248,7 @@ export type CatAccent = "blue" | "indigo" | "violet" | "green" | "black" | "pink
 
 const catColors = {
 	B: { F: { 4: "black", 3: "choco", 2: "brown", 1: "tan", 0: "snow" }, D: { 4: "charc", 3: "grey", 2: "smoke", 1: "silver", 0: "snow" } },
-	O: { F: { 4: "red", 3: "orange", 2: "ginger", 1: "aprico", 0: "snow" }, D: { 4: "buff", 3: "cream", 2: "almond", 1: "beige", 0: "snow" } },
+	O: { F: { 4: "red", 3: "ginger", 2: "orange", 1: "aprico", 0: "snow" }, D: { 4: "buff", 3: "cream", 2: "almond", 1: "beige", 0: "snow" } },
 } satisfies Record<z.TypeOf<typeof colorType>, Record<z.TypeOf<typeof dilutionType>, Record<number, CatColor>>>;
 
 export const catColorList = [...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x))))] as CatColor[];
@@ -677,8 +677,24 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 			? [gene.wind.map(x => (x === "?" ? "O" : x)), gene.wind.map(x => (x === "?" ? gene.wind.find(x => x !== "?")! : x))]
 			: [gene.wind]) as unknown as readonly ["N" | "S" | "O", "N" | "S" | "O"][],
 		fur: gene.fur.includes("?") ? [gene.fur.map(x => (x === "?" ? "S" : x)), gene.fur.map(x => (x === "?" ? "L" : x))] : [gene.fur],
-		color: gene.color.includes("?") ? [gene.color.map(x => (x === "?" ? "O" : x)), gene.color.map(x => (x === "?" ? "B" : x))] : [gene.color],
-		dilution: gene.dilution.includes("?") ? [gene.dilution.map(x => (x === "?" ? "F" : x)), gene.dilution.map(x => (x === "?" ? "D" : x))] : [gene.dilution],
+		color: gene.color.every(x => x === "?")
+			? [
+					["B", "B"],
+					["B", "O"],
+					["O", "O"],
+			  ]
+			: gene.color.includes("?")
+			? [gene.color.map(x => (x === "?" ? "O" : x)), gene.color.map(x => (x === "?" ? "B" : x))]
+			: [gene.color],
+		dilution: gene.dilution.every(x => x === "?")
+			? [
+					["F", "F"],
+					["F", "D"],
+					["D", "D"],
+			  ]
+			: gene.dilution.includes("?")
+			? [gene.dilution.map(x => (x === "?" ? "F" : x)), gene.dilution.map(x => (x === "?" ? "D" : x))]
+			: [gene.dilution],
 		density: gene.density === "?" ? [1, 2, 3, 4] : [gene.density],
 		pattern: gene.pattern.every(x => x === "?")
 			? [
