@@ -6,7 +6,7 @@ import { defaultFont } from "@/util/font";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-	title: "Meowtilities",
+	title: "Mewtilities",
 	description: "todo come up with descriptoin",
 };
 

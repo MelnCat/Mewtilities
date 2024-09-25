@@ -86,7 +86,7 @@ const generateBBCode = (gene: PartialCatGene) => {
 	const density = gene.density.toString();
 	const color = replaceColors(brackets(`${colorType}${dilution}${density}`), { 1: "green", 2: "teal", 3: "blue", 4: "purple", D: "pink", F: "red", O: "orange", B: "black" });
 	const YN = { Y: "green", N: "red" } as const;
-	const patternColors = {...YN, /*T: "green", M: "blue", S: "red", P: "yellow"*/} as const;
+	const patternColors = { ...YN /*T: "green", M: "blue", S: "red", P: "yellow"*/ } as const;
 	const pattern = gene.pattern.join("");
 	const spotting = gene.spotting.join("");
 	const patternSection =
@@ -94,23 +94,28 @@ const generateBBCode = (gene: PartialCatGene) => {
 			? replaceColors(brackets(`${pattern}${spotting}`, true), patternColors)
 			: replaceColors(brackets(`${optionalBrackets(pattern, gene.unknownOrder?.pattern)}${optionalBrackets(spotting, gene.unknownOrder?.spotting)}`), patternColors);
 	const white = replaceColors(optionalBrackets(gene.white.join(""), gene.unknownOrder?.white), YN);
-	const whiteNumber = gene.whiteNumber === 0 || gene.whiteNumber === "?" ? "0" : `[color=${{
-		0: "black",
-		1: "teal",
-		2: "teal",
-		3: "teal",
-		4: "blue",
-		5: "blue",
-		6: "blue",
-		7: "purple",
-		8: "purple",
-		9: "purple",
-		10: "yellow"
-	}[gene.whiteNumber]}]${gene.whiteNumber}[/color]`;
+	const whiteNumber =
+		gene.whiteNumber === 0 || gene.whiteNumber === "?"
+			? "0"
+			: `[color=${
+					{
+						0: "black",
+						1: "teal",
+						2: "teal",
+						3: "teal",
+						4: "blue",
+						5: "blue",
+						6: "blue",
+						7: "purple",
+						8: "purple",
+						9: "purple",
+						10: "yellow",
+					}[gene.whiteNumber]
+			  }]${gene.whiteNumber}[/color]`;
 	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow" });
 	const whiteSection = `${replaceColors("[", {})}${white}${whiteNumber}${whiteType}${replaceColors("]", {})}`;
-	const growth = replaceColors(brackets(gene.growth.join(""), gene.unknownOrder?.growth), { A: "green", B:"yellow", C:"red" });
-	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), { B: "blue", L: "black", R: "red", Y: "yellow" })
+	const growth = replaceColors(brackets(gene.growth.join(""), gene.unknownOrder?.growth), { A: "green", B: "yellow", C: "red" });
+	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), { B: "blue", L: "black", R: "red", Y: "yellow" });
 	const content = `${species} ${wind} ${fur} ${color} ${patternSection} ${whiteSection} ${growth} ${accent}`.replaceAll(" ", " ");
 	return `[center][table][tr][td][b][size=4][font='Nimbus Mono PS', 'Courier New', monospace]${content}[/font][/size][/b][/td][/tr][/table][/center]`;
 };
@@ -228,11 +233,15 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 					Open Sandbox
 				</a>
 				<button onClick={copy}>Copy Tester ID</button>
-				<p>Stuck on the white YN? Use <input readOnly value="114019" /></p>
+				<p>
+					Stuck on the white YN? Use <input readOnly value="114019" />
+				</p>
 				<p>{serializeCatGene(outputGene, true)}</p>
 				<h2>BBCode</h2>
 				<textarea readOnly value={generateBBCode(outputGene)} />
 				<button onClick={() => navigator.clipboard.writeText(generateBBCode(outputGene))}>Copy BBCode</button>
+				<h2>Traditional Gene Format</h2>
+				<p>{serializeCatGene({ ...outputGene, unknownOrder: {} }, true)}</p>
 			</article>
 		</>
 	);
