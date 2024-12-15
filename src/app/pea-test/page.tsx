@@ -47,7 +47,19 @@ const Title = ({ onPaste }: { onPaste: (data: RawPeaPlantEntry, text: string) =>
 const certain = <T,>(value: T) => [{ result: value, probability: 1 }];
 const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b[1] - a[1]).map(x => ({ result: x[0], probability: x[1] }));
 
-const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; setTests: Dispatch<SetStateAction<RawPeaPlantEntry[]>>; paste: string }) => {
+const GeneDashboard = ({
+	tests,
+	setTests,
+	paste,
+	manual,
+	clearManual,
+}: {
+	tests: RawPeaPlantEntry[];
+	setTests: Dispatch<SetStateAction<RawPeaPlantEntry[]>>;
+	paste: string;
+	manual: null | "a" | "b" | "c" | "d" | "e";
+	clearManual: () => void;
+}) => {
 	const copy = async () => {
 		await navigator.clipboard.writeText("");
 	};
@@ -57,14 +69,19 @@ const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; 
 		if (seen.includes(data)) return;
 		const pea = parsePeaPlantEventPage(data);
 		if (!pea.ok) return;
+		if (!pea.data.parents) {
+			if (!manual) return
+			pea.data.parents = ["mystery", manual];
+		}
 		setSeen(seen.concat(data));
 		setTests(tests.concat(pea.data));
+		clearManual();
 	});
 	const probableGene = useMemo(
 		() =>
 			calculatePeaGenes(
 				tests[0].testee?.phenotype ?? null,
-				tests.flatMap(x => x.descendants.map(y => ({ result: y.phenotype, tester: x.testers.find(z => z.letter === x.parents.find(w => w !== "mystery"))!.phenotype })))
+				tests.flatMap(x => x.descendants.map(y => ({ result: y.phenotype, tester: x.testers.find(z => z.letter === x.parents!.find(w => w !== "mystery"))!.phenotype })))
 			),
 		[tests]
 	);
@@ -105,18 +122,31 @@ const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; 
 export default function GeneTestPage() {
 	const [tests, setTests] = useState<RawPeaPlantEntry[]>([]);
 	const [paste, setPaste] = useState<string>("");
+	const [manual, setManual] = useState<null | "a" | "b" | "c" | "d" | "e">(null);
 	return (
 		<main className={styles.main}>
 			{tests.length ? (
-				<GeneDashboard tests={tests} setTests={setTests} paste={paste} />
+				<GeneDashboard tests={tests} setTests={setTests} paste={paste} manual={manual} clearManual={() => setManual(null)} />
 			) : (
 				<Title
 					onPaste={(x, s) => {
+						if (!x.parents) {
+							if (!manual) return;
+							x.parents = ["mystery", manual];
+						}
 						setTests([x]);
 						setPaste(s);
+						setManual(null);
 					}}
 				/>
 			)}
+			<div>
+				{(["a", "b", "c", "d", "e"] as const).map(x => (
+					<button disabled={manual === x} key={x} onClick={() => setManual(x)}>
+						{x.toUpperCase()}
+					</button>
+				))}
+			</div>
 		</main>
 	);
 }

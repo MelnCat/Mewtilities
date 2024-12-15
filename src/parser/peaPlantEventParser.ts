@@ -8,7 +8,7 @@ import { PeaPhenotype } from "@/util/peaplant";
 export interface RawPeaPlantEntry {
 	testee: { phenotype: PeaPhenotype } | null;
 	testers: { letter: string; phenotype: PeaPhenotype }[];
-	parents: ["mystery" | "a" | "b" | "c" | "d" | "e", "mystery" | "a" | "b" | "c" | "d" | "e"];
+	parents: ["mystery" | "a" | "b" | "c" | "d" | "e", "mystery" | "a" | "b" | "c" | "d" | "e"] | null;
 	descendants: { phenotype: PeaPhenotype }[];
 }
 
@@ -68,10 +68,9 @@ export const parsePeaPlantEventPage = (content: string): Result<RawPeaPlantEntry
 	const testers = topRowPlants.filter(x => x?.data?.letter)!.map(x => x!.data!) as { phenotype: PeaPhenotype; letter: "a" }[];
 	const parent1 = (form.querySelector("#parent_a") as HTMLSelectElement | null)?.value;
 	const parent2 = (form.querySelector("#parent_b") as HTMLSelectElement | null)?.value;
-	if (!parent1 || !parent2) return failure("Parent missing");
-	const bottomRow = form.querySelector(".form-group + .horizontalflex.wrapflex.justify");
+	// if (!parent1 || !parent2) return failure("Parent missing");
+	const bottomRow = doc.querySelectorAll(".horizontalflex.wrapflex.justify")?.[1];
 	if (!bottomRow) return failure("Bottom row missing");
-
 	const bottomRowPlants = [...bottomRow.children].map(x => x.querySelector(".plantjail")).map(x => (x ? parsePlantJail(x) : x));
 	if (bottomRowPlants.includes(null)) return failure("Plant jail missing");
 
@@ -80,7 +79,7 @@ export const parsePeaPlantEventPage = (content: string): Result<RawPeaPlantEntry
 	return success({
 		testee,
 		testers,
-		parents: [parent1 as "a", parent2 as "a"],
+		parents: parent1 === undefined ? null : [parent1 as "a", parent2 as "a"],
 		descendants: bottomRowPlants.map(x => x!.data!),
 	});
 };
