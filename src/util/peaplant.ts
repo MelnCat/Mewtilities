@@ -1,17 +1,4 @@
 import { groupBy } from "remeda";
-import {
-	accents,
-	CatAppearance,
-	catPatterns,
-	densityFromColor,
-	dilutionFromColor,
-	geneFromColor,
-	GenePhenotype,
-	getGenePhenotype,
-	PartialCatGene,
-	possibleGenes,
-	whiteTypes,
-} from "./cat";
 import { combineResults } from "./gene";
 
 export interface ResultProbability<T extends string> {
@@ -100,13 +87,14 @@ export const getPossiblePeaGenes = (phenotype: PeaPhenotype | null) => {
 					["S", "S"],
 			  ]
 			: mendelian(phenotype.stem === "Straight", "S", "C"),
-		stemColor: !phenotype || phenotype.stemColor === "?"
-			? [
-					["L", "L"],
-					["D", "D"],
-					["D", "L"],
-			  ]
-			: mendelian(phenotype.stemColor === "Dark", "D", "L"),
+		stemColor:
+			!phenotype || phenotype.stemColor === "?"
+				? [
+						["L", "L"],
+						["D", "D"],
+						["D", "L"],
+				  ]
+				: mendelian(phenotype.stemColor === "Dark", "D", "L"),
 		pod: !phenotype
 			? [
 					["S", "W"],
@@ -187,70 +175,70 @@ export const calculatePeaGenes = (initial: PeaPhenotype | null, results: { resul
 	const checkProperty = <T extends keyof typeof possible, U extends keyof PeaPhenotype>(
 		property: T,
 		phenotype: U,
-		combine: (first: (typeof possible)[T][number], second: (typeof possible)[T][number]) => ResultProbability<string>[] | ResultProbability<string>[]
+		combine: (first: (typeof possible)[T][number], second: (typeof possible)[T][number]) => ResultProbability<string>[],
+		allowUnknown: boolean = false
 	) => {
 		if (possible[property].length === 1) return certain(possible[property][0]);
-		const out: { result: string; probability: number }[] = [];
-		for (const possibility of possible[property]) {
-			let probability = 1;
-			for (const test of results) {
-				if (test.result[phenotype] === "?") continue;
-				const tester = getPossiblePeaGenes(test.tester);
-				const results = combineResults(tester[property].flatMap(x => combine(possibility, x)));
-				if (property === "variegationColor") console.log(possibility, results, test.result[phenotype]);
-				probability *= results.find(x => x.result === test.result[phenotype])?.probability ?? 0;
-				if (!probability) break;
+		const out: { result: string; probability: number }[][][] = [];
+		const grouped = groupBy(results, x => JSON.stringify(x.tester));
+		for (const group of Object.values(grouped)) {
+			const probabilities: { result: string; probability: number }[][] = [];
+			for (const testPossibility of getPossiblePeaGenes(group[0].tester)[property]) {
+				const list: { result: string; probability: number }[] = [];
+				for (const possibility of possible[property]) {
+					let probability = 1;
+					for (const test of group) {
+						if (!allowUnknown && test.result[phenotype] === "?") continue;
+						const results = combineResults(combine(possibility, testPossibility));
+						probability *= results.find(x => x.result.toString() === test.result[phenotype].toString())?.probability ?? 0;
+						if (!probability) break;
+					}
+					list.push({ result: possibility.join(""), probability });
+				}
+				probabilities.push(list);
 			}
-			out.push({ result: possibility.join(""), probability });
+			out.push(probabilities);
 		}
-		return combineResults(out);
-	};
-	const checkMendelian = <T extends keyof PeaPhenotype & keyof typeof possible>(
-		property: T,
-		dominant: string,
-		dominantPhenotype: string,
-		recessivePhenotype: string
-	) =>
-		checkProperty(property, property, (a, b) =>
-			mendelian(a as readonly [string, string], b as readonly [string, string], dominant, dominantPhenotype, recessivePhenotype)
+		//console.log("O", out)
+		const averages = out.map(x =>
+			combineResults(x[0].map(y => ({ result: y.result, probability: x.map(z => z.find(n => n.result === y.result)?.probability ?? 0).reduce((l, c) => l + c, 0) })))
 		);
+		//console.log("A", averages)
+		const result = combineResults(
+			averages[0].map(x => ({ result: x.result, probability: averages.map(y => y.find(z => z.result === x.result)?.probability ?? 0).reduce((l, c) => l * c, 1) }))
+		);
+		//console.log("R", result);
+		return result;
+	};
+	const checkMendelian = <T extends keyof PeaPhenotype & keyof typeof possible>(property: T, dominant: string, dominantPhenotype: string, recessivePhenotype: string) =>
+		checkProperty(property, property, (a, b) => mendelian(a as readonly [string, string], b as readonly [string, string], dominant, dominantPhenotype, recessivePhenotype));
 
 	const size = checkMendelian("size", "N", "Normal", "Miniature");
 	const stem = checkMendelian("stem", "S", "Straight", "Curly");
 	const stemColor = checkMendelian("stemColor", "D", "Dark", "Light");
 	const pod = checkMendelian("pod", "S", "Smooth", "Wrinkly");
 	const podColor = checkMendelian("podColor", "G", "Green", "Gold");
-	const variegation = (() => {
-		const out: { result: string; probability: number }[] = [];
-		for (const possibility of possible.variegation) {
-			let probability = 1;
-			for (const test of results) {
-				const tester = getPossiblePeaGenes(test.tester);
-				const results = combineResults(
-					tester.variegation.flatMap(x => {
-						const output: ResultProbability<string>[] = [];
-						for (const first of possibility.slice(0, 2) as [string, string]) {
-							for (const second of x.slice(0, 2) as [string, string]) {
-								for (let i = Math.min(possibility[2] as number, x[2] as number); i <= Math.max(possibility[2] as number, x[2] as number); i++) {
-									output.push({ probability: 1, result: i === 0 || (first === "N" && second === "N") ? "?" : i.toString() });
-								}
-							}
-						}
-						return combineResults(output);
-					})
-				);
-				probability *= results.find(x => x.result === test.result.variegationCount.toString())?.probability ?? 0;
-				if (!probability) break;
+	const variegation = checkProperty(
+		"variegation",
+		"variegationCount",
+		(a, b) => {
+			const output: ResultProbability<string>[] = [];
+			for (const first of a.slice(0, 2) as [string, string]) {
+				for (const second of b.slice(0, 2) as [string, string]) {
+					for (let i = Math.min(a[2] as number, b[2] as number); i <= Math.max(a[2] as number, b[2] as number); i++) {
+						output.push({ probability: 1, result: i === 0 || (first === "N" && second === "N") ? "?" : i.toString() });
+					}
+				}
 			}
-			out.push({ result: possibility.join(""), probability });
-		}
-		return combineResults(out);
-	})();
+			return combineResults(output);
+		},
+		true
+	);
 	const variegationColor = checkMendelian("variegationColor", "W", "White", "Gold");
 	const flower = checkProperty("flower", "flower", (a, b) =>
 		a.flatMap(x =>
 			b.map(y => {
-				const sorted = [x, y].toSorted().join("");
+				const sorted = [x, y].toSorted((a, b) => a.localeCompare(b)).join("");
 
 				return { result: flowerTypeMap[sorted as keyof typeof flowerTypeMap], probability: 1 };
 			})
@@ -259,7 +247,7 @@ export const calculatePeaGenes = (initial: PeaPhenotype | null, results: { resul
 	const flowerColor = checkProperty("flowerColor", "flowerColor", (a, b) =>
 		a.flatMap(x =>
 			b.map(y => {
-				const sorted = [x, y].toSorted().join("");
+				const sorted = [x, y].toSorted((a, b) => a.localeCompare(b)).join("");
 				return { result: flowerColorMap[sorted as keyof typeof flowerColorMap], probability: 1 };
 			})
 		)
