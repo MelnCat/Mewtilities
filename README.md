@@ -6,7 +6,7 @@ A website for [Pixel Cat's End](https://www.pixelcatsend.com/) utilities, such a
 
 # All Rights Reserved
 
-# Self-Hosting (if you have permission)
+# Self-Hosting
 
 First, clone the repository locally, and run `yarn` to install packages. Afterwards, run `yarn build` to build a production build and `yarn start` to start hosting it.
 
