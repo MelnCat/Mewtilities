@@ -1,0 +1,34 @@
+.main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.25em;
+}
+.title {
+	font-size: 12em;
+}
+.lowertitle {
+	font-weight: bold;
+}
+.error {
+	color: #880000;
+}
+
+.certaintyList {
+	display: flex;
+	font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+	gap: 0.5em;
+}
+
+.geneCertainty {
+	padding: 0.5em 1em;
+}
+
+.geneValue {
+	font-weight: bold;
+	font-size: 2em;
+}
+
+.certainty {
+	font-size: 0.75em;
+}

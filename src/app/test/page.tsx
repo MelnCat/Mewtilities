@@ -6,6 +6,7 @@ import { CatAppearance, geneFromImported, PartialCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { parseBeanSandboxPage, RawBeanSandboxEntry } from "@/parser/beanSandboxParser";
 import { calculateUnknownGenes } from "@/util/gene";
+import { parsePeaPlantEventPage } from "@/parser/peaPlantEventParser";
 
 export default function GeneTestPage() {
 	const [pasted, setPasted] = useState("");
@@ -15,6 +16,7 @@ export default function GeneTestPage() {
 	const cat = useMemo(() => (pasted ? parseCatPage(pasted) : null), [pasted]);
 	const gene = useMemo(() => (cat?.data ? geneFromImported(cat.data) : null), [cat]);
 	const appearances = useMemo(() => (pasted ? parseBeanSandboxPage(pasted) : null), [pasted]);
+	const pea = useMemo(() => (pasted ? parsePeaPlantEventPage(pasted) : null), [pasted]);
 	const [savedAppearances, setSavedAppearances] = useState<RawBeanSandboxEntry[]>([]);
 	const [savedCat, setSavedCat] = useState<RawCat | null>(null);
 	const [catRegistry, setCatRegistry] = useState<Record<number, PartialCatGene>>({});
@@ -45,6 +47,9 @@ export default function GeneTestPage() {
 			</pre>
 			<pre>
 				<code>{appearances?.ok ? JSON.stringify(appearances.data, null, "\t") : appearances?.message}</code>
+			</pre>
+			<pre>
+				<code>{pea?.ok ? JSON.stringify(pea.data, null, "\t") : pea?.message}</code>
 			</pre>
 			<pre>
 				<code>{pasted}</code>
