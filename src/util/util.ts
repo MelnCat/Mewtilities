@@ -14,6 +14,7 @@ export const parsePriceType = (raw: string) =>
 	({
 		Notes: Currency.NOTE,
 		"Essence Fragments": Currency.ESSENCE,
+		"Lost Buttons": Currency.LOST_BUTTON,
 	}[raw]);
 
 export const numberFormat = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 2 });
