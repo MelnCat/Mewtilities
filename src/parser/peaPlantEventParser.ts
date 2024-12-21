@@ -40,13 +40,13 @@ export const parsePeaPlantEventPage = (content: string): Result<RawPeaPlantEntry
 		const clazz = [...base.classList].find(x => x !== "plant-base");
 		if (!baseColor || !potType || !peasData || !flowerData || !clazz) return failure("Invalid plant components");
 		const baseData = clazz.split("-").slice(1);
-		const albino = baseColor !== "darkgreen" && baseColor !== "lightgreen";
+		const albino = baseColor !== "darkgreen" && baseColor !== "lavender";
 		return success({
 			...(potType === "mystery" ? null : { letter: potType as "a" }),
 			phenotype: {
 				size: baseData[0] === "normal" ? "Normal" : "Miniature",
 				stem: baseData[1] === "straight" ? "Straight" : "Curly",
-				stemColor: baseColor === "darkgreen" ? "Dark" : baseColor === "lightgreen" ? "Light" : "?",
+				stemColor: baseColor === "darkgreen" ? "Dark" : baseColor === "lavender" ? "Light" : "?",
 				pod: peasData[0] === "smooth" ? "Smooth" : "Wrinkly",
 				podColor: peasData[1] === "green" ? "Green" : "Gold",
 				variegation: varieData || albino ? "Yes" : "No",
