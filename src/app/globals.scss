@@ -25,14 +25,9 @@ button {
 		background-color: #cecece77;
 	}
 }
-img, canvas {
+img,
+canvas {
 	image-rendering: pixelated;
-}
-
-.footer {
-	text-align: center;
-	padding: 1em 0;
-	width: 100%;
 }
 
 :root {
@@ -48,10 +43,45 @@ a {
 	color: #6b90d6;
 }
 
-input, textarea {
+input,
+textarea {
 	font-size: 0.91em;
 	background-color: #eeeeee11;
 	color: inherit;
 	padding: 0.4em 0.8em;
 	border: 1px solid #bbbbbb;
+}
+
+.footer {
+	text-align: center;
+	padding: 1em 0;
+	width: 100%;
+}
+
+.header {
+	padding: 0.8em 0;
+	width: 100%;
+	background-color: #6c8d7c;
+	background-image: linear-gradient(#6c8d7c, #497075);
+	border-bottom: #dcdec7 3px solid;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	img {
+		height: round(up, 6.1em, 58px);
+		width: auto;
+		image-rendering: pixelated;
+		z-index: 2;
+	}
+	.noise {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left:0 ;
+		z-index: 1;
+		mix-blend-mode: soft-light;
+		image-rendering: pixelated;
+	}
 }
