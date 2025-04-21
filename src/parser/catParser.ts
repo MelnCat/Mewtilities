@@ -13,9 +13,9 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	const form = doc.querySelector(".forum-post-group");
 	if (!form) return failure("Invalid page layout");
 	const builder = {} as Partial<RawCat>;
-	const title = doc.querySelector(".cat-title b")?.textContent;
+	const title = doc.querySelector(".cat-title")?.textContent;
 	if (!title) return failure("Invalid title");
-	builder.name = title;
+	builder.name = title.trim();
 	const columns = [...form.querySelectorAll(".bio-group-column")];
 	const findColumn = (text: string) =>
 		columns
@@ -224,30 +224,24 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	const genetic = form.querySelector(".genes-code.cat-minigroup")?.textContent?.match(/\w+/g);
 	if (genetic) builder.genetic = genetic.join("") === "UnknownGeneticString" ? null : genetic.join("");
 
-	const friends = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")))?.querySelector(".bio-scroll");
+	const friends = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")))?.querySelector(".friend-all");
 	if (!friends) return failure("Friends missing");
 	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
-		const found = chunk(
-			[...friends.childNodes].filter(x => x?.textContent?.trim()),
-			2
-		).map(x => [
-			([...x[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
-			x[1]?.textContent?.replace("- ", "").trim(),
+		const found = [...friends.children].filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR").map(x => [
+			([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+			x.childNodes[1]?.textContent?.replace("- ", "").trim(),
 		]);
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
 		builder.friends = Object.fromEntries(found);
 	}
-	const family = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")))?.querySelector(".bio-scroll");
+	const family = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")))?.querySelector(".friend-all");
 	if (!family) return failure("Family missing");
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
-		const found = chunk(
-			[...family.childNodes].filter(x => x?.textContent?.trim()),
-			2
-		).map(x => [
-			((x[0] as HTMLElement).tagName === "A" ? (x[0] as HTMLElement) : (x[0].childNodes[0] as HTMLElement))?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
-			x[1]?.textContent?.replace("- ", "").trim(),
+		const found = [...family.children].filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR").map(x => [
+			([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+			x.childNodes[1]?.textContent?.replace("- ", "").trim(),
 		]);
 		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
 		builder.family = Object.fromEntries(found);
