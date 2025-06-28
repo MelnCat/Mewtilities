@@ -37,7 +37,7 @@ const Title = ({ onPaste }: { onPaste: (data: RawPeaPlantEntry, text: string) =>
 		<>
 			<h1 className={styles.title}>[PURR]</h1>
 			<p className={styles.lowertitle}>Pea Unknowable Reproduction Resolver</p>
-			<p>Paste a pea to begin.</p>
+			<p>Paste a pea to begin. (Test with A)</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>
 		</>
@@ -47,19 +47,7 @@ const Title = ({ onPaste }: { onPaste: (data: RawPeaPlantEntry, text: string) =>
 const certain = <T,>(value: T) => [{ result: value, probability: 1 }];
 const sortMap = <T,>(map: Map<T, number>) => [...map.entries()].sort((a, b) => b[1] - a[1]).map(x => ({ result: x[0], probability: x[1] }));
 
-const GeneDashboard = ({
-	tests,
-	setTests,
-	paste,
-	manual,
-	clearManual,
-}: {
-	tests: RawPeaPlantEntry[];
-	setTests: Dispatch<SetStateAction<RawPeaPlantEntry[]>>;
-	paste: string;
-	manual: null | "a" | "b" | "c" | "d" | "e";
-	clearManual: () => void;
-}) => {
+const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; setTests: Dispatch<SetStateAction<RawPeaPlantEntry[]>>; paste: string }) => {
 	const copy = async () => {
 		await navigator.clipboard.writeText("");
 	};
@@ -69,14 +57,20 @@ const GeneDashboard = ({
 		if (seen.includes(data)) return;
 		const pea = parsePeaPlantEventPage(data);
 		if (!pea.ok) return;
-		if (!pea.data.parents) {
-			if (!manual) return;
-			pea.data.parents = ["mystery", manual];
-		}
+		if (!pea.data.parents) return;
 		setSeen(seen.concat(data));
 		setTests(tests.concat(pea.data));
-		clearManual();
 	});
+	const onLetterClick = async (letter: string) => {
+		const items = await (await navigator.clipboard.read())[0].getType("text/html");
+		const data = await items.text();
+		if (seen.includes(data)) return;
+		const pea = parsePeaPlantEventPage(data);
+		if (!pea.ok) return;
+		if (!pea.data.parents) pea.data.parents = ["mystery", letter as "a"];
+		setSeen(seen.concat(data));
+		setTests(tests.concat(pea.data));
+	};
 	const probableGeneRaw = useMemo(
 		() =>
 			calculatePeaGenes(
@@ -139,6 +133,14 @@ const GeneDashboard = ({
 			<article>
 				<p>Paste a pea trial to gene.</p>
 				<input value="" readOnly />
+
+				<div>
+					{(["a", "b", "c", "d", "e"] as const).map(x => (
+						<button style={{fontSize:"2em", margin: "0 0.1em"}} key={x} onClick={() => onLetterClick(x)}>
+							{x.toUpperCase()}
+						</button>
+					))}
+				</div>
 			</article>
 		</>
 	);
@@ -147,31 +149,21 @@ const GeneDashboard = ({
 export default function GeneTestPage() {
 	const [tests, setTests] = useState<RawPeaPlantEntry[]>([]);
 	const [paste, setPaste] = useState<string>("");
-	const [manual, setManual] = useState<null | "a" | "b" | "c" | "d" | "e">(null);
 	return (
 		<main className={styles.main}>
 			{tests.length ? (
-				<GeneDashboard tests={tests} setTests={setTests} paste={paste} manual={manual} clearManual={() => setManual(null)} />
+				<GeneDashboard tests={tests} setTests={setTests} paste={paste} />
 			) : (
 				<Title
 					onPaste={(x, s) => {
 						if (!x.parents) {
-							if (!manual) return;
-							x.parents = ["mystery", manual];
+							x.parents = ["mystery", "a"];
 						}
 						setTests([x]);
 						setPaste(s);
-						setManual(null);
 					}}
 				/>
 			)}
-			<div>
-				{(["a", "b", "c", "d", "e"] as const).map(x => (
-					<button disabled={manual === x} key={x} onClick={() => setManual(x)}>
-						{x.toUpperCase()}
-					</button>
-				))}
-			</div>
 		</main>
 	);
 }
