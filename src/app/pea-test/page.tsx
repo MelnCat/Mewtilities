@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { CatAppearance, catSpeciesList, deserializeCatGene, geneFromImported, PartialCatGene, serializeCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
-import { calculateUnknownGenes } from "@/util/gene";
+import { calculateUnknownGenes, combineResults } from "@/util/gene";
 import { parseBeanSandboxPage } from "@/parser/beanSandboxParser";
 import { smallNumberFormat } from "@/util/util";
 import SignIn from "../components/SignIn";
@@ -70,14 +70,14 @@ const GeneDashboard = ({
 		const pea = parsePeaPlantEventPage(data);
 		if (!pea.ok) return;
 		if (!pea.data.parents) {
-			if (!manual) return
+			if (!manual) return;
 			pea.data.parents = ["mystery", manual];
 		}
 		setSeen(seen.concat(data));
 		setTests(tests.concat(pea.data));
 		clearManual();
 	});
-	const probableGene = useMemo(
+	const probableGeneRaw = useMemo(
 		() =>
 			calculatePeaGenes(
 				tests[0].testee?.phenotype ?? null,
@@ -85,7 +85,32 @@ const GeneDashboard = ({
 			),
 		[tests]
 	);
-	console.log(probableGene);
+	const probableGene = useMemo(
+		() =>
+			new Map([
+				["size", probableGeneRaw.get("size")!],
+				["stem", probableGeneRaw.get("stem")!],
+				["stemColor", probableGeneRaw.get("stemColor")!],
+				["pod", probableGeneRaw.get("pod")!],
+				["podColor", probableGeneRaw.get("podColor")!],
+				[
+					"variegation",
+					combineResults(probableGeneRaw.get("variegation")!.map(x => ({ result: x.result.slice(0, 2), probability: x.probability }))).sort(
+						(a, b) => b.probability - a.probability
+					),
+				],
+				["variegationColor", probableGeneRaw.get("variegationColor")!],
+				[
+					"variegationN",
+					combineResults(probableGeneRaw.get("variegation")!.map(x => ({ result: x.result.slice(2), probability: x.probability }))).sort(
+						(a, b) => b.probability - a.probability
+					),
+				],
+				["flower", probableGeneRaw.get("flower")!],
+				["flowerColor", probableGeneRaw.get("flowerColor")!],
+			]),
+		[probableGeneRaw]
+	);
 	return (
 		<>
 			<section className={styles.certaintyList}>
