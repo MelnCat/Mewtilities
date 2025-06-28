@@ -1,7 +1,7 @@
 "use client";
 import { parseCatPage, RawCat } from "@/parser/catParser";
 import styles from "./page.module.scss";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { CatAppearance, catSpeciesList, deserializeCatGene, geneFromImported, PartialCatGene, serializeCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
@@ -36,7 +36,7 @@ const Title = ({ onPaste }: { onPaste: (data: RawPeaPlantEntry, text: string) =>
 	return (
 		<>
 			<h1 className={styles.title}>[PURR]</h1>
-			<p className={styles.lowertitle}>Pea Unknowable Reproduction Resolver</p>
+			<p className={styles.lowertitle}>Pea Unknown Reproduction Resolver</p>
 			<p>Paste a pea to begin. (Test with A)</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>
@@ -105,6 +105,19 @@ const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; 
 			]),
 		[probableGeneRaw]
 	);
+	const options = [
+		["NN", "NM", "MM"],
+		["SS", "SC", "CC"],
+		["DD", "DL", "LL"],
+		["SS", "SW", "WW"],
+		["GG", "GY", "YY"],
+		["YY", "YN", "NN"],
+		["WW", "WY", "YY"],
+		["0", "1", "2", "3", "4", "5"],
+		["AA", "AB", "AC", "BB", "BC", "CC"],
+		["BB", "BO", "PP", "PO", "BP", "OO"],
+	];
+
 	return (
 		<>
 			<section className={styles.certaintyList}>
@@ -133,10 +146,12 @@ const GeneDashboard = ({ tests, setTests, paste }: { tests: RawPeaPlantEntry[]; 
 			<article>
 				<p>Paste a pea trial to gene.</p>
 				<input value="" readOnly />
+				<div>{
+					[...probableGene.values()].map((x,  i) => options[i].findIndex(y => y === x[0].result || x[0].result.split("").reverse().join("") === y) + 1).join(" ")}</div>
 
 				<div>
 					{(["a", "b", "c", "d", "e"] as const).map(x => (
-						<button style={{fontSize:"2em", margin: "0 0.1em"}} key={x} onClick={() => onLetterClick(x)}>
+						<button style={{ fontSize: "2em", margin: "0 0.1em" }} key={x} onClick={() => onLetterClick(x)}>
 							{x.toUpperCase()}
 						</button>
 					))}
