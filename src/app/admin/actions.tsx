@@ -5,7 +5,7 @@ import prisma from "@/db/prisma";
 import { parseCatPage } from "@/parser/catParser";
 import { parseGatherResourcesPage } from "@/parser/gatherResourceParser";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
-import { parseMarketPage } from "@/parser/marketParser";
+import { parseMarketPage, RawMarketEntry } from "@/parser/marketParser";
 import { parseQuickSellPage } from "@/parser/quickSellParser";
 import { parseRecipeDatabasePage } from "@/parser/recipeDatabaseParser";
 import { parseShopListPage } from "@/parser/shopListParser";
@@ -41,12 +41,12 @@ const processFileAction =
 		}
 	};
 
-export const processMarketFiles = processFileAction(parseMarketPage, async data => {
+export const processMarketFiles = async (data: RawMarketEntry[]) => {
 	try {
 		let added = 0;
 		let updated = 0;
 		let untouched = 0;
-		for (const x of data.flat()) {
+		for (const x of data) {
 			const existing = await prisma.marketEntry.findFirst({ where: { id: x.id } });
 			const details = await prisma.marketEntry.upsert({
 				where: {
@@ -82,7 +82,7 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 		}
 		throw e;
 	}
-});
+};
 export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage, async data => {
 	let i = 0;
 	const existing = await prisma.item.count({
