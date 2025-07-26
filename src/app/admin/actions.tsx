@@ -265,6 +265,17 @@ export const processResourceGatherFiles = processFileAction(parseGatherResources
 	}
 	return { success: true, message: `${updated} entries updated` };
 });
+export const processDeletedItemFile = processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
+	const result = await prisma.item.updateMany({
+		data: {
+			deleted: true
+		},
+		where: {
+			id: { in: data.flat() }
+		}
+	});
+	return { success: true, message: `ok` };
+});
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
 	return {

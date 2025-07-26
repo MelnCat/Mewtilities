@@ -20,7 +20,7 @@ export const CustomItemPreview = ({ image, model, name, category }: { image: str
 				<div className={styles.modelContainer}>
 					{catTexture ? catTexture.images.map(x => x ? <img key={x} src={pceLink(x)} alt="Random Cat" /> : null) : model ? <img src={model} alt="Model" /> : null}
 				</div>
-				<img src={image} alt={name} />
+				<img src={pceLink(image)} alt={name} />
 			</div>
 			{allowedTypes ? <button onClick={() => setCatTexture(randomCatTexture(sample(allowedTypes, 1)[0]))}>Randomize Cat</button> : null}
 		</div>

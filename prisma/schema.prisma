@@ -31,6 +31,7 @@ model Item {
     custom     Boolean @default(false)
     /// [CustomItemData]
     customData Json?
+    deleted     Boolean @default(false)
 
     marketEntries        MarketEntry[]
     shopEntries          ShopEntry[]
