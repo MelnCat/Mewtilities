@@ -69,6 +69,7 @@ export const getProcessedItems = async (): Promise<ProcessedItem[]> => {
 		craftable: x.recipe !== null,
 		custom: x.custom,
 		customData: x.customData,
+		deleted: x.deleted
 	}));
 };
 
