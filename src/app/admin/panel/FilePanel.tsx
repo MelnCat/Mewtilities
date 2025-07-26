@@ -1,7 +1,19 @@
 "use client";
 import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.scss";
-import { processCatFiles, processDeletedItemFile, processItemDatabaseFiles, processMarketFiles, processQuickSellFiles, processRecipeDatabaseFiles, processResourceGatherFiles, processShopEntryFiles, processShopListFiles } from "../actions";
+import {
+	processCatFiles,
+	processDeletedItemFile,
+	processItemDatabaseFiles,
+	processMarketFiles,
+	processQuickSellFiles,
+	processRecipeDatabaseFiles,
+	processResourceGatherFiles,
+	processShopEntryFiles,
+	processShopListFiles,
+} from "../actions";
+import { parseMarketPage } from "@/parser/marketParser";
+import { Failure, unwrap } from "@/util/result";
 
 export const FilePanel = ({
 	title,
@@ -66,10 +78,31 @@ export const FilePanels = () => {
 			const result = await processor(formData);
 			return result;
 		};
+	const decoder = new TextDecoder();
+	const uploadMarket = async (fileList: FileList) => {
+		const files = [...fileList];
+		try {
+			const processed = await Promise.all(
+				files.map(async x => {
+					try {
+						return parseMarketPage(decoder.decode(await x.arrayBuffer()));
+					} catch (e) {
+						throw new Error(`${x.name}: ${e}`);
+					}
+				})
+			);
+			const errors = processed.map((x, i) => [x, i] as const).filter(x => !x[0].ok);
+			if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as Failure).message}`).join("\n")}` };
+			const unwrapped = processed.map(x => unwrap(x)).flat();
+			return await processMarketFiles(unwrapped);
+		} catch (e) {
+			return { success: false, message: String(e) };
+		}
+	};
 	return (
 		<>
 			<FilePanel title="Process Item Database" onSubmit={upload(processItemDatabaseFiles)} />
-			<FilePanel title="Process Marketplace" onSubmit={upload(processMarketFiles)} />
+			<FilePanel title="Process Marketplace" onSubmit={uploadMarket} />
 			<FilePanel title="Process Shop List" description="The city page, not the place where you buy stuff." onSubmit={upload(processShopListFiles)} />
 			<FilePanel title="Process Shop" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
 			<FilePanel title="Process Quick Sell" onSubmit={upload(processQuickSellFiles)} />
