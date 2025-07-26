@@ -34,6 +34,9 @@ const nextConfig = {
 				canvas: { browser: "buffer" },
 			},
 		},
+		serverActions: {
+			bodySizeLimit: "5mb",
+		},
 	},
 };
 
