@@ -52,10 +52,12 @@
 	flex-direction: column;
 	padding: 0.25em 0;
 	align-items: center;
+	gap: 0.2em;
 }
 .searchOption {
 	display: flex;
-	gap: 0.25em;
+	gap: 0.3em;
+	align-items: center;
 }
 .spacer {
 	flex-grow: 1;

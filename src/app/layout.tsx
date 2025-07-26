@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.scss";
+import styles from "./layout.module.scss";
 
 import { defaultFont } from "@/util/font";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +29,25 @@ export default function RootLayout({
 						<rect x="0" y="0" width="100%" height="100%" filter="url(#filter)" />
 					</svg>
 				</header>
+				<nav className={styles.nav}>
+					<div className={styles.navEntry}>
+						<Link href="/">Home</Link>
+					</div>
+					<div className={styles.gap} />
+					<div className={styles.navEntry}>
+						<Link href="/cat-editor">Cat Editor</Link>
+					</div>
+					<div className={styles.gap} />
+					<div className={styles.navEntry}>
+						<Link href="/items">Stock Market</Link>
+					</div>
+					<div className={styles.gap} />
+					<div className={styles.navEntry}>
+						<Link href="/bap">BAP</Link>
+					</div>
+				</nav>
 				{children}
-				<footer className="footer">
+				<footer className={styles.footer}>
 					All images and art are property of Cloudy Squid Games&apos; Pixel Cat&apos;s End. The site can be accessed at{" "}
 					<a href="https://www.pixelcatsend.com/">https://www.pixelcatsend.com/</a>
 				</footer>

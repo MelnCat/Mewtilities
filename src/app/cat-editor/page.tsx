@@ -15,7 +15,7 @@ import {
 	parseCatBio,
 	PartialCatGene,
 	randomCatGene,
-	whiteTypeList
+	whiteTypeList,
 } from "@/util/cat";
 import { accentNames, colorNames, patternNames, whiteTypeKeys } from "@/util/catData";
 import { blobToBase64, downloadFile } from "@/util/downloadFile";
@@ -218,7 +218,7 @@ export default function CatEditorPage() {
 				setAccentLayer(parsed[3]);
 				setEyesLayer(parsed[4]);
 				found = true;
-			} catch {}
+			} catch { }
 		}
 		if (found) setImportInput("");
 		else setImportInput("[Invalid]");
@@ -284,7 +284,7 @@ export default function CatEditorPage() {
 						return { ...item, keyId: Math.random(), shown: x.shown };
 					})
 				);
-		} catch {}
+		} catch { }
 	};
 	const uploadAsset = async () => {
 		try {
@@ -299,7 +299,7 @@ export default function CatEditorPage() {
 				cl.push({ keyId: Math.random(), data: await blobToBase64(f), image: url, custom: true, name: f.name, shown: true });
 			}
 			setClothing(cl);
-		} catch {}
+		} catch { }
 	};
 
 	return (
@@ -424,6 +424,12 @@ export default function CatEditorPage() {
 					<h1>Clothing</h1>
 					<div className={styles.selectRow}>
 						<Select
+							styles={{
+								option: (provided, state) => ({
+									...provided,
+									backgroundColor: state.isFocused ? "var(--dark)" : state.isSelected ? "#7a7bc254" : "var(--darker)"
+								}),
+							}}
 							className={styles.select}
 							windowThreshold={50}
 							filterOption={createFilter({ ignoreAccents: false })}
@@ -459,7 +465,7 @@ export default function CatEditorPage() {
 									)}
 								</section>
 								<p>{item.name}</p>
-								<button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>X</button>
+								<button onClick={() => setClothing(x => x.filter(y => y.keyId !== item.keyId))}>&times;</button>
 							</Reorder.Item>
 						))}
 					</Reorder.Group>

@@ -86,3 +86,7 @@ export const getClothing = () =>
 		where: { category: { contains: "clothing" } },
 		orderBy: { id: "asc" },
 	});
+
+export const generatePinglist = async (tags: string[]) => {
+	return (await prisma.bapEntry.findMany({ where: { subscribed: { hasSome: tags } } })).sort((a, b) => a.username.localeCompare(b.username)).map(x => `@${x.username}`).join(" ");
+};

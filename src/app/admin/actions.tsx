@@ -85,6 +85,11 @@ export const processMarketFiles = processFileAction(parseMarketPage, async data 
 });
 export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage, async data => {
 	let i = 0;
+	const existing = await prisma.item.count({
+		where: {
+			id: { in: data.flat().map(x => x.id) }
+		}
+	})
 	for (const item of data.flat()) {
 		await prisma.item.upsert({
 			where: {
@@ -116,7 +121,7 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 		});
 		i++;
 	}
-	return { success: true, message: `${i} entries updated` };
+	return { success: true, message: `${i} entries updated, ${data.flat().length - existing} new ones` };
 });
 
 export const processShopListFiles = processFileAction(parseShopListPage, async data => {

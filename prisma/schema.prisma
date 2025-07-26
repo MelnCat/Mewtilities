@@ -38,6 +38,7 @@ model Item {
     recipe               Recipe?
     usages               RecipeIngredient[]
     holdingCats          Cat[]
+    holdingUserCats      UserCat[]
     ResourceGatherResult ResourceGatherResult[]
 }
 
@@ -53,6 +54,11 @@ model MarketEntry {
     priceCount   Int
     expiryTime   DateTime
     creationTime DateTime
+}
+
+model BapEntry {
+    username   String   @id
+    subscribed String[]
 }
 
 model Shop {
@@ -189,6 +195,65 @@ model Cat {
     bio String?
 }
 
+model UserCat {
+    id        Int     @id
+    ownerName String?
+    ownerId   Int?
+
+    travelling Boolean
+    location   String
+
+    genetic String?
+
+    name        String
+    wind        String
+    personality String
+    clothing    Int[]
+    birthYear   Int
+    birthSeason Season
+    birthDay    Int
+    pronouns    String
+    origin      String
+    species     String
+    sizeLb      Float
+    sizeKg      Float
+    fur         String
+    color       String
+    pattern     String
+    whiteMarks  String
+    accentColor String?
+    eyeColor    String
+    ageType     String
+    ageNumber   String
+
+    trinket   Item? @relation(fields: [trinketId], references: [id])
+    trinketId Int?
+
+    job     String?
+    jobXp   Json?
+    class   String?
+    classXp Json?
+
+    strength   Int?
+    agility    Int?
+    health     Int?
+    finesse    Int?
+    cleverness Int?
+    perception Int?
+    luck       Int?
+
+    bravery      Int?
+    benevolence  Int?
+    energy       Int?
+    extroversion Int?
+    dedication   Int?
+
+    friends Json
+    family  Json
+
+    bio String?
+}
+
 enum RecipeCategory {
     APOTHECARY
     CLOTHIER
@@ -227,13 +292,13 @@ enum Currency {
 // Auth
 
 model User {
-    id            String          @id @default(cuid())
+    id            String    @id @default(cuid())
     name          String?
-    email         String          @unique
+    email         String    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
-	
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
