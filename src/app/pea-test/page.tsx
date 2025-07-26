@@ -1,16 +1,11 @@
 "use client";
-import { parseCatPage, RawCat } from "@/parser/catParser";
-import styles from "./page.module.scss";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { useEventListener } from "usehooks-ts";
-import { CatAppearance, catSpeciesList, deserializeCatGene, geneFromImported, PartialCatGene, serializeCatGene } from "@/util/cat";
-import { CatGeneDisplay } from "../components/CatGeneDisplay";
-import { calculateUnknownGenes, combineResults } from "@/util/gene";
-import { parseBeanSandboxPage } from "@/parser/beanSandboxParser";
-import { smallNumberFormat } from "@/util/util";
-import SignIn from "../components/SignIn";
 import { parsePeaPlantEventPage, RawPeaPlantEntry } from "@/parser/peaPlantEventParser";
+import { combineResults } from "@/util/gene";
 import { calculatePeaGenes } from "@/util/peaplant";
+import { smallNumberFormat } from "@/util/util";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { useEventListener } from "usehooks-ts";
+import styles from "./page.module.scss";
 
 const usePaste = (cb: (html: string) => void | Promise<void>) => {
 	useEventListener("paste", event => {
@@ -35,8 +30,7 @@ const Title = ({ onPaste }: { onPaste: (data: RawPeaPlantEntry, text: string) =>
 	});
 	return (
 		<>
-			<h1 className={styles.title}>[PURR]</h1>
-			<p className={styles.lowertitle}>Pea Unknown Reproduction Resolver</p>
+			<img src="/img/services/purr.png" alt="PURR: Pea Unknowable Reproduction Resolver" className={styles.title} />
 			<p>Paste a pea to begin. (Test with A)</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>

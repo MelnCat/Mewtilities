@@ -1,0 +1,40 @@
+.main {
+	display: flex;
+	flex-direction: column;
+	padding: 0.4em;
+	--border-color: #36383a;
+}
+.banner {
+	height: 8em;
+	margin: 0 auto;
+}
+.category {
+	background-color: #464950;
+	border: var(--border-color) 2px solid;
+}
+.categories {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2em;
+}
+.categoryTitle {
+	border: var(--border-color) 2px solid;
+	cursor: pointer;
+	padding: 0.2em 0.3em;
+}
+.separator {
+}
+.categoryContents {
+	display: none;
+	padding: 0.6em;
+	gap: 0.8em;
+	flex-wrap: wrap;
+	&[data-visible] {
+		display: flex;
+	}
+}
+.tag {
+	cursor: pointer;
+	padding: 0.6em;
+	border: var(--border-color) 2px solid;
+}

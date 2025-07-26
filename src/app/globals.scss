@@ -1,7 +1,8 @@
-* {
+*, *::before, *::after {
 	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
+	scrollbar-color: #29282c var(--darker);
 }
 
 button {
@@ -9,19 +10,18 @@ button {
 	width: fit-content;
 	padding: 0.3em 0.7em;
 	font-size: 1em;
-	border: 1px solid #77777777;
+	border: none;
 	cursor: pointer;
-	background-color: #cecece22;
+	background-color: #b5b7be22;
 	transition: background-color 0.1s;
 	&:hover {
-		background-color: #cecece2e;
+		background-color: #b5b7be33;
 	}
 	&:active {
-		background-color: #cecece44;
+		background-color: #b5b7be22;
 	}
 	&:disabled {
 		cursor: not-allowed;
-		border-color: #77777733;
 		background-color: #cecece77;
 	}
 }
@@ -29,14 +29,34 @@ img,
 canvas {
 	image-rendering: pixelated;
 }
-
+h1 {
+	font-size: 1.4em;
+}
+input[type="checkbox"] {
+	accent-color: var(--darker);
+	border-radius: 0;
+	width: 1.25em;
+	height: 1.25em;
+}
+select {
+	border-radius: 0;
+	border: none;
+	padding: 0.3em 0.5em;
+	background-color: var(--darker);
+	color: var(--light);
+}
 :root {
 	--light: #eeeeee;
-	--dark: #111111;
+	--dark: #403f47;
+	--darker: #333238;
+	--darkest: #2d2c33;
 }
 body {
 	background-color: var(--dark);
 	color: var(--light);
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
 a {
@@ -45,17 +65,10 @@ a {
 
 input,
 textarea {
-	font-size: 0.91em;
-	background-color: #eeeeee11;
+	background-color: var(--darker);
+	border: none;
 	color: inherit;
 	padding: 0.4em 0.8em;
-	border: 1px solid #bbbbbb;
-}
-
-.footer {
-	text-align: center;
-	padding: 1em 0;
-	width: 100%;
 }
 
 .header {
@@ -79,7 +92,7 @@ textarea {
 		height: 100%;
 		position: absolute;
 		top: 0;
-		left:0 ;
+		left: 0;
 		z-index: 1;
 		mix-blend-mode: soft-light;
 		image-rendering: pixelated;

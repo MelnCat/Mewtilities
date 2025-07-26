@@ -1,0 +1,166 @@
+[
+	{
+		"name": "Body Horror",
+		"category": "trigger_squick_tags"
+	},
+	{
+		"name": "Eyes",
+		"category": "trigger_squick_tags"
+	},
+	{
+		"name": "Eyestrain",
+		"category": "trigger_squick_tags"
+	},
+	{
+		"name": "Insects",
+		"category": "trigger_squick_tags"
+	},
+	{
+		"name": "Parasites/Growths",
+		"category": "trigger_squick_tags"
+	},
+	{
+		"name": "Limited/Retiring",
+		"category": "item_type"
+	},
+	{
+		"name": "Full Set",
+		"category": "item_type"
+	},
+	{
+		"name": "Site Item Extension",
+		"category": "item_type"
+	},
+	{
+		"name": "Site Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Warm Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Cool Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Bright Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Dark Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Pastel Colors",
+		"category": "colors"
+	},
+	{
+		"name": "Metallics",
+		"category": "colors"
+	},
+	{
+		"name": "ACMA Palette",
+		"category": "colors"
+	},
+	{
+		"name": "CCC Palette",
+		"category": "colors"
+	},
+	{
+		"name": "Pride",
+		"category": "colors"
+	},
+	{
+		"name": "Food",
+		"category": "theme"
+	},
+	{
+		"name": "Floral/Flower",
+		"category": "theme"
+	},
+	{
+		"name": "Job/Occupation",
+		"category": "theme"
+	},
+	{
+		"name": "Meme/Silly",
+		"category": "theme"
+	},
+	{
+		"name": "Plant/Greenery",
+		"category": "theme"
+	},
+	{
+		"name": "Space/Stars/Galaxy",
+		"category": "theme"
+	},
+	{
+		"name": "Atmospheric/Whirl",
+		"category": "descriptive"
+	},
+	{
+		"name": "Accessories",
+		"category": "descriptive"
+	},
+	{
+		"name": "Animal/Creature Companion",
+		"category": "descriptive"
+	},
+	{
+		"name": "Background/Border",
+		"category": "descriptive"
+	},
+	{
+		"name": "Hat/Headpiece",
+		"category": "descriptive"
+	},
+	{
+		"name": "Horns/Antlers",
+		"category": "descriptive"
+	},
+	{
+		"name": "Humanwear",
+		"category": "descriptive"
+	},
+	{
+		"name": "Jewelry",
+		"category": "descriptive"
+	},
+	{
+		"name": "Makeup/tattoos",
+		"category": "descriptive"
+	},
+	{
+		"name": "Mantle/shawl/cloak",
+		"category": "descriptive"
+	},
+	{
+		"name": "Mask",
+		"category": "descriptive"
+	},
+	{
+		"name": "Prop/tasty",
+		"category": "descriptive"
+	},
+	{
+		"name": "Prosthetic/Body Modification",
+		"category": "descriptive"
+	},
+	{
+		"name": "Weapon",
+		"category": "descriptive"
+	},
+	{
+		"name": "Wig/Hair",
+		"category": "descriptive"
+	},
+	{
+		"name": "Wings",
+		"category": "descriptive"
+	},
+	{
+		"name": "ASDFGHJKL",
+		"category": "descriptive"
+	}
+]
