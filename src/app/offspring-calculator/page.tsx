@@ -158,7 +158,7 @@ const GeneTestResults = ({
 export default function GeneTestPage() {
 	const [first, setFirst] = useState("");
 	const [second, setSecond] = useState("");
-	const [ignoreOrder, setIgnoreOrder] = useState(false);
+	const [ignoreOrder, setIgnoreOrder] = useState(true);
 	const [fractions, setFractions] = useState(false);
 	const [componentwise, setComponentwise] = useState(false);
 	const [ignorePush, setIgnorePush] = useState(false);
@@ -210,7 +210,7 @@ export default function GeneTestPage() {
 					pushyNorth={ignorePush ? null : pushyNorth}
 				/>
 			) : null}
-			{first && second && !compatible ? <p>Incompatible Cats!</p> : null}
+			{(first && second && !compatible) ? <p>Incompatible Cats!</p> : null}
 		</main>
 	);
 }
