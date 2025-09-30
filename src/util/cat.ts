@@ -292,7 +292,7 @@ export const catPatterns = generateAlleleMap({
 	AA: "freckle"
 } as const)
 
-export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns];
+export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns] | "solid";
 
 export const catPatternList = ["solid" as CatPattern].concat([
 	...new Set(Object.values(catPatterns).flatMap(x => Object.values(x))),
