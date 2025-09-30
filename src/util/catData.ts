@@ -72,6 +72,7 @@ export const whiteTypeKeys = {
 	left: "Left",
 	right: "Right",
 	inverse: "Inverse",
+	tabby: "Tabby"
 };
 
 export const patternNames = {
@@ -86,6 +87,11 @@ export const patternNames = {
 	spotted: "Spotted",
 	mink: "Mink",
 	colorpoint: "Colorpoint",
+	ticked: "Ticked",
+	ripple: "Ripple",
+	agouti: "Agouti",
+	karpati: "Karpati",
+	freckle: "Freckle"
 };
 
 export const colorNames = {
