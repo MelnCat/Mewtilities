@@ -13,7 +13,7 @@ export default function GeneTestPage() {
 	const onPaste: ClipboardEventHandler<HTMLInputElement> = e => {
 		setPasted(e.clipboardData.getData("text/html"));
 	};
-	const cat = useMemo(() => (pasted ? parseCatPage(pasted) : null), [pasted]);
+	const cat = useMemo(() => (pasted ? parseCatPage(pasted, true) : null), [pasted]);
 	const gene = useMemo(() => (cat?.data ? geneFromImported(cat.data) : null), [cat]);
 	const appearances = useMemo(() => (pasted ? parseBeanSandboxPage(pasted) : null), [pasted]);
 	const pea = useMemo(() => (pasted ? parsePeaPlantEventPage(pasted) : null), [pasted]);
