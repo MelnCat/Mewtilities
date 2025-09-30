@@ -263,8 +263,8 @@ export const catColorList = [
 	...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x)))),
 ] as CatColor[];
 
-const generateAlleleMap = (map: Record<string, string>) => {
-	const out: Record<string, Record<string, string>> = {};
+const generateAlleleMap = <T>(map: Record<string, T>) => {
+	const out: Record<string, Record<string, T>> = {};
 	for (const [k, v] of Object.entries(map)) {
 		out[k[0]] ??= {};
 		out[k[0]][k[1]] = v;
@@ -290,7 +290,7 @@ export const catPatterns = generateAlleleMap({
 	PP: "colorpoint",
 	PA: "karpati",
 	AA: "freckle"
-})
+} as const)
 
 export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns];
 

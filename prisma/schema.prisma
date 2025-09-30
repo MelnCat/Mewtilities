@@ -253,6 +253,9 @@ model UserCat {
     family  Json
 
     bio String?
+
+	pose String @default("playing")
+	flipped Boolean @default(false)
 }
 
 enum RecipeCategory {
