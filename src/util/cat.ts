@@ -262,9 +262,11 @@ const catColors = {
 export const catColorList = [
 	...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x)))),
 ] as CatColor[];
-
+export const entriesSymbol = Symbol();
 const generateAlleleMap = (map: Record<string, string>) => {
-	const out: Record<string, Record<string, string>> = {};
+	const out: Record<string, Record<string, string>> & Record<typeof entriesSymbol, string[]> = {
+		[entriesSymbol]: Object.keys(map)
+	};
 	for (const [k, v] of Object.entries(map)) {
 		out[k[0]] ??= {};
 		out[k[0]][k[1]] = v;
@@ -655,13 +657,13 @@ export const densityFromColor = (color: string): 1 | 2 | 3 | 4 | "?" => {
 	}
 	return "?";
 };
-export const geneFromPattern = (pattern: string): ["T" | "M" | "S" | "P" | "?", "T" | "M" | "S" | "P" | "?"] => {
+export const geneFromPattern = (pattern: string): ["T" | "M" | "S" | "P" | "A" | "?", "T" | "M" | "S" | "P" | "A" | "?"] => {
 	for (const [k, v] of Object.entries(catPatterns)) {
 		for (const [k2, p] of Object.entries(v)) if (p === pattern) return [k as "T", k2 as "T"];
 	}
 	return ["?", "?"];
 };
-export const geneFromWhiteType = (type: string): "C" | "P" | "L" | "R" | "I" | "?" => {
+export const geneFromWhiteType = (type: string): "C" | "P" | "L" | "R" | "I" | "T" | "?" => {
 	for (const [k, v] of Object.entries(whiteTypes)) {
 		if (type === v) return k as "C";
 	}
@@ -756,9 +758,9 @@ export interface PossibleGenes {
 	dilution: readonly ["F" | "D", "F" | "D"][];
 	density: readonly (1 | 2 | 3 | 4)[];
 	pattern: readonly ["Y" | "N", "Y" | "N"][];
-	spotting: readonly ["T" | "M" | "S" | "P", "T" | "M" | "S" | "P"][];
+	spotting: readonly ["T" | "M" | "S" | "P" | "A", "T" | "M" | "S" | "P" | "A"][];
 	white: readonly [["Y" | "N", "Y" | "N"], 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10][];
-	whiteType: readonly ("C" | "P" | "L" | "R" | "I")[];
+	whiteType: readonly ("C" | "P" | "L" | "R" | "I" | "T")[];
 	accent: readonly ["B" | "L" | "R" | "Y", "B" | "L" | "R" | "Y"][];
 }
 
@@ -800,16 +802,7 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 			: [gene.pattern],
 		spotting: gene.spotting.every(x => x === "?")
 			? [
-					["T", "T"],
-					["T", "M"],
-					["T", "S"],
-					["T", "P"],
-					["M", "M"],
-					["M", "S"],
-					["M", "P"],
-					["S", "S"],
-					["S", "P"],
-					["P", "P"],
+					catPatterns[entriesSymbol].map(x => x.split(""))
 			  ]
 			: [gene.spotting],
 		white: gene.white.every(x => x === "?")
@@ -826,7 +819,7 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 			  ])
 			: [[gene.white, gene.whiteNumber]],
 		whiteNumber: gene.whiteNumber === "?" ? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [gene.whiteNumber],
-		whiteType: gene.whiteType === "?" ? ["C", "P", "L", "R", "I"] : [gene.whiteType],
+		whiteType: gene.whiteType === "?" ? ["C", "P", "L", "R", "I", "T"] : [gene.whiteType],
 		accent: gene.accent.every(x => x === "?")
 			? [
 					["B", "B"],
