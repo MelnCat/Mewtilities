@@ -64,6 +64,19 @@ export const whiteTypeNames = {
 		9: "Heart",
 		10: "Albino",
 	},
+	tabby: {
+		0: "None",
+		1: "Tail Bands",
+		2: "Tail & Ear Bands",
+		3: "Small Stripes",
+		4: "Small Ribbons",
+		5: "Fishspine",
+		6: "Full Stripes",
+		7: "Full Ribbons",
+		8: "Birch",
+		9: "Scratch",
+		10: "Albino",
+	},
 };
 
 export const whiteTypeKeys = {

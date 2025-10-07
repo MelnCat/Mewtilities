@@ -263,9 +263,10 @@ export const catColorList = [
 	...new Set(Object.values(catColors).flatMap(x => Object.values(x).flatMap(x => Object.values(x)))),
 ] as CatColor[];
 export const entriesSymbol = Symbol();
-const generateAlleleMap = (map: Record<string, string>) => {
-	const out: Record<string, Record<string, string>> & Record<typeof entriesSymbol, string[]> = {
-		[entriesSymbol]: Object.keys(map)
+
+const generateAlleleMap = <T>(map: Record<string, T>) => {
+	const out: Record<string, Record<string, T>> & Record<typeof entriesSymbol, string[]> = {
+		[entriesSymbol]: Object.keys(map),
 	};
 	for (const [k, v] of Object.entries(map)) {
 		out[k[0]] ??= {};
@@ -274,7 +275,7 @@ const generateAlleleMap = (map: Record<string, string>) => {
 		out[k[1]][k[0]] = v;
 	}
 	return out;
-}
+};
 
 export const catPatterns = generateAlleleMap({
 	TT: "mackerel",
@@ -291,10 +292,10 @@ export const catPatterns = generateAlleleMap({
 	SA: "agouti",
 	PP: "colorpoint",
 	PA: "karpati",
-	AA: "freckle"
-})
+	AA: "freckle",
+} as const);
 
-export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns];
+export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns] | "solid";
 
 export const catPatternList = ["solid" as CatPattern].concat([
 	...new Set(Object.values(catPatterns).flatMap(x => Object.values(x))),
@@ -311,7 +312,7 @@ export const whiteTypes = {
 	L: "left",
 	P: "piebald",
 	C: "classic",
-	T: "tabby"
+	T: "tabby",
 } as const satisfies Record<z.TypeOf<typeof whitePatternType>, string>;
 
 export type CatWhiteType = (typeof whiteTypes)[keyof typeof whiteTypes];
@@ -474,8 +475,29 @@ export const getCatTextureProperties = (p: GenePhenotype) =>
 		{ eyes: "neutral", albinoType: p.whiteNumber === 10 ? p.whiteType : "-", shown: true },
 	] as const;
 
-export type CatEyes = "squint" | "sleepy" | "uwu" | "content" | "danger" | "sad" | "stern" | "right" | "left" | "neutral";
-export const catEyes = ["squint", "sleepy", "uwu", "content", "danger", "sad", "stern", "right", "left", "neutral"] as const;
+export const catEyes = [
+	"squint",
+	"sleepy",
+	"uwu",
+	"content",
+	"danger",
+	"sad",
+	"stern",
+	"right",
+	"left",
+	"neutral",
+	"wink",
+	"happy",
+	"pensive",
+	"ough",
+	"sparkling",
+	"wimdy",
+	"whoa",
+	"zoinks",
+	"sneer",
+	"cute",
+] as const;
+export type CatEyes = (typeof catEyes)[number];
 export const catEyesNames = {
 	squint: "Squint",
 	sleepy: "Sleepy",
@@ -487,6 +509,16 @@ export const catEyesNames = {
 	right: "Right",
 	left: "Left",
 	neutral: "Neutral",
+	wink: "Wink",
+	happy: "Happy",
+	pensive: "Pensive",
+	ough: "Ough",
+	sparkling: "Sparkling",
+	wimdy: "Wimdy",
+	whoa: "Whoa",
+	zoinks: "Zoinks",
+	sneer: "Sneer",
+	cute: "Cute",
 };
 
 export const textureFromGene = (
@@ -538,8 +570,8 @@ const geneRegex = regex`
 	(?<windBracket>\[|\{)?\s*(?<wind>[NSO?]{2})\s*(\]|\})?\s*
 	(?<furBracket>\[|\{)?\s*(?<fur>[SL?]{2})\s*(\]|\})?\s*
 	\[?\s*(?<colorBracket>\{)?\s*(?<color>[BO?]{2})\s*\}?\s*(?<dilutionBracket>\{)?\s*(?<dilution>[FD?]{2})\s*\}?\s*(?<density>[1234?])\s*\]?\s*
-	(?<patternSectionBracket>\[|\{)?\s*(?<patternBracket>\{)?\s*(?<pattern>[YN?]{2})\s*(?<patternEndBracket>\})?\s*(?<spottingBracket>\{)?\s*(?<spotting>[TMSP]{2})\s*\}?\s*(\]|\})?\s*
-	\[?\s*(?<whiteBracket>\{)?\s*(?<white>[YN?]{2})\s*\}?\s*(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRI])\s*\]?\s*
+	(?<patternSectionBracket>\[|\{)?\s*(?<patternBracket>\{)?\s*(?<pattern>[YN?]{2})\s*(?<patternEndBracket>\})?\s*(?<spottingBracket>\{)?\s*(?<spotting>[TMSPA]{2})\s*\}?\s*(\]|\})?\s*
+	\[?\s*(?<whiteBracket>\{)?\s*(?<white>[YN?]{2})\s*\}?\s*(?<whiteNumber>[0123456789?]|10)(?<whitePattern>[CPLRIT])\s*\]?\s*
 	(?<growthBracket>\[|\{)?\s*(?<growth>[ABC?]{2})\s*(\]|\})?\s*
 	(?<accentBracket>\[|\{)?\s*(?<accent>[BLRY?]{2})\s*(\]|\})?
 `;
@@ -800,11 +832,7 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 			: gene.pattern.includes("?")
 			? [gene.pattern.map(x => (x === "?" ? "Y" : x)), gene.pattern.map(x => (x === "?" ? "N" : x))]
 			: [gene.pattern],
-		spotting: gene.spotting.every(x => x === "?")
-			? [
-					catPatterns[entriesSymbol].map(x => x.split(""))
-			  ]
-			: [gene.spotting],
+		spotting: gene.spotting.every(x => x === "?") ? [catPatterns[entriesSymbol].map(x => x.split(""))] : [gene.spotting],
 		white: gene.white.every(x => x === "?")
 			? [
 					["Y", "N"],

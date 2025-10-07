@@ -4,11 +4,11 @@ import type { Cat, Season } from "@prisma/client";
 import { HTML2BBCode } from "html2bbcode";
 import { chunk } from "remeda";
 
-export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[] };
+export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[]; pose: string; flipped: boolean };
 
 const seasons = ["SPRING", "SUMMER", "AUTUMN", "WINTER"];
 
-export const parseCatPage = (content: string): Result<RawCat> => {
+export const parseCatPage = (content: string, includePose: boolean = false): Result<RawCat> => {
 	const doc = parseDom(content);
 	const form = doc.querySelector(".forum-post-group");
 	if (!form) return failure("Invalid page layout");
@@ -228,10 +228,12 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!friends) return failure("Friends missing");
 	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
-		const found = [...friends.children].filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR").map(x => [
-			([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
-			x.childNodes[1]?.textContent?.replace("- ", "").trim(),
-		]);
+		const found = [...friends.children]
+			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
+			.map(x => [
+				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+				x.childNodes[1]?.textContent?.replace("- ", "").trim(),
+			]);
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
 		builder.friends = Object.fromEntries(found);
 	}
@@ -239,10 +241,12 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	if (!family) return failure("Family missing");
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
-		const found = [...family.children].filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR").map(x => [
-			([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
-			x.childNodes[1]?.textContent?.replace("- ", "").trim(),
-		]);
+		const found = [...family.children]
+			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
+			.map(x => [
+				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+				x.childNodes[1]?.textContent?.replace("- ", "").trim(),
+			]);
 		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
 		builder.family = Object.fromEntries(found);
 	}
@@ -282,6 +286,15 @@ export const parseCatPage = (content: string): Result<RawCat> => {
 	const clothing = [...form.querySelectorAll(".catjail .cat-clothes")].map(x => x.getAttribute("src")?.match(/\/(\w+)\.png/)?.[1]);
 	if (clothing.includes(undefined)) return failure("Clothing missing or invalid");
 	builder.clothingKeys = clothing as string[];
+
+	if (includePose) {
+		const base = form.querySelector(".cat-base");
+		if (!base || base.classList.length < 2) return failure("Cat base missing or not long enough");
+		builder.pose = [...base?.classList].find(x => x !== "cat-base");
+		const cat = form.querySelector(".cat-cat");
+		if (!cat) return failure("Cat cat missing");
+		builder.flipped = cat.classList.contains("flip");
+	}
 
 	return success(builder as RawCat);
 };
