@@ -12,7 +12,7 @@ export const calculateMendelianAlleles = (data: { dominant: number; recessive: n
 	const dominant = isNaN(data.dominant) ? 0 : data.dominant;
 	const recessive = isNaN(data.recessive) ? 0 : data.recessive;
 	return {
-		dominant: Math.sqrt(-2 * Math.sqrt(recessive * (recessive + dominant)) + 2 * recessive + dominant),
-		recessive: -(recessive - Math.sqrt(recessive * (recessive + dominant))) / Math.sqrt(-2 * Math.sqrt(recessive * (recessive + dominant)) + 2 * recessive + dominant),
+		dominant: 1 - Math.sqrt(recessive),
+		recessive: Math.sqrt(recessive),
 	};
 };
