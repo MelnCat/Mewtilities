@@ -23,7 +23,7 @@ declare global {
 	}
 }
 
-export const getItemData = (id: number) =>
+export const getItemData = async(id: number) =>
 	prisma.item.findFirst({
 		where: { id },
 		include: {
@@ -34,7 +34,7 @@ export const getItemData = (id: number) =>
 		},
 	});
 
-export const getAllItems = () =>
+export const getAllItems = async() =>
 	prisma.item.findMany({
 		orderBy: { id: "asc" },
 		include: { marketEntries: { where: { expiryTime: { gt: new Date() } } }, shopEntries: true, quickSellEntries: { orderBy: { priceCount: "asc" } }, recipe: true },
@@ -81,7 +81,7 @@ export interface ProcessedClothing {
 	custom: boolean;
 	customData: PrismaJson.CustomItemData | null;
 }
-export const getClothing = () =>
+export const getClothing = async() =>
 	prisma.item.findMany({
 		select: { id: true, name: true, key: true, image: true, custom: true, customData: true },
 		where: { category: { contains: "clothing" } },

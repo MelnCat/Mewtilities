@@ -265,7 +265,7 @@ export const processResourceGatherFiles = processFileAction(parseGatherResources
 	}
 	return { success: true, message: `${updated} entries updated` };
 });
-export const processDeletedItemFile = processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
+export const processDeletedItemFile = async(data: FormData) => processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
 	const result = await prisma.item.updateMany({
 		data: {
 			deleted: true
@@ -275,7 +275,7 @@ export const processDeletedItemFile = processFileAction(x => ({ ok: true, data: 
 		}
 	});
 	return { success: true, message: `ok` };
-});
+})(data);
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
 	return {
