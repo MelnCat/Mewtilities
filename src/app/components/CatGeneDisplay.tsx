@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { RefObject, useRef } from "react";
 import styles from "./CatGeneDisplay.module.scss";
 import { deserializeCatGene, getCatTextures, getGenePhenotype, PartialCatGene, textureFromGene } from "@/util/cat";
 import { useHover } from "usehooks-ts";
@@ -10,7 +10,7 @@ import { colorNames, patternNames, whiteTypeNames, accentNames } from "@/util/ca
 
 const CatGeneSection = ({ category, children, tooltip }: { category: string; children: React.ReactNode; tooltip: { title: string; content: string | React.ReactNode } }) => {
 	const ref = useRef<HTMLDivElement | null>(null);
-	const hovered = useHover(ref);
+	const hovered = useHover(ref as RefObject<HTMLDivElement>);
 	return (
 		<div className={styles.geneSection} data-category={category} ref={ref}>
 			{hovered ? (

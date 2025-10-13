@@ -8,7 +8,7 @@ import { getProcessedItems } from "@/db/db";
 const Login = () => {
 	const submit = async(formData: FormData) => {
 		"use server";
-		cookies().set("password", formData.get("password") as string);
+		(await cookies()).set("password", formData.get("password") as string);
 	}
 	return (
 		<form action={submit}>
