@@ -7,7 +7,7 @@ import { CatAppearance, catSpeciesList, deserializeCatGene, geneFromImported, Pa
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
 import { calculateUnknownGenes } from "@/util/gene";
 import { parseBeanSandboxPage } from "@/parser/beanSandboxParser";
-import { smallNumberFormat } from "@/util/util";
+import { smallNumberFormat, useExtData } from "@/util/util";
 import SignIn from "../components/SignIn";
 
 const usePaste = (cb: (html: string) => void | Promise<void>) => {
@@ -191,6 +191,16 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 		setSeen(seen.concat(data));
 		setTests(tests.concat(sandbox.data.results.map(x => ({ result: x, parents: sandbox.data.parents }))));
 	});
+    useExtData(event => {
+        if (!event.detail.url.includes("sandbox/beans")) return;
+        const data = new TextDecoder().decode(event.detail.data);
+		if (seen.includes(data)) return;
+		const sandbox = parseBeanSandboxPage(data);
+		if (!sandbox.ok) return;
+		if (!sandbox.data.parents.includes(cat.id)) return;
+		setSeen(seen.concat(data));
+		setTests(tests.concat(sandbox.data.results.map(x => ({ result: x, parents: sandbox.data.parents }))));
+    })
 	return (
 		<>
 			<h1>

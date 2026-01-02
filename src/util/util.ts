@@ -1,6 +1,7 @@
 import { Currency } from "@prisma/client";
 import { createHash } from "crypto";
 import { randomInteger } from "remeda";
+import { useEventListener } from "usehooks-ts";
 
 export const bestOffersByCurrency = (offers: { priceCount: number; priceType: Currency }[]) => {
 	const output = {} as Record<Currency, number>;
@@ -36,6 +37,19 @@ export const weightedRandomKeys = <T extends string | number | symbol>(data: Rec
 };
 
 export const pceLink = (path: string) =>
-	path.startsWith("blob:") || path.startsWith("data:") ? path : path.startsWith("https://") ? `https://pce.crab.trade${new URL(path).pathname}` : `https://pce.crab.trade/${path}`;
+	path.startsWith("blob:") || path.startsWith("data:")
+		? path
+		: path.startsWith("https://")
+		? `https://pce.crab.trade${new URL(path).pathname}`
+		: `https://pce.crab.trade/${path}`;
 
 export const sampleRandom = <T>(array: T[]) => array[Math.floor(Math.random() * array.length)];
+
+export const useExtData = (cb: (event: CustomEvent<{ type: string; data: Uint8Array<ArrayBuffer>; url: string }>) => void) => {
+	useEventListener(
+		"extdata" as keyof WindowEventMap,
+		event => {
+            cb(event as CustomEvent<{ type: string; data: Uint8Array<ArrayBuffer>; url: string }>)
+        }
+	);
+};

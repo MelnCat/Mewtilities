@@ -19,19 +19,19 @@ const decoder = new TextDecoder();
 
 const processFileAction =
 	<T,>(parser: (content: string) => Result<T>, cb: (args: T[]) => Promise<{ success: boolean; message: string }>) =>
-	async (data: FormData): Promise<{ success: boolean; message: string }> => {
+	async (data: FormData | Uint8Array[]): Promise<{ success: boolean; message: string }> => {
 		if (!(await getAdminState())) return { success: false, message: ":(" };
-		const files = data.getAll("files") as File[];
+		const files = data instanceof Array ? data : data.getAll("files") as File[];
 		try {
 			const processed = await Promise.all(files.map(async x => {
 				try {
-					return parser(decoder.decode(await x.arrayBuffer()));
+					return parser(decoder.decode(x instanceof Uint8Array ? x : await x.arrayBuffer()));
 				} catch (e) {
-					throw new Error(`${x.name}: ${e}`)
+					throw new Error(`${"name" in x ? x.name : "data"}: ${e}`)
 				}
 			}));
 			const errors = processed.map((x, i) => [x, i] as const).filter(x => !x[0].ok);
-			if (errors.length) return { success: false, message: `${errors.map(x => `${files[x[1]].name}: ${(x[0] as Failure).message}`).join("\n")}` };
+			if (errors.length) return { success: false, message: `${errors.map(x => `${"name" in files[x[1]] ? (files[x[1]] as File).name : "data"}: ${(x[0] as Failure).message}`).join("\n")}` };
 			const unwrapped = processed.map(x => unwrap(x));
 			return await cb(unwrapped);
 		} catch (e) {
@@ -265,7 +265,7 @@ export const processResourceGatherFiles = processFileAction(parseGatherResources
 	}
 	return { success: true, message: `${updated} entries updated` };
 });
-export const processDeletedItemFile = async(data: FormData) => processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
+export const processDeletedItemFile = async(data: FormData | Uint8Array[]) => processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
 	const result = await prisma.item.updateMany({
 		data: {
 			deleted: true
