@@ -133,10 +133,10 @@ export const FilePanels = () => {
 			/>
 			<FilePanel title="Process Shop" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
 			<FilePanel title="Process Quick Sell" onSubmit={upload(processQuickSellFiles)} />
-			<FilePanel title="Process Recipe Database" onSubmit={upload(processRecipeDatabaseFiles)} />
+			<FilePanel title="Process Recipe Database" onSubmit={upload(processRecipeDatabaseFiles)} path="/crafts" />
 			<FilePanel title="Process Cat" onSubmit={upload(processCatFiles)} />
-			<FilePanel title="Process Resource Gather" onSubmit={upload(processResourceGatherFiles)} />
-			<FilePanel title="Process Deleted Items" onSubmit={upload(processDeletedItemFile)} path="/gather-resources" />
+			<FilePanel title="Process Resource Gather" onSubmit={upload(processResourceGatherFiles)} path="/gather-resources" />
+			<FilePanel title="Process Deleted Items" onSubmit={upload(processDeletedItemFile)} />
 		</>
 	);
 };
