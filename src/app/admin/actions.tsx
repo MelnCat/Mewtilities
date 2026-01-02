@@ -246,8 +246,8 @@ export const processCatFiles = processFileAction(parseCatPage, async data => {
 export const processResourceGatherFiles = processFileAction(parseGatherResourcesPage, async data => {
 	let updated = 0;
 	for (const entry of data.flat()) {
-		await prisma.resourceGather.create({
-			data: {
+		await prisma.resourceGather.upsert({
+			create: {
 				catId: entry.catId,
 				catName: entry.catName,
 				id: entry.id,
@@ -260,6 +260,10 @@ export const processResourceGatherFiles = processFileAction(parseGatherResources
 					create: entry.results.map(x => ({ itemId: x.type, count: x.count }))
 				}
 			},
+            update: {},
+            where: {
+                id: entry.id
+            }
 		});
 		updated++;
 	}
