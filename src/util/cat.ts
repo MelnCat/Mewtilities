@@ -490,7 +490,7 @@ export const catEyes = [
 	"happy",
 	"pensive",
 	"ough",
-	"sparkling",
+	"sparkle",
 	"wimdy",
 	"whoa",
 	"zoinks",
