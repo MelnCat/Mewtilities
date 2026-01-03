@@ -33,8 +33,9 @@ const Title = ({ setCat }: { setCat: (cat: RawCat) => void }) => {
 	});
 	return (
 		<>
-			<h1 className={styles.title}>[GATO]</h1>
-			<p className={styles.lowertitle}>Genetic Allele Test Operator</p>
+			<h1 className={styles.title}>
+				<img src="/img/services/gato.png" alt="GATO" />
+			</h1>
 			<p>Paste a cat to begin.</p>
 			<input value="" onChange={() => {}} />
 			<p className={styles.error}>{error}</p>
@@ -84,7 +85,16 @@ const generateBBCode = (gene: PartialCatGene) => {
 	const colorType = optionalBrackets(gene.color.join(""), gene.unknownOrder?.color);
 	const dilution = optionalBrackets(gene.dilution.join(""), gene.unknownOrder?.dilution);
 	const density = gene.density.toString();
-	const color = replaceColors(brackets(`${colorType}${dilution}${density}`), { 1: "green", 2: "teal", 3: "blue", 4: "purple", D: "pink", F: "red", O: "orange", B: "black" });
+	const color = replaceColors(brackets(`${colorType}${dilution}${density}`), {
+		1: "green",
+		2: "teal",
+		3: "blue",
+		4: "purple",
+		D: "pink",
+		F: "red",
+		O: "orange",
+		B: "black",
+	});
 	const YN = { Y: "green", N: "red" } as const;
 	const patternColors = { ...YN /*T: "green", M: "blue", S: "red", P: "yellow"*/ } as const;
 	const pattern = gene.pattern.join("");
@@ -92,7 +102,12 @@ const generateBBCode = (gene: PartialCatGene) => {
 	const patternSection =
 		gene.unknownOrder?.pattern && gene.unknownOrder?.spotting
 			? replaceColors(brackets(`${pattern}${spotting}`, true), patternColors)
-			: replaceColors(brackets(`${optionalBrackets(pattern, gene.unknownOrder?.pattern)}${optionalBrackets(spotting, gene.unknownOrder?.spotting)}`), patternColors);
+			: replaceColors(
+					brackets(
+						`${optionalBrackets(pattern, gene.unknownOrder?.pattern)}${optionalBrackets(spotting, gene.unknownOrder?.spotting)}`
+					),
+					patternColors
+			  );
 	const white = replaceColors(optionalBrackets(gene.white.join(""), gene.unknownOrder?.white), YN);
 	const whiteNumber =
 		gene.whiteNumber === 0 || gene.whiteNumber === "?"
@@ -115,7 +130,12 @@ const generateBBCode = (gene: PartialCatGene) => {
 	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow" });
 	const whiteSection = `${replaceColors("[", {})}${white}${whiteNumber}${whiteType}${replaceColors("]", {})}`;
 	const growth = replaceColors(brackets(gene.growth.join(""), gene.unknownOrder?.growth), { A: "green", B: "yellow", C: "red" });
-	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), { B: "blue", L: "black", R: "red", Y: "yellow" });
+	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), {
+		B: "blue",
+		L: "black",
+		R: "red",
+		Y: "yellow",
+	});
 	const content = `${species} ${wind} ${fur} ${color} ${patternSection} ${whiteSection} ${growth} ${accent}`.replaceAll(" ", " ");
 	return `[center][table][tr][td][b][size=4][font='Nimbus Mono PS', 'Courier New', monospace]${content}[/font][/size][/b][/td][/tr][/table][/center]`;
 };
@@ -134,7 +154,10 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 			),
 		[gene, tests, cat]
 	);
-	const getOrCertain = useMemo(() => (key: keyof typeof matched & keyof typeof gene) => matched[key] ? sortMap(matched[key]) : certain(gene[key]), [gene, matched]);
+	const getOrCertain = useMemo(
+		() => (key: keyof typeof matched & keyof typeof gene) => matched[key] ? sortMap(matched[key]) : certain(gene[key]),
+		[gene, matched]
+	);
 	const probableGene = useMemo(
 		() => ({
 			species: certain(gene.species),
@@ -191,16 +214,16 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 		setSeen(seen.concat(data));
 		setTests(tests.concat(sandbox.data.results.map(x => ({ result: x, parents: sandbox.data.parents }))));
 	});
-    useExtData(event => {
-        if (!event.detail.url.includes("sandbox/beans")) return;
-        const data = new TextDecoder().decode(event.detail.data);
+	useExtData(event => {
+		if (!event.detail.url.includes("sandbox/beans")) return;
+		const data = new TextDecoder().decode(event.detail.data);
 		if (seen.includes(data)) return;
 		const sandbox = parseBeanSandboxPage(data);
 		if (!sandbox.ok) return;
 		if (!sandbox.data.parents.includes(cat.id)) return;
 		setSeen(seen.concat(data));
 		setTests(tests.concat(sandbox.data.results.map(x => ({ result: x, parents: sandbox.data.parents }))));
-    })
+	});
 	return (
 		<>
 			<h1>

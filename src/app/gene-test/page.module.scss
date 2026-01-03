@@ -5,7 +5,10 @@
 	gap: 0.25em;
 }
 .title {
-	font-size: 12em;
+    img {
+        height: 7em;
+        margin: 0.5em 0;
+    }
 }
 .lowertitle {
 	font-weight: bold;

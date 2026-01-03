@@ -10,9 +10,8 @@ const nextConfig = {
 			},
 		],
 	},
-	typescript:{
-
-    ignoreBuildErrors: true,
+	typescript: {
+		ignoreBuildErrors: true,
 	},
 	webpack: config => ({
 		...config,
@@ -28,16 +27,16 @@ const nextConfig = {
 			},
 		},
 	}),
-	experimental: {
-		turbo: {
-			resolveAlias: {
-				fs: { browser: "buffer" },
-				tls: { browser: "buffer" },
-				child_process: { browser: "buffer" },
-				net: { browser: "buffer" },
-				canvas: { browser: "buffer" },
-			},
+	turbopack: {
+		resolveAlias: {
+			fs: { browser: "buffer" },
+			tls: { browser: "buffer" },
+			child_process: { browser: "buffer" },
+			net: { browser: "buffer" },
+			canvas: { browser: "buffer" },
 		},
+	},
+	experimental: {
 		serverActions: {
 			bodySizeLimit: "5mb",
 		},
