@@ -295,7 +295,9 @@ export const catPatterns = generateAlleleMap({
 	AA: "freckle",
 } as const);
 
-export type CatPattern = (typeof catPatterns)[keyof typeof catPatterns][keyof typeof catPatterns] | "solid";
+type AlleleMapValue<T> = T extends Record<string, Record<string, infer U>> & Record<typeof entriesSymbol, string[]> ? U : never;
+
+export type CatPattern = AlleleMapValue<typeof catPatterns> | "solid";
 
 export const catPatternList = ["solid" as CatPattern].concat([
 	...new Set(Object.values(catPatterns).flatMap(x => Object.values(x))),
@@ -513,7 +515,7 @@ export const catEyesNames = {
 	happy: "Happy",
 	pensive: "Pensive",
 	ough: "Ough",
-	sparkling: "Sparkling",
+	sparkle: "Sparkling",
 	wimdy: "Wimdy",
 	whoa: "Whoa",
 	zoinks: "Zoinks",
