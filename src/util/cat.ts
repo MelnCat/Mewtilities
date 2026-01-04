@@ -5,7 +5,7 @@ import offsets from "./catOffsets.json";
 import { regex } from "regex";
 import { failure, success } from "./result";
 import { accentNames, colorNames, patternNames } from "./catData";
-import type { Cat } from "@prisma/client";
+import type { Cat } from "@/../generated/prisma/client";
 
 export const offsetList = Object.entries(offsets).flatMap(([k, v]) =>
 	Object.entries(v).flatMap(([n, l]) =>

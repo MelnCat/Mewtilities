@@ -3,6 +3,7 @@
 import { getAdminState } from "@/admin/auth";
 import prisma from "@/db/prisma";
 import { parseCatPage } from "@/parser/catParser";
+import { parseChestDatabasePage } from "@/parser/chestDatabaseParser";
 import { parseGatherResourcesPage } from "@/parser/gatherResourceParser";
 import { parseItemDatabasePage } from "@/parser/itemDatabaseParser";
 import { parseMarketPage, RawMarketEntry } from "@/parser/marketParser";
@@ -11,9 +12,9 @@ import { parseRecipeDatabasePage } from "@/parser/recipeDatabaseParser";
 import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
-import { Currency } from "@prisma/client";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { Currency } from "@/../generated/prisma/client";
 import { revalidatePath } from "next/cache";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 
 const decoder = new TextDecoder();
 
@@ -21,17 +22,25 @@ const processFileAction =
 	<T,>(parser: (content: string) => Result<T>, cb: (args: T[]) => Promise<{ success: boolean; message: string }>) =>
 	async (data: FormData | Uint8Array[]): Promise<{ success: boolean; message: string }> => {
 		if (!(await getAdminState())) return { success: false, message: ":(" };
-		const files = data instanceof Array ? data : data.getAll("files") as File[];
+		const files = data instanceof Array ? data : (data.getAll("files") as File[]);
 		try {
-			const processed = await Promise.all(files.map(async x => {
-				try {
-					return parser(decoder.decode(x instanceof Uint8Array ? x : await x.arrayBuffer()));
-				} catch (e) {
-					throw new Error(`${"name" in x ? x.name : "data"}: ${e}`)
-				}
-			}));
+			const processed = await Promise.all(
+				files.map(async x => {
+					try {
+						return parser(decoder.decode(x instanceof Uint8Array ? x : await x.arrayBuffer()));
+					} catch (e) {
+						throw new Error(`${"name" in x ? x.name : "data"}: ${e}`);
+					}
+				})
+			);
 			const errors = processed.map((x, i) => [x, i] as const).filter(x => !x[0].ok);
-			if (errors.length) return { success: false, message: `${errors.map(x => `${"name" in files[x[1]] ? (files[x[1]] as File).name : "data"}: ${(x[0] as Failure).message}`).join("\n")}` };
+			if (errors.length)
+				return {
+					success: false,
+					message: `${errors
+						.map(x => `${"name" in files[x[1]] ? (files[x[1]] as File).name : "data"}: ${(x[0] as Failure).message}`)
+						.join("\n")}`,
+				};
 			const unwrapped = processed.map(x => unwrap(x));
 			return await cb(unwrapped);
 		} catch (e) {
@@ -87,9 +96,9 @@ export const processItemDatabaseFiles = processFileAction(parseItemDatabasePage,
 	let i = 0;
 	const existing = await prisma.item.count({
 		where: {
-			id: { in: data.flat().map(x => x.id) }
-		}
-	})
+			id: { in: data.flat().map(x => x.id) },
+		},
+	});
 	for (const item of data.flat()) {
 		await prisma.item.upsert({
 			where: {
@@ -161,7 +170,8 @@ export const processShopEntryFiles = processFileAction(parseShopPage, async data
 	const itemIds = data.flatMap(x => x.entries.map(y => y.itemId));
 	const items = await prisma.item.findMany({ select: { id: true, seasons: true }, where: { id: { in: itemIds } } });
 	const itemMap = Object.fromEntries(items.map(x => [x.id, x.seasons]));
-	if (!itemIds.every(x => items.some(y => y.id === x))) return { success: false, message: `Unknown item(s) ${itemIds.filter(x => !items.some(y => y.id === x)).join(", ")}` };
+	if (!itemIds.every(x => items.some(y => y.id === x)))
+		return { success: false, message: `Unknown item(s) ${itemIds.filter(x => !items.some(y => y.id === x)).join(", ")}` };
 	const result = await prisma.shopEntry.createMany({
 		data: data.flatMap(x =>
 			x.entries.map(y => ({
@@ -190,7 +200,10 @@ export const processQuickSellFiles = processFileAction(parseQuickSellPage, async
 			})),
 		skipDuplicates: true,
 	});
-	return { success: true, message: `${result.count} entries updated, ${data.flat().filter(y => !items.some(x => x.id === y.itemId)).length} unknown items` };
+	return {
+		success: true,
+		message: `${result.count} entries updated, ${data.flat().filter(y => !items.some(x => x.id === y.itemId)).length} unknown items`,
+	};
 });
 
 export const processRecipeDatabaseFiles = processFileAction(parseRecipeDatabasePage, async data => {
@@ -229,7 +242,11 @@ export const processCatFiles = processFileAction(parseCatPage, async data => {
 		const trinket = cat.trinketName === null ? null : items.find(x => x.key === cat.trinketName);
 		if (trinket === undefined) return { success: false, message: `Unknown trinket ${cat.trinketName}` };
 		const clothing = cat.clothingKeys.map(x => items.find(y => y.key === x));
-		if (clothing.includes(undefined)) return { success: false, message: `Unknown clothing item(s) ${cat.clothingKeys.filter(x => !items.some(y => y.key === x)).join(", ")}` };
+		if (clothing.includes(undefined))
+			return {
+				success: false,
+				message: `Unknown clothing item(s) ${cat.clothingKeys.filter(x => !items.some(y => y.key === x)).join(", ")}`,
+			};
 		const processed = { ...cat, trinketId: trinket === null ? null : trinket.id, clothing: clothing.map(x => x!.id) };
 		delete (processed as any).trinketName;
 		delete (processed as any).clothingKeys;
@@ -257,29 +274,58 @@ export const processResourceGatherFiles = processFileAction(parseGatherResources
 				skillBonus: entry.skillBonus,
 				extraText: null,
 				results: {
-					create: entry.results.map(x => ({ itemId: x.type, count: x.count }))
-				}
+					create: entry.results.map(x => ({ itemId: x.type, count: x.count })),
+				},
 			},
-            update: {},
-            where: {
-                id: entry.id
-            }
+			update: {},
+			where: {
+				id: entry.id,
+			},
 		});
 		updated++;
 	}
 	return { success: true, message: `${updated} entries updated` };
 });
-export const processDeletedItemFile = async(data: FormData | Uint8Array[]) => processFileAction(x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }), async data => {
-	const result = await prisma.item.updateMany({
-		data: {
-			deleted: true
-		},
-		where: {
-			id: { in: data.flat() }
+export const processDeletedItemFile = async (data: FormData | Uint8Array[]) =>
+	processFileAction(
+		x => ({ ok: true, data: JSON.parse(x) as number[], message: undefined }),
+		async data => {
+			const result = await prisma.item.updateMany({
+				data: {
+					deleted: true,
+				},
+				where: {
+					id: { in: data.flat() },
+				},
+			});
+			return { success: true, message: `ok` };
 		}
-	});
-	return { success: true, message: `ok` };
-})(data);
+	)(data);
+export const processChestDatabaseFiles = processFileAction(parseChestDatabasePage, async data => {
+	let updated = 0;
+	for (const entry of data.flat()) {
+		await prisma.chestEntry.upsert({
+			create: {
+				id: entry.id,
+				cat: entry.cat,
+				essence: entry.essence,
+				notes: entry.notes,
+				pools: entry.pools ?? [],
+			},
+			update: {
+				cat: entry.cat,
+				essence: entry.essence,
+				notes: entry.notes,
+				pools: entry.pools ?? [],
+			},
+			where: {
+				id: entry.id,
+			},
+		});
+		updated++;
+	}
+	return { success: true, message: `${updated} entries updated` };
+});
 export const getItemDatabaseInfo = async () => {
 	const allItems = await prisma.item.findMany({ orderBy: { id: "asc" } });
 	return {

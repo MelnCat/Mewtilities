@@ -1,7 +1,7 @@
 import { CatAppearance } from "@/util/cat";
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { Season } from "@prisma/client";
+import { Season } from "@/../generated/prisma/client";
 import { parseCatJail } from "./parserUtil";
 
 export interface RawBeanSandboxEntry {

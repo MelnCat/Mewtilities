@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Currency } from "@/../generated/prisma/client";
 import styles from "./currencyIcons.module.scss";
 import { pceLink } from "@/util/util";
 

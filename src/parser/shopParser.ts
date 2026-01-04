@@ -1,7 +1,7 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
 import { parsePriceType } from "@/util/util";
-import { Currency, Season } from "@prisma/client";
+import { Currency, Season } from "@/../generated/prisma/client";
 
 export interface RawShopEntries {
 	entries: RawShopEntry[];

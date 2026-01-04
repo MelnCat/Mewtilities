@@ -1,4 +1,4 @@
-import { Currency, Item, MarketEntry, ShopEntry } from "@prisma/client";
+import { Currency, Item, MarketEntry, ShopEntry } from "@/../generated/prisma/client";
 import prisma from "./prisma";
 import { groupBy } from "remeda";
 

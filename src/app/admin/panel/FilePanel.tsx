@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import styles from "./AdminPanel.module.scss";
 import {
 	processCatFiles,
+	processChestDatabaseFiles,
 	processDeletedItemFile,
 	processItemDatabaseFiles,
 	processMarketFiles,
@@ -132,11 +133,12 @@ export const FilePanels = () => {
 				onSubmit={upload(processShopListFiles)}
 			/>
 			<FilePanel title="Process Shop" description="Where you buy stuff." onSubmit={upload(processShopEntryFiles)} />
-			<FilePanel title="Process Quick Sell" onSubmit={upload(processQuickSellFiles)} />
+			<FilePanel title="Process Quick Sell" onSubmit={upload(processQuickSellFiles)} path="/quick-sales" />
 			<FilePanel title="Process Recipe Database" onSubmit={upload(processRecipeDatabaseFiles)} path="/crafts" />
-			<FilePanel title="Process Cat" onSubmit={upload(processCatFiles)} />
+			<FilePanel title="Process Cat" onSubmit={upload(processCatFiles)} path="/cat" />
 			<FilePanel title="Process Resource Gather" onSubmit={upload(processResourceGatherFiles)} path="/gather-resources" />
 			<FilePanel title="Process Deleted Items" onSubmit={upload(processDeletedItemFile)} />
+			<FilePanel title="Process Chest Database" onSubmit={upload(processChestDatabaseFiles)} />
 		</>
 	);
 };

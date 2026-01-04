@@ -1,5 +1,5 @@
 "use client";
-import { Cat } from "@prisma/client";
+import { Cat } from "@/../generated/prisma/client";
 import "chart.js/auto";
 import "chartjs-adapter-luxon";
 import { Line, Bar, Pie } from "react-chartjs-2";

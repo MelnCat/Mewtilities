@@ -40,3 +40,5 @@ test.html
 .env
 
 .yarn/**/*/
+
+generated/**/*

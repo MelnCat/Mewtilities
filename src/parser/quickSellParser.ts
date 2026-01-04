@@ -1,7 +1,7 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
 import { parsePriceType } from "@/util/util";
-import { Currency } from "@prisma/client";
+import { Currency } from "@/../generated/prisma/client";
 
 export interface RawQuickSellEntry {
 	itemId: number;

@@ -1,6 +1,6 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { Season } from "@prisma/client";
+import { Season } from "@/../generated/prisma/client";
 
 export interface RawItemDatabaseEntry {
 	id: number;

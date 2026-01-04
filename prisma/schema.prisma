@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider = "prisma-client-js"
+    provider = "prisma-client"
+    output   = "../generated/prisma"
 }
 
 generator json {
@@ -14,7 +15,6 @@ generator json {
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
 }
 
 model Item {
@@ -31,7 +31,7 @@ model Item {
     custom     Boolean @default(false)
     /// [CustomItemData]
     customData Json?
-    deleted     Boolean @default(false)
+    deleted    Boolean @default(false)
 
     marketEntries        MarketEntry[]
     shopEntries          ShopEntry[]
@@ -40,7 +40,8 @@ model Item {
     usages               RecipeIngredient[]
     holdingCats          Cat[]
     holdingUserCats      UserCat[]
-    ResourceGatherResult ResourceGatherResult[]
+    resourceGatherResult ResourceGatherResult[]
+    chestEntry           ChestEntry?
 }
 
 model MarketEntry {
@@ -55,6 +56,15 @@ model MarketEntry {
     priceCount   Int
     expiryTime   DateTime
     creationTime DateTime
+}
+
+model ChestEntry {
+    id      Int    @id
+    item    Item   @relation(fields: [id], references: [id])
+    pools   Json[]
+    notes   Int?
+    essence Int?
+    cat     String?
 }
 
 model BapEntry {
@@ -254,8 +264,8 @@ model UserCat {
 
     bio String?
 
-	pose String @default("playing")
-	flipped Boolean @default(false)
+    pose    String  @default("playing")
+    flipped Boolean @default(false)
 }
 
 enum RecipeCategory {

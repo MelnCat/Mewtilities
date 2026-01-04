@@ -1,4 +1,4 @@
-import { Currency } from "@prisma/client";
+import { Currency } from "@/../generated/prisma/client";
 import { createHash } from "crypto";
 import { randomInteger } from "remeda";
 import { useEventListener } from "usehooks-ts";

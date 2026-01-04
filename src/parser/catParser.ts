@@ -1,6 +1,6 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import type { Cat, Season } from "@prisma/client";
+import type { Cat, Season } from "@/../generated/prisma/client";
 import { HTML2BBCode } from "html2bbcode";
 import { chunk } from "remeda";
 

@@ -1,7 +1,7 @@
 import { getItemData } from "@/db/db";
 import styles from "../item.module.scss";
 import { CurrencyValue, EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@/components/currencyIcons";
-import { Currency, MarketEntry } from "@prisma/client";
+import { Currency, MarketEntry } from "@/../generated/prisma/client";
 import { PriceGraph } from "./PriceGraph";
 import { getCheapestEntries, getCheapestNote } from "@/db/dbUtil";
 import Link from "next/link";
