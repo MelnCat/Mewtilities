@@ -32,7 +32,7 @@ export const parseChestDatabasePage = (content: string): Result<RawChestDatabase
 		const findWithName: {
 			(name: string, type: "text"): string | null;
 			(name: string, type?: "number"): number | null;
-		} = (name, type) => {
+		} = (name, type = "number") => {
 			const index = [...line.childNodes].findIndex(x => x.textContent?.trim() === name);
 			if (!index) return null;
 			const child = line.childNodes[index + 1];

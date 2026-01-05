@@ -138,7 +138,7 @@ export const FilePanels = () => {
 			<FilePanel title="Process Cat" onSubmit={upload(processCatFiles)} path="/cat" />
 			<FilePanel title="Process Resource Gather" onSubmit={upload(processResourceGatherFiles)} path="/gather-resources" />
 			<FilePanel title="Process Deleted Items" onSubmit={upload(processDeletedItemFile)} />
-			<FilePanel title="Process Chest Database" onSubmit={upload(processChestDatabaseFiles)} />
+			<FilePanel title="Process Chest Database" onSubmit={upload(processChestDatabaseFiles)} path="/chests" />
 		</>
 	);
 };
