@@ -12,7 +12,7 @@ import { parseRecipeDatabasePage } from "@/parser/recipeDatabaseParser";
 import { parseShopListPage } from "@/parser/shopListParser";
 import { parseShopPage } from "@/parser/shopParser";
 import { Failure, Result, unwrap } from "@/util/result";
-import { Currency } from "@/../generated/prisma/client";
+import { Currency } from "@/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
 

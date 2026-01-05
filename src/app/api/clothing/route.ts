@@ -1,4 +1,4 @@
-import { getAllItems, getClothing, getProcessedItems } from "@/db/db";
+import { getClothing } from "@/db/db";
 
 export const dynamic = "force-dynamic";
 

@@ -1,16 +1,15 @@
 "use client";
+import { ItemImage } from "@/app/components/ItemImage";
 import { CurrencyValue, EssenceValue, NoteValue } from "@/components/currencyIcons";
-import { getAllItems, ProcessedItem } from "@/db/db";
-import { bestOffersByCurrency } from "@/util/util";
-import { Currency, Item, MarketEntry, QuickSellEntry, ShopEntry } from "@/../generated/prisma/client";
+import { type ProcessedItem } from "@/db/db";
+import { Currency } from "@/generated/prisma/enums";
 import fuzzysort from "fuzzysort";
-import { parseAsInteger, parseAsBoolean, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
+import Link from "next/link";
+import { parseAsBoolean, parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useMemo } from "react";
 import * as R from "remeda";
 import useSWR from "swr";
 import styles from "../page.module.scss";
-import Link from "next/link";
-import { ItemImage } from "@/app/components/ItemImage";
 
 const ItemBox = ({ item }: { item: ProcessedItem }) => {
 	return (

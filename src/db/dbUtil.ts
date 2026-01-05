@@ -1,6 +1,6 @@
-import { Currency, Item, MarketEntry, ShopEntry } from "@/../generated/prisma/client";
-import prisma from "./prisma";
+import { Currency, Item, MarketEntry, ShopEntry } from "@/generated/prisma/client";
 import { groupBy } from "remeda";
+import "server-only";
 
 export const getCheapestEntries = (entries: (MarketEntry & { unitPrice: number })[]) =>
 	Object.values(groupBy(entries, y => y.priceType))

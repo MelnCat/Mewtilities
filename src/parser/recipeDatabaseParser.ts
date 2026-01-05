@@ -1,6 +1,6 @@
 import { parseDom } from "@/util/dom";
 import { failure, Result, success } from "@/util/result";
-import { RecipeCategory } from "@/../generated/prisma/client";
+import { RecipeCategory } from "@/generated/prisma/enums";
 import { parseItemCubeId } from "./parserUtil";
 
 export interface RawRecipeDatabaseEntries {

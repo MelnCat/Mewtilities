@@ -1,8 +1,14 @@
 import "server-only";
-import { PrismaClient } from "@/../generated/prisma/client";
+import { PrismaClient, Prisma } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import "dotenv/config";
 
 const prismaClientSingleton = () => {
-	return new PrismaClient().$extends({
+	return new PrismaClient({
+		adapter: new PrismaPg({
+			connectionString: process.env.DATABASE_URL,
+		}),
+	}).$extends({
 		result: {
 			marketEntry: {
 				unitPrice: {
@@ -21,7 +27,6 @@ declare const globalThis: {
 } & typeof global;
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
-
 
 export default prisma;
 

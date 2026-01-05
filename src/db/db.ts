@@ -1,5 +1,5 @@
 "use server";
-import { Currency, Item, MarketEntry } from "@/../generated/prisma/client";
+import { Currency, Item, MarketEntry } from "@/generated/prisma/client";
 import prisma from "./prisma";
 import { getCheapestEntries } from "./dbUtil";
 

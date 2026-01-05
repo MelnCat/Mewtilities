@@ -1,6 +1,6 @@
 import { pceLink } from "@/util/util";
 import styles from "./ItemImage.module.scss";
-import { Item } from "@/../generated/prisma/client";
+import type { Item } from "@/generated/prisma/client";
 import Image from "next/image";
 
 export const ItemImage = ({ item }: { item: Pick<Item, "customData" | "name" | "image" | "custom"> }) => {

@@ -1,9 +1,6 @@
-import { CatAppearance } from "@/util/cat";
 import { parseDom } from "@/util/dom";
-import { failure, Result, success } from "@/util/result";
-import { Season } from "@/../generated/prisma/client";
-import { parseCatJail } from "./parserUtil";
 import { PeaPhenotype } from "@/util/peaplant";
+import { failure, Result, success } from "@/util/result";
 
 export interface RawPeaPlantEntry {
 	testee: { phenotype: PeaPhenotype } | null;

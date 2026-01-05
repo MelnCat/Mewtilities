@@ -41,4 +41,4 @@ test.html
 
 .yarn/**/*/
 
-generated/**/*
+src/generated/**/*

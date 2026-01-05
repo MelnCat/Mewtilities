@@ -1,14 +1,14 @@
+import { ItemImage } from "@/app/components/ItemImage";
+import { CurrencyValue, EssenceValue, NoteValue } from "@/components/currencyIcons";
 import { getItemData } from "@/db/db";
-import styles from "../item.module.scss";
-import { CurrencyValue, EssenceIcon, EssenceValue, NoteIcon, NoteValue } from "@/components/currencyIcons";
-import { Currency, MarketEntry } from "@/../generated/prisma/client";
-import { PriceGraph } from "./PriceGraph";
 import { getCheapestEntries, getCheapestNote } from "@/db/dbUtil";
-import Link from "next/link";
+import { Currency } from "@/generated/prisma/enums";
 import { getNestorSources } from "@/util/nestor";
 import { pceLink, smallNumberFormat } from "@/util/util";
-import { ItemImage } from "@/app/components/ItemImage";
-import { median, min } from "simple-statistics";
+import Link from "next/link";
+import { min } from "simple-statistics";
+import styles from "../item.module.scss";
+import { PriceGraph } from "./PriceGraph";
 
 const createHistory = (entries: { creationTime: Date; expiryTime: Date; itemCount: number; priceCount: number; sellerId: number }[]) => {
 	if (entries.length === 0) return [];
