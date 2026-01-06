@@ -1,8 +1,17 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
 	scrollbar-color: #29282c var(--darker);
+}
+
+button,
+select,
+input,
+textarea {
+	font-family: inherit;
 }
 
 button {

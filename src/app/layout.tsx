@@ -37,14 +37,6 @@ export default function RootLayout({
 					<div className={styles.navEntry}>
 						<Link href="/cat-editor">Cat Editor</Link>
 					</div>
-					<div className={styles.gap} />
-					<div className={styles.navEntry}>
-						<Link href="/items">Stock Market</Link>
-					</div>
-					<div className={styles.gap} />
-					<div className={styles.navEntry}>
-						<Link href="/bap">BAP</Link>
-					</div>
 				</nav>
 				{children}
 				<footer className={styles.footer}>

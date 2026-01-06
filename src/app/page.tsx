@@ -4,10 +4,9 @@ import styles from "./page.module.scss";
 export default async function Home() {
 	return (
 		<main className={styles.main}>
-			<Link href="/cat-editor">Cat editor</Link>
-			<Link href="/items">items</Link>
-			<Link href="/offspring-calculator">offspring calculator</Link>
-			<Link href="/">dont click this</Link>
+            <h1>Welcome to Mewtilities!</h1>
+            <p>you should play silksong</p>
+			<Link href="/cat-editor">Cat Editor</Link>
 		</main>
 	);
 }
