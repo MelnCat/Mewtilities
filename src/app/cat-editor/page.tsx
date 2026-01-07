@@ -112,7 +112,7 @@ export default function CatEditorPage() {
 					clothing
 						.toReversed()
 						.filter(x => x.shown)
-						.map(x => (x.custom ? x.image : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))
+						.map(x => (x.custom ? pceLink(x.image) : pceLink(`images/clothing/${colorLayer.species}/${x.key}.png`)))
 				),
 		[colorLayer, tradeColorLayer, whiteLayer, accentLayer, eyesLayer, clothing]
 	);
@@ -461,7 +461,7 @@ export default function CatEditorPage() {
 									{"id" in item ? (
 										<ItemImage item={item} />
 									) : (
-										<article className={styles.customUploadImage} style={{ backgroundImage: `url("${item.image}")` }} />
+										<article className={styles.customUploadImage} style={{ backgroundImage: `url("${pceLink(item.image)}")` }} />
 									)}
 								</section>
 								<p>{item.name}</p>
