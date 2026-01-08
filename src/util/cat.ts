@@ -787,11 +787,11 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 };
 export interface PossibleGenes {
 	wind: readonly ["N" | "S" | "O", "N" | "S" | "O"][];
-	fur: readonly ["S" | "L", "S" | "L"][];
-	color: readonly ["O" | "B", "O" | "B"][];
-	dilution: readonly ["F" | "D", "F" | "D"][];
+	fur: readonly (readonly ["S" | "L", "S" | "L"])[];
+	color: readonly (readonly ["O" | "B", "O" | "B"])[];
+	dilution: readonly (readonly ["F" | "D", "F" | "D"])[];
 	density: readonly (1 | 2 | 3 | 4)[];
-	pattern: readonly ["Y" | "N", "Y" | "N"][];
+	pattern: readonly (readonly ["Y" | "N", "Y" | "N"])[];
 	spotting: readonly ["T" | "M" | "S" | "P" | "A", "T" | "M" | "S" | "P" | "A"][];
 	white: readonly [["Y" | "N", "Y" | "N"], 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10][];
 	whiteType: readonly ("C" | "P" | "L" | "R" | "I" | "T")[];
@@ -802,7 +802,7 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 	return {
 		wind: (gene.wind.includes("?")
 			? [gene.wind.map(x => (x === "?" ? "O" : x)), gene.wind.map(x => (x === "?" ? gene.wind.find(x => x !== "?")! : x))]
-			: [gene.wind]) as unknown as readonly ["N" | "S" | "O", "N" | "S" | "O"][],
+			: [gene.wind]) as unknown as ["N" | "S" | "O", "N" | "S" | "O"][],
 		fur: gene.fur.includes("?")
 			? [gene.fur.map(x => (x === "?" ? "S" : x)), gene.fur.map(x => (x === "?" ? "L" : x))]
 			: [gene.fur],
@@ -834,7 +834,7 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 			: gene.pattern.includes("?")
 			? [gene.pattern.map(x => (x === "?" ? "Y" : x)), gene.pattern.map(x => (x === "?" ? "N" : x))]
 			: [gene.pattern],
-		spotting: gene.spotting.every(x => x === "?") ? [catPatterns[entriesSymbol].map(x => x.split(""))] : [gene.spotting],
+		spotting: gene.spotting.every(x => x === "?") ? catPatterns[entriesSymbol].map(x => x.split("")) : [gene.spotting],
 		white: gene.white.every(x => x === "?")
 			? [
 					["Y", "N"],
@@ -864,5 +864,5 @@ export const possibleGenes = (gene: PartialCatGene): PossibleGenes => {
 					["Y", "Y"],
 			  ]
 			: [gene.accent],
-	} as unknown as PossibleGenes;
+	}  as unknown as PossibleGenes;
 };
