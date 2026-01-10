@@ -304,7 +304,7 @@ export default function CatEditorPage() {
 
 	return (
 		<main className={styles.main}>
-			<h1>Cat Editor</h1>
+			<h1>PCE: Pixel Cat Editor</h1>
 			<button
 				onClick={() => {
 					loadFromGene(randomCatGene(species === "Any" ? undefined : species === "Not-Cat" ? "C" : "M"));

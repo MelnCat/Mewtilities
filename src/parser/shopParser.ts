@@ -25,7 +25,7 @@ export const parseShopPage = (content: string): Result<RawShopEntries> => {
 	if (!form) return failure("Invalid page layout");
 	const lines = [...form.querySelectorAll(".shops-itemcube")];
 	const entries: RawShopEntry[] = [];
-	const shopUrl = form.getAttribute("action");
+	const shopUrl = form.getAttribute("action")?.replace(/&page=\d+/, "");
 	if (!shopUrl) return failure("Missing shop action");
 	const shopBlurb = doc.querySelector(".shopbanner > p")?.innerHTML?.trim();
 	if (!shopBlurb) return failure("Missing shop blurb");
