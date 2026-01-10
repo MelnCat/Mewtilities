@@ -112,10 +112,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 					patternColors
 			  );
 	const white = replaceColors(optionalBrackets(gene.white.join(""), !oldStyle && gene.unknownOrder?.white), YN);
-	const whiteNumber =
-		gene.whiteNumber === 0 || gene.whiteNumber === "?"
-			? "0"
-			: `[color=${
+	const whiteNumber = gene.whiteNumber === 0 || gene.whiteNumber === "?" ? "0" : gene.whiteNumber; /*`[color=${
 					{
 						0: "black",
 						1: "black",
@@ -129,7 +126,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 						9: "black",
 						10: "black",
 					}[gene.whiteNumber]
-			  }]${gene.whiteNumber}[/color]`;
+			  }]${gene.whiteNumber}[/color]`*/
 	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow", T: "teal" });
 	const whiteSection = `${replaceColors("[", {})}${white}${whiteNumber}${whiteType}${replaceColors("]", {})}`;
 	const growth = replaceColors(brackets(gene.growth.join(""), !oldStyle && gene.unknownOrder?.growth), {

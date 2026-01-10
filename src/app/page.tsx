@@ -7,6 +7,7 @@ export default async function Home() {
             <h1>Welcome to Mewtilities!</h1>
             <p>you should play silksong</p>
 			<Link href="/cat-editor">Cat Editor</Link>
+			<Link href="/gene-test">GATO</Link>
 		</main>
 	);
 }
