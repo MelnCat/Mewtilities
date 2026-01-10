@@ -147,8 +147,8 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 	const [gene, setGene] = useState(geneFromImported(cat));
 	const [tests, setTests] = useState<{ parents: [number, number]; result: CatAppearance }[]>([]);
-	const copy = async () => {
-		await navigator.clipboard.writeText("");
+	const copy = async (id: number) => {
+		await navigator.clipboard.writeText(id.toString());
 	};
 	const matched = useMemo(
 		() =>
@@ -269,7 +269,8 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 				<a href="https://www.pixelcatsend.com/sandbox/beans" target="_blank">
 					Open Sandbox
 				</a>
-				<button onClick={copy}>Copy Tester ID</button>
+				<button onClick={() => copy(cat.id)}>Copy Cat ID</button>
+				<button onClick={() => copy(572)}>Copy Tester ID</button>
 				<p>
 					Stuck on the white YN? Use <input readOnly value="114019" />
 				</p>
