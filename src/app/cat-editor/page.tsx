@@ -328,6 +328,7 @@ export default function CatEditorPage() {
 						loadFromGene(deserialize.data);
 						setGeneInput("");
 					}
+                    
 				}}
 			>
 				Import Gene
