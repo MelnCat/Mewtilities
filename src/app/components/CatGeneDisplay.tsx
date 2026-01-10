@@ -6,7 +6,7 @@ import { useHover } from "usehooks-ts";
 import { defaultFont } from "@/util/font";
 import { CatImage } from "./CatImage";
 import { pceLink } from "@/util/util";
-import { colorNames, patternNames, whiteTypeNames, accentNames } from "@/util/catData";
+import { colorNames, patternNames, whiteTypeNames, accentNames, whiteTypeKeys } from "@/util/catData";
 
 const CatGeneSection = ({ category, children, tooltip }: { category: string; children: React.ReactNode; tooltip: { title: string; content: string | React.ReactNode } }) => {
 	const ref = useRef<HTMLDivElement | null>(null);
@@ -179,7 +179,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "White",
 					content: (
 						<>
-							{p.whiteNumber === 10 ? "Albino" : p.whiteNumber === "?" || p.whiteType === "?" ? "Unknown" : whiteTypeNames[p.whiteType][p.whiteNumber]}
+							{p.whiteNumber === 10 ? "Albino" : 
+                            p.whiteNumber === 0 ? "None" : p.whiteNumber === "?" || p.whiteType === "?" ? "Unknown" : whiteTypeNames[p.whiteType][p.whiteNumber]}
+                            {(p.whiteNumber === 0 || p.whiteNumber === 10) && p.whiteType && p.whiteType !== "?" ? ` (${whiteTypeKeys[p.whiteType]})` :""  }
 							<CatImage gene={g} layer={2} />
 						</>
 					),
