@@ -1,7 +1,7 @@
 "use client";
 import React, { RefObject, useRef } from "react";
 import styles from "./CatGeneDisplay.module.scss";
-import { deserializeCatGene, getCatTextures, getGenePhenotype, PartialCatGene, textureFromGene } from "@/util/cat";
+import { catPatterns, deserializeCatGene, getCatTextures, getGenePhenotype, PartialCatGene, textureFromGene } from "@/util/cat";
 import { useHover } from "usehooks-ts";
 import { defaultFont } from "@/util/font";
 import { CatImage } from "./CatImage";
@@ -60,6 +60,8 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 	}
 	const g = data.gene;
 	const p = getGenePhenotype(g);
+
+    const hiddenPattern = catPatterns[g.pattern[0]]?.[g.pattern[1]]
 	return (
 		<div className={styles.display}>
 			<CatGeneSection
@@ -145,7 +147,7 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "Pattern",
 					content: (
 						<>
-							{p.pattern ? patternNames[p.pattern] : "Unknown"}
+							{p.pattern ? patternNames[p.pattern] : "Unknown"}{p.pattern === "solid" && hiddenPattern ? ` (Hidden ${patternNames[hiddenPattern]})` : ""}
 							<CatImage gene={g} layer={[0, 1]} />
 						</>
 					),
