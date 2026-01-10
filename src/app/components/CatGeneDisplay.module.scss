@@ -72,7 +72,7 @@
 			--color: #9b5960;
 		}
 		span[data-content="O"] {
-			--color: #2e2e2e;
+			--color: #b4b4b4;
 		}
 	}
 	&[data-category="fur"] {
@@ -85,7 +85,7 @@
 	}
 	&[data-category="color"] {
 		span[data-content="B"] {
-			--color: #3d3b3a;
+			--color: #6b6866;
 		}
 		span[data-content="O"] {
 			--color: #ac7729;
@@ -97,7 +97,7 @@
 			--color: #bb6a6a;
 		}
 		span:last-child {
-			--color: #23185f;
+			--color: #dfdfdf;
 			opacity: calc(var(--content) / 4);
 		}
 	}
@@ -132,7 +132,7 @@
 			--color: #a52a2a;
 		}
 		span:nth-last-child(2) {
-			--color: #100b2e;
+			--color: #dfdfdf;
 			opacity: calc((11 - var(--content)) / 11);
 		}
 	}
