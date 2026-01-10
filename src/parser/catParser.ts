@@ -224,7 +224,8 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 	const genetic = form.querySelector(".genes-code.cat-minigroup")?.textContent?.match(/\w+/g);
 	if (genetic) builder.genetic = genetic.join("") === "UnknownGeneticString" ? null : genetic.join("");
 
-	const friends = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")))?.querySelector(".friend-all");
+	const friendContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")));
+	const friends = friendContainer?.querySelector(".friend-local") ?? friendContainer?.querySelector(".friend-all")
 	if (!friends) return failure("Friends missing");
 	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
@@ -237,7 +238,8 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
 		builder.friends = Object.fromEntries(found);
 	}
-	const family = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")))?.querySelector(".friend-all");
+	const familyContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")));
+	const family = familyContainer?.querySelector(".friend-local") ?? familyContainer?.querySelector(".friend-all");
 	if (!family) return failure("Family missing");
 	if (family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
