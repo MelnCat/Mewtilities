@@ -81,7 +81,7 @@ const optionalBrackets = (text: string, braces: boolean = false) => (braces ? `{
 const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 	const species = replaceColors(brackets(gene.species), { C: "brown", M: "blue" });
 	const wind = replaceColors(brackets(gene.wind.join(""), !oldStyle && gene.unknownOrder?.wind), { N: "blue", S: "red", O: "grey" });
-	const fur = replaceColors(brackets(gene.fur.join(""), !oldStyle && gene.unknownOrder?.fur), { S: "yellow", L: "pink" });
+	const fur = replaceColors(brackets(gene.fur.join(""), !oldStyle && gene.unknownOrder?.fur), { S: "yellow", L: "orange" });
 	const colorType = optionalBrackets(gene.color.join(""), !oldStyle && gene.unknownOrder?.color);
 	const dilution = optionalBrackets(gene.dilution.join(""), !oldStyle && gene.unknownOrder?.dilution);
 	const density = gene.density.toString();
@@ -90,8 +90,8 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 		2: "black",
 		3: "black",
 		4: "black",
-		D: "pink",
-		F: "purple",
+		D: "yellow",
+		F: "orange",
 		O: "orange",
 		B: "grey",
 	});
@@ -117,7 +117,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 			? "0"
 			: `[color=${
 					{
-						0: "red",
+						0: "black",
 						1: "black",
 						2: "black",
 						3: "black",
@@ -127,7 +127,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 						7: "black",
 						8: "black",
 						9: "black",
-						10: "yellow",
+						10: "black",
 					}[gene.whiteNumber]
 			  }]${gene.whiteNumber}[/color]`;
 	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow", T: "teal" });
@@ -144,7 +144,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 		Y: "yellow",
 	});
 	const content = `${species} ${wind} ${fur} ${color} ${patternSection} ${whiteSection} ${growth} ${accent}`.replaceAll(" ", " ");
-	return `[center][table][tr][td][b][size=4][font='Nimbus Mono PS', 'Courier New', monospace]${content}[/font][/size][/b][/td][/tr][/table][/center]`;
+	return `[center][table][tr][td][size=3][font='Nimbus Mono PS', 'Courier New', monospace]${content}[/font][/size][/td][/tr][/table][/center]`;
 };
 
 const GeneDashboard = ({ cat }: { cat: RawCat }) => {
