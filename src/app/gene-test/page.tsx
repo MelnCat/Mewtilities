@@ -78,61 +78,68 @@ const replaceColors = (str: string, rules: Record<string, ForumColor | "black">)
 const brackets = (text: string, braces: boolean = false) => (braces ? `{${text}}` : `[${text}]`);
 const optionalBrackets = (text: string, braces: boolean = false) => (braces ? `{${text}}` : text);
 
-const generateBBCode = (gene: PartialCatGene) => {
-	const species = replaceColors(brackets(gene.species), { C: "brown", M: "teal" });
-	const wind = replaceColors(brackets(gene.wind.join(""), gene.unknownOrder?.wind), { N: "blue", S: "red", O: "black" });
-	const fur = replaceColors(brackets(gene.fur.join(""), gene.unknownOrder?.fur), { S: "orange", L: "brown" });
-	const colorType = optionalBrackets(gene.color.join(""), gene.unknownOrder?.color);
-	const dilution = optionalBrackets(gene.dilution.join(""), gene.unknownOrder?.dilution);
+const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
+	const species = replaceColors(brackets(gene.species), { C: "brown", M: "blue" });
+	const wind = replaceColors(brackets(gene.wind.join(""), !oldStyle && gene.unknownOrder?.wind), { N: "blue", S: "red", O: "grey" });
+	const fur = replaceColors(brackets(gene.fur.join(""), !oldStyle && gene.unknownOrder?.fur), { S: "yellow", L: "pink" });
+	const colorType = optionalBrackets(gene.color.join(""), !oldStyle && gene.unknownOrder?.color);
+	const dilution = optionalBrackets(gene.dilution.join(""), !oldStyle && gene.unknownOrder?.dilution);
 	const density = gene.density.toString();
 	const color = replaceColors(brackets(`${colorType}${dilution}${density}`), {
-		1: "green",
-		2: "teal",
-		3: "blue",
-		4: "purple",
+		1: "black",
+		2: "black",
+		3: "black",
+		4: "black",
 		D: "pink",
-		F: "red",
+		F: "purple",
 		O: "orange",
-		B: "black",
+		B: "grey",
 	});
 	const YN = { Y: "green", N: "red" } as const;
 	const patternColors = { ...YN /*T: "green", M: "blue", S: "red", P: "yellow"*/ } as const;
 	const pattern = gene.pattern.join("");
 	const spotting = gene.spotting.join("");
 	const patternSection =
-		gene.unknownOrder?.pattern && gene.unknownOrder?.spotting
+		!oldStyle && gene.unknownOrder?.pattern && gene.unknownOrder?.spotting
 			? replaceColors(brackets(`${pattern}${spotting}`, true), patternColors)
 			: replaceColors(
 					brackets(
-						`${optionalBrackets(pattern, gene.unknownOrder?.pattern)}${optionalBrackets(spotting, gene.unknownOrder?.spotting)}`
+						`${optionalBrackets(pattern, !oldStyle && gene.unknownOrder?.pattern)}${optionalBrackets(
+							spotting,
+							!oldStyle && gene.unknownOrder?.spotting
+						)}`
 					),
 					patternColors
 			  );
-	const white = replaceColors(optionalBrackets(gene.white.join(""), gene.unknownOrder?.white), YN);
+	const white = replaceColors(optionalBrackets(gene.white.join(""), !oldStyle && gene.unknownOrder?.white), YN);
 	const whiteNumber =
 		gene.whiteNumber === 0 || gene.whiteNumber === "?"
 			? "0"
 			: `[color=${
 					{
-						0: "black",
-						1: "teal",
-						2: "teal",
-						3: "teal",
-						4: "blue",
-						5: "blue",
-						6: "blue",
-						7: "purple",
-						8: "purple",
-						9: "purple",
+						0: "red",
+						1: "black",
+						2: "black",
+						3: "black",
+						4: "black",
+						5: "black",
+						6: "black",
+						7: "black",
+						8: "black",
+						9: "black",
 						10: "yellow",
 					}[gene.whiteNumber]
 			  }]${gene.whiteNumber}[/color]`;
-	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow" });
+	const whiteType = replaceColors(gene.whiteType, { C: "red", P: "purple", L: "blue", R: "green", I: "yellow", T: "teal" });
 	const whiteSection = `${replaceColors("[", {})}${white}${whiteNumber}${whiteType}${replaceColors("]", {})}`;
-	const growth = replaceColors(brackets(gene.growth.join(""), gene.unknownOrder?.growth), { A: "green", B: "yellow", C: "red" });
-	const accent = replaceColors(brackets(gene.accent.join(""), gene.unknownOrder?.accent), {
+	const growth = replaceColors(brackets(gene.growth.join(""), !oldStyle && gene.unknownOrder?.growth), {
+		A: "green",
+		B: "yellow",
+		C: "red",
+	});
+	const accent = replaceColors(brackets(gene.accent.join(""), !oldStyle && gene.unknownOrder?.accent), {
 		B: "blue",
-		L: "black",
+		L: "grey",
 		R: "red",
 		Y: "yellow",
 	});
