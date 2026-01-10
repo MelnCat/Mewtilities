@@ -91,7 +91,7 @@ const generateBBCode = (gene: PartialCatGene, oldStyle = true) => {
 		3: "black",
 		4: "black",
 		D: "yellow",
-		F: "orange",
+		F: "red",
 		O: "orange",
 		B: "grey",
 	});
