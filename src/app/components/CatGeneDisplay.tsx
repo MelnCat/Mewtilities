@@ -8,7 +8,15 @@ import { CatImage } from "./CatImage";
 import { pceLink } from "@/util/util";
 import { colorNames, patternNames, whiteTypeNames, accentNames, whiteTypeKeys } from "@/util/catData";
 
-const CatGeneSection = ({ category, children, tooltip }: { category: string; children: React.ReactNode; tooltip: { title: string; content: string | React.ReactNode } }) => {
+const CatGeneSection = ({
+	category,
+	children,
+	tooltip,
+}: {
+	category: string;
+	children: React.ReactNode;
+	tooltip: { title: string; content: string | React.ReactNode };
+}) => {
 	const ref = useRef<HTMLDivElement | null>(null);
 	const hovered = useHover(ref as RefObject<HTMLDivElement>);
 	return (
@@ -37,7 +45,9 @@ const CatGeneContent = ({ content }: { content: number | string | readonly strin
 		</span>
 	);
 };
-export const WindIcon = ({ wind }: { wind: string }) => <img className={styles.windIcon} src={pceLink(`main_assets/runes/wind_${wind.toLowerCase()}.png`)} alt={wind} />;
+export const WindIcon = ({ wind }: { wind: string }) => (
+	<img className={styles.windIcon} src={pceLink(`main_assets/runes/wind_${wind.toLowerCase()}.png`)} alt={wind} />
+);
 
 const Bracketed = ({ children, type }: { children: React.ReactNode; type: "bracket" | "brace" | "none" }) => {
 	if (type === "none") return children;
@@ -61,7 +71,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 	const g = data.gene;
 	const p = getGenePhenotype(g);
 
-    const hiddenPattern = catPatterns[g.pattern[0]]?.[g.pattern[1]]
+	const hiddenPattern = catPatterns[g.pattern[0]]?.[g.pattern[1]];
+
+	const blank = pceLink(`main_assets/${p.species === "m" ? "mercat" : "notcat"}_grey_model.png`);
 	return (
 		<div className={styles.display}>
 			<CatGeneSection
@@ -108,8 +120,12 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "Fur",
 					content: (
 						<>
-							{`${p.fur === "longhair" ? "Longhair" : `${g.fur.every(x => x === g.fur[0]) ? "Homozygous" : "Heterozygous"} Shorthair`}`}
-							<CatImage gene={g} layer={pceLink(`main_assets/${p.species === "m" ? "mercat" : "notcat"}_grey_model.png`)} />
+							{`${
+								p.fur === "longhair"
+									? "Longhair"
+									: `${g.fur.every(x => x === g.fur[0]) ? "Homozygous" : "Heterozygous"} Shorthair`
+							}`}
+							<CatImage gene={g} layer={blank} />
 						</>
 					),
 				}}
@@ -125,9 +141,13 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					content: (
 						<>
 							{p.tradeColor && p.mainColor
-								? `${colorNames[p.mainColor]}-${colorNames[p.tradeColor]} ${g.color.every(x => x === g.color[0]) ? "Watercolor" : "Tortoiseshell"}`
-								: p.mainColor ? colorNames[p.mainColor] : "Unknown"}
-							<CatImage gene={g} layer={[0, 1]} />
+								? `${colorNames[p.mainColor]}-${colorNames[p.tradeColor]} ${
+										g.color.every(x => x === g.color[0]) ? "Watercolor" : "Tortoiseshell"
+								  }`
+								: p.mainColor
+								? colorNames[p.mainColor]
+								: "Unknown"}
+							<CatImage gene={g.whiteNumber === 10  ? {...g, whiteNumber: 0} : g} layer={[0, 1]} />
 						</>
 					),
 				}}
@@ -147,8 +167,9 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "Pattern",
 					content: (
 						<>
-							{p.pattern ? patternNames[p.pattern] : "Unknown"}{p.pattern === "solid" && hiddenPattern ? ` (Hidden ${patternNames[hiddenPattern]})` : ""}
-							<CatImage gene={g} layer={[0, 1]} />
+							{p.pattern ? patternNames[p.pattern] : "Unknown"}
+							{p.pattern === "solid" && hiddenPattern ? ` (Hidden ${patternNames[hiddenPattern]})` : ""}
+							<CatImage gene={g.whiteNumber === 10  ? {...g, whiteNumber: 0} : g} layer={[0, 1]} />
 						</>
 					),
 				}}
@@ -179,10 +200,17 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 					title: "White",
 					content: (
 						<>
-							{p.whiteNumber === 10 ? "Albino" : 
-                            p.whiteNumber === 0 ? "None" : p.whiteNumber === "?" || p.whiteType === "?" ? "Unknown" : whiteTypeNames[p.whiteType][p.whiteNumber]}
-                            {(p.whiteNumber === 0 || p.whiteNumber === 10) && p.whiteType && p.whiteType !== "?" ? ` (${whiteTypeKeys[p.whiteType]})` :""  }
-							<CatImage gene={g} layer={2} />
+							{p.whiteNumber === 10
+								? "Albino"
+								: p.whiteNumber === 0
+								? "None"
+								: p.whiteNumber === "?" || p.whiteType === "?"
+								? "Unknown"
+								: whiteTypeNames[p.whiteType][p.whiteNumber]}
+							{p.whiteType && p.whiteType !== "?"
+								? ` (${whiteTypeKeys[p.whiteType]} ${p.whiteNumber})`
+								: ""}
+							<CatImage gene={g} layer={[blank, 2]} />
 						</>
 					),
 				}}
@@ -207,7 +235,7 @@ export const CatGeneDisplay = (data: { gene: string } | { gene: PartialCatGene }
 						<>
 							{p.accent === "?" ? "Unknown" : accentNames[p.accent]}
 
-							<CatImage gene={g} layer={3} />
+							<CatImage gene={g.species === "C" ? {...g, species: "M"} : g} layer={3} />
 						</>
 					),
 				}}

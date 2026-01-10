@@ -1,11 +1,19 @@
 "use client";
-import { MouseEventHandler, MutableRefObject, useEffect, useRef } from "react";
+import { MouseEventHandler, MutableRefObject, RefObject, useEffect, useRef } from "react";
 import styles from "./CatImage.module.scss";
 import { CatEyes, PartialCatGene, deserializeCatGene, textureFromGene } from "@/util/cat";
 import { downloadFile } from "@/util/downloadFile";
 import { pceLink } from "@/util/util";
 
-export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (string | null)[]; eyes?: CatEyes; onClick?: MouseEventHandler<HTMLCanvasElement> }) => {
+export const CatSheet = ({
+	gene,
+	eyes,
+	onClick,
+}: {
+	gene: PartialCatGene | (string | null)[];
+	eyes?: CatEyes;
+	onClick?: MouseEventHandler<HTMLCanvasElement>;
+}) => {
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
 	useEffect(() => {
 		if (!canvasRef.current) return;
@@ -46,10 +54,10 @@ export const CatSheet = ({ gene, eyes, onClick }: { gene: PartialCatGene | (stri
 
 export const CatImage = (
 	data: ({ gene: string } | { gene: PartialCatGene } | { images: (string | null)[]; offset: { x: number; y: number } }) & {
-		layer?: number | string | number[];
+		layer?: number | string | (number | string)[];
 		sheet?: boolean;
 		eyes?: CatEyes;
-		downloadRef?: MutableRefObject<() => unknown>;
+		downloadRef?: RefObject<() => unknown>;
 	}
 ) => {
 	const imageRefs = useRef([] as HTMLImageElement[]);
@@ -71,11 +79,21 @@ export const CatImage = (
 	if ("gene" in data) {
 		if (typeof data.gene === "string") {
 			const test = deserializeCatGene(data.gene);
-			if (test.ok) return <CatImage gene={test.data} layer={data.layer} sheet={data.sheet} eyes={data.eyes} downloadRef={data.downloadRef} />;
+			if (test.ok)
+				return <CatImage gene={test.data} layer={data.layer} sheet={data.sheet} eyes={data.eyes} downloadRef={data.downloadRef} />;
 			return <p>{test.message}</p>;
 		}
 		const processed = textureFromGene("adult", "standing", data.eyes ?? "neutral", data.gene);
-		return <CatImage images={processed.images} offset={processed.offset} layer={data.layer} sheet={data.sheet} eyes={data.eyes} downloadRef={data.downloadRef} />;
+		return (
+			<CatImage
+				images={processed.images}
+				offset={processed.offset}
+				layer={data.layer}
+				sheet={data.sheet}
+				eyes={data.eyes}
+				downloadRef={data.downloadRef}
+			/>
+		);
 	}
 	const images = data.images.map((x, i) =>
 		x === null ? null : (
@@ -90,15 +108,15 @@ export const CatImage = (
 			/>
 		)
 	);
-	const toDisplay =
-		data.layer === undefined ? (
-			images
-		) : typeof data.layer === "number" ? (
-			images[data.layer]
-		) : data.layer instanceof Array ? (
-			images.filter((x, i) => (data.layer as number[]).includes(i))
+	const convertImageLayer = (layer: string | number) =>
+		typeof layer === "string" ? (
+			<img key={layer} style={{ objectPosition: data.sheet ? "" : `${data.offset.x}px ${data.offset.y}px` }} src={layer} alt="Cat" />
 		) : (
-			<img style={{ objectPosition: data.sheet ? "" : `${data.offset.x}px ${data.offset.y}px` }} src={data.layer} alt="Cat" />
+			images[layer]
 		);
-	return toDisplay === null ? null : <article className={`${styles.catContainer}${data.sheet ? ` ${styles.sheet}` : ""}`}>{toDisplay}</article>;
+	const toDisplay =
+		data.layer === undefined ? images : data.layer instanceof Array ? data.layer.map(x => convertImageLayer(x)) : convertImageLayer(data.layer);
+	return toDisplay === null ? null : (
+		<article className={`${styles.catContainer}${data.sheet ? ` ${styles.sheet}` : ""}`}>{toDisplay}</article>
+	);
 };

@@ -452,7 +452,7 @@ export const getCatTextures = (p: GenePhenotype) => ({
 		p.whiteNumber !== 0
 			? `images/cats/${p.species}/white_${p.whiteType}_${p.whiteNumber === "?" ? 10 : p.whiteNumber}.png`
 			: null,
-	accent: p.species === "m" ? `images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png` : null,
+	accent: p.species === "m" && p.accent !== "?" ? `images/cats/${p.species}/${p.accent}_accent_${p.pattern}.png` : null,
 });
 
 export const getCatTextureProperties = (p: GenePhenotype) =>
