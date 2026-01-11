@@ -61,7 +61,7 @@ model MarketEntry {
 model ChestEntry {
     id      Int    @id
     item    Item   @relation(fields: [id], references: [id])
-    pools   Json[]
+    pools   Json
     notes   Int?
     essence Int?
     cat     String?
