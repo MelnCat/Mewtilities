@@ -304,6 +304,7 @@ export const processDeletedItemFile = async (data: FormData | Uint8Array[]) =>
 export const processChestDatabaseFiles = processFileAction(parseChestDatabasePage, async data => {
 	let updated = 0;
 	for (const entry of data.flat()) {
+        console.log(entry.pools)
 		await prisma.chestEntry.upsert({
 			create: {
 				id: entry.id,

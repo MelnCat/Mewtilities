@@ -226,8 +226,7 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 
 	const friendContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")));
 	const friends = friendContainer?.querySelector(".friend-local") ?? friendContainer?.querySelector(".friend-all")
-	if (!friends) return failure("Friends missing");
-	if (friends?.textContent?.trim() === "n/a") builder.friends = {};
+	if (!friends || friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
 		const found = [...friends.children]
 			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
@@ -240,8 +239,7 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 	}
 	const familyContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")));
 	const family = familyContainer?.querySelector(".friend-local") ?? familyContainer?.querySelector(".friend-all");
-	if (!family) return failure("Family missing");
-	if (family?.textContent?.trim() === "n/a") builder.family = {};
+	if (!family || family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
 		const found = [...family.children]
 			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
