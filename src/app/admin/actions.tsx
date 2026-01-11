@@ -304,25 +304,29 @@ export const processDeletedItemFile = async (data: FormData | Uint8Array[]) =>
 export const processChestDatabaseFiles = processFileAction(parseChestDatabasePage, async data => {
 	let updated = 0;
 	for (const entry of data.flat()) {
-        console.log(entry.pools)
-		await prisma.chestEntry.upsert({
-			create: {
-				id: entry.id,
-				cat: entry.cat,
-				essence: entry.essence,
-				notes: entry.notes,
-				pools: entry.pools ?? [],
-			},
-			update: {
-				cat: entry.cat,
-				essence: entry.essence,
-				notes: entry.notes,
-				pools: entry.pools ?? [],
-			},
-			where: {
-				id: entry.id,
-			},
-		});
+		console.log(entry.pools);
+		try {
+			await prisma.chestEntry.upsert({
+				create: {
+					id: entry.id,
+					cat: entry.cat,
+					essence: entry.essence,
+					notes: entry.notes,
+					pools: entry.pools ?? [],
+				},
+				update: {
+					cat: entry.cat,
+					essence: entry.essence,
+					notes: entry.notes,
+					pools: entry.pools ?? [],
+				},
+				where: {
+					id: entry.id,
+				},
+			});
+		} catch (e) {
+			console.error(e);
+		}
 		updated++;
 	}
 	return { success: true, message: `${updated} entries updated` };
