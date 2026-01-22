@@ -4,7 +4,13 @@ import type { Cat, Season } from "@/generated/prisma/client";
 import { HTML2BBCode } from "html2bbcode";
 import { chunk } from "remeda";
 
-export type RawCat = Omit<Cat, "trinketId" | "clothing"> & { trinketName: string | null; clothingKeys: string[]; pose: string; flipped: boolean };
+export type RawCat = Omit<Cat, "trinketId" | "clothing"> & {
+	trinketName: string | null;
+	clothingKeys: string[];
+	pose: string;
+	flipped: boolean;
+	eyes: string;
+};
 
 const seasons = ["SPRING", "SUMMER", "AUTUMN", "WINTER"];
 
@@ -91,9 +97,13 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 	if (!eyeColor) return failure("Eye color missing");
 	builder.eyeColor = eyeColor;
 
-	const mayorBonusText = form.querySelector(":where(#base-stats, #total-stats) + .genes-code")?.textContent?.matchAll(/([+-]\d+) (\w+)/g);
+	const mayorBonusText = form
+		.querySelector(":where(#base-stats, #total-stats) + .genes-code")
+		?.textContent?.matchAll(/([+-]\d+) (\w+)/g);
 	const statBonuses: Record<string, number> = {};
-	const trinketBonusText = form.querySelector(".trinket-subgroup .bio-group-label")?.textContent?.matchAll(/(\w+) ([+-]\d+)/g);
+	const trinketBonusText = form
+		.querySelector(".trinket-subgroup .bio-group-label")
+		?.textContent?.matchAll(/(\w+) ([+-]\d+)/g);
 	if (mayorBonusText)
 		for (const bonus of mayorBonusText) {
 			statBonuses[bonus[2].toLowerCase()] = +bonus[1];
@@ -144,18 +154,23 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 						x.textContent?.match(/(.+?) Level/)?.[1],
 						{
 							level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
-							xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
+							xp: x.textContent?.includes("Maximum Level")
+								? 0
+								: toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
 						},
 					] as const
 			);
-		if (jobXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined)) return failure("Job xp invalid");
+		if (jobXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined))
+			return failure("Job xp invalid");
 		builder.jobXp = Object.fromEntries(jobXp);
 	} else {
 		builder.job = null;
 		builder.jobXp = null;
 	}
 
-	const classLoop = [...form.querySelectorAll(".cat-title-loop")].find(x => x.firstChild?.textContent?.startsWith("Adventuring Class"));
+	const classLoop = [...form.querySelectorAll(".cat-title-loop")].find(x =>
+		x.firstChild?.textContent?.startsWith("Adventuring Class")
+	);
 	if (classLoop) {
 		const childNodes = [...classLoop.childNodes].filter(x => x.textContent?.trim());
 		const clazz = childNodes[1]?.textContent?.match(/[\w ]+/)?.[0]?.trim();
@@ -171,11 +186,14 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 						x.textContent?.match(/(.+?) Level/)?.[1],
 						{
 							level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
-							xp: x.textContent?.includes("Maximum Level") ? 0 : toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
+							xp: x.textContent?.includes("Maximum Level")
+								? 0
+								: toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
 						},
 					] as const
 			);
-		if (classXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined)) return failure("Job xp invalid");
+		if (classXp.some(x => x[0] === undefined || x[1].level === undefined || x[1].xp === undefined))
+			return failure("Job xp invalid");
 		builder.classXp = Object.fromEntries(classXp);
 	} else {
 		builder.class = null;
@@ -224,27 +242,35 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 	const genetic = form.querySelector(".genes-code.cat-minigroup")?.textContent?.match(/\w+/g);
 	if (genetic) builder.genetic = genetic.join("") === "UnknownGeneticString" ? null : genetic.join("");
 
-	const friendContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Friends")));
-	const friends = friendContainer?.querySelector(".friend-local") ?? friendContainer?.querySelector(".friend-all")
+	const friendContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x =>
+		[...x.children].some(x => x.textContent?.startsWith("Friends"))
+	);
+	const friends = friendContainer?.querySelector(".friend-local") ?? friendContainer?.querySelector(".friend-all");
 	if (!friends || friends?.textContent?.trim() === "n/a") builder.friends = {};
 	else {
 		const found = [...friends.children]
 			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
 			.map(x => [
-				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)
+					?.getAttribute("href")
+					?.match(/&id=(\d+)/)?.[1],
 				x.childNodes[1]?.textContent?.replace("- ", "").trim(),
 			]);
 		if (found.some(x => x.includes(undefined))) return failure("Friends invalid");
 		builder.friends = Object.fromEntries(found);
 	}
-	const familyContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x => [...x.children].some(x => x.textContent?.startsWith("Family")));
+	const familyContainer = [...doc.querySelectorAll(".cat-title-loop")].find(x =>
+		[...x.children].some(x => x.textContent?.startsWith("Family"))
+	);
 	const family = familyContainer?.querySelector(".friend-local") ?? familyContainer?.querySelector(".friend-all");
 	if (!family || family?.textContent?.trim() === "n/a") builder.family = {};
 	else {
 		const found = [...family.children]
 			.filter(x => x.tagName === "DIV" && x.children[0]?.tagName !== "BR")
 			.map(x => [
-				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)?.getAttribute("href")?.match(/&id=(\d+)/)?.[1],
+				([...x.children[0].childNodes].find(x => (x as HTMLElement).tagName === "A") as HTMLElement)
+					?.getAttribute("href")
+					?.match(/&id=(\d+)/)?.[1],
 				x.childNodes[1]?.textContent?.replace("- ", "").trim(),
 			]);
 		if (found.some(x => x.includes(undefined))) return failure("Family invalid");
@@ -283,7 +309,9 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 		builder.bio = bio;
 	} else builder.bio = null;
 
-	const clothing = [...form.querySelectorAll(".catjail .cat-clothes")].map(x => x.getAttribute("src")?.match(/\/(\w+)\.png/)?.[1]);
+	const clothing = [...form.querySelectorAll(".catjail .cat-clothes")].map(
+		x => x.getAttribute("src")?.match(/\/(\w+)\.png/)?.[1]
+	);
 	if (clothing.includes(undefined)) return failure("Clothing missing or invalid");
 	builder.clothingKeys = clothing as string[];
 
@@ -294,6 +322,9 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 		const cat = form.querySelector(".cat-cat");
 		if (!cat) return failure("Cat cat missing");
 		builder.flipped = cat.classList.contains("flip");
+		const eyes = form.querySelector(".cat-eyes") as HTMLImageElement
+		if (!eyes) return failure("Cat eyes missing");
+		builder.eyes = eyes.getAttribute("src")?.match(/eyes_(\w+)\.png/)?.[1];
 	}
 
 	return success(builder as RawCat);

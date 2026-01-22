@@ -202,10 +202,12 @@ export default function CatEditorPage() {
 		const pattern = cat.pattern;
 		const white = cat.whiteMarks;
 		const accent = cat.accentColor ?? undefined;
-		const eyes = cat.eyeColor;
+		const eyes = cat.eyes;
 		if (species && color && pattern && eyes && white) {
 			try {
 				const parsed = parseCatBio({ species, color, pattern, white, accent, eyes });
+				console.log("from", { species, color, pattern, white, accent, eyes })
+				console.log("to", parsed)
 				setColorLayer(parsed[0]);
 				setTradeColorLayer(parsed[1]);
 				setWhiteLayer(parsed[2]);
@@ -333,7 +335,7 @@ export default function CatEditorPage() {
 				onChange={() => {}}
 				onPaste={(x: React.ClipboardEvent<HTMLTextAreaElement>) => {
 					const data = x.clipboardData.getData("text/html");
-					const parsed = parseCatPage(data);
+					const parsed = parseCatPage(data, true);
 					if (!parsed.ok) return;
 					setImportInput("[OK]");
 					tryImport(parsed.data);
@@ -460,7 +462,7 @@ export default function CatEditorPage() {
 									{"id" in item ? (
 										<ItemImage item={item} />
 									) : (
-										<article className={styles.customUploadImage} style={{ backgroundImage: `url("${pceLink(item.image)}")` }} />
+										<article className={styles.customUploadImage} style={{ backgroundImage: `url("${pceLink(item.image ?? "")}")` }} />
 									)}
 								</section>
 								<p>{item.name}</p>

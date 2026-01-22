@@ -617,6 +617,7 @@ const eyeColorToType: Record<string, CatWhiteType> = {
 	"Pale Blue": "left",
 	"Pale Green": "right",
 	"Pale Gold": "inverse",
+	"Cool Odd": "tabby"
 };
 
 export const parseCatBio = (bio: {
@@ -727,7 +728,7 @@ export const geneFromImported = (data: Omit<Cat, "trinketId" | "clothing">): Par
 	if (data.genetic) return deserializeCatGene(data.genetic).data!;
 	const parsed = parseCatBioObj({
 		color: data.color,
-		eyes: data.eyeColor,
+		eyes: "sleepy",
 		pattern: data.pattern,
 		species: data.species,
 		white: data.whiteMarks,
