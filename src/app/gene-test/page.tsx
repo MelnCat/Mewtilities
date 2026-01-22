@@ -1,7 +1,7 @@
 "use client";
 import { parseCatPage, RawCat } from "@/parser/catParser";
 import styles from "./page.module.scss";
-import { useMemo, useState } from "react";
+import { Ref, RefObject, useMemo, useState } from "react";
 import { useEventListener } from "usehooks-ts";
 import { CatAppearance, catSpeciesList, deserializeCatGene, geneFromImported, PartialCatGene, serializeCatGene } from "@/util/cat";
 import { CatGeneDisplay } from "../components/CatGeneDisplay";
@@ -21,6 +21,13 @@ const usePaste = (cb: (html: string) => void | Promise<void>) => {
 			cb(await (await (await navigator.clipboard.read())[0].getType("text/html")).text());
 		} catch {}
 	});
+};
+const useElementPaste = (element: RefObject<HTMLElement>, cb: (html: string) => void | Promise<void>) => {
+	useEventListener("paste", event => {
+		try {
+			cb(event.clipboardData!.getData("text/html"));
+		} catch {}
+	}, element);
 };
 
 const Title = ({ setCat }: { setCat: (cat: RawCat) => void }) => {

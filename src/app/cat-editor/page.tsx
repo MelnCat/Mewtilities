@@ -29,6 +29,7 @@ import useSWR from "swr";
 import { CatSheet } from "../components/CatImage";
 import { ItemImage } from "../components/ItemImage";
 import styles from "./page.module.scss";
+import { parseCatPage, RawCat } from "@/parser/catParser";
 
 const EditorLayer = <T extends { shown: boolean }>({
 	layer,
@@ -186,29 +187,22 @@ export default function CatEditorPage() {
 		const pos = found.position;
 		setSelected(x => (x && x[0] === -pos.x && x[1] === -pos.y ? null : [-pos.x, -pos.y]));
 	};
-	const tryImport = (data: string) => {
+	const tryImport = (cat: RawCat) => {
 		let found = false;
-		const foundClothing = data.match(/Currently Wearing: (.+)/)?.[1];
-		if (foundClothing) {
-			found = true;
-			setClothing(
-				[...foundClothing.matchAll(/#(\d+)/g)]
-					.map(x => +x[1])
-					.flatMap(x => {
-						const item = clothingIndex?.find(y => y.id === x);
-						if (!item) return [];
-						return { ...item, keyId: Math.random(), shown: true };
-					})
-					.toReversed()
-			);
-		} else setClothing([]);
-		const find = (header: string) => data.match(new RegExp(`${header}:\n(.+)`))?.[1];
-		const species = find("Species");
-		const color = find("Color");
-		const pattern = find("Pattern");
-		const white = find("White Marks");
-		const accent = find("Accent") ?? undefined;
-		const eyes = data.match(/ (\w+) eyes/)?.[1];
+		setClothing(
+			cat.clothingKeys
+				.map(x => {
+					const item = clothingIndex?.find(y => y.key === x)!;
+					return { ...item, keyId: Math.random(), shown: true };
+				})
+				.toReversed()
+		);
+		const species = cat.species;
+		const color = cat.color;
+		const pattern = cat.pattern;
+		const white = cat.whiteMarks;
+		const accent = cat.accentColor ?? undefined;
+		const eyes = cat.eyeColor;
 		if (species && color && pattern && eyes && white) {
 			try {
 				const parsed = parseCatBio({ species, color, pattern, white, accent, eyes });
@@ -336,9 +330,13 @@ export default function CatEditorPage() {
 			<textarea
 				className={styles.geneInput}
 				value={importInput}
-				onChange={x => {
-					setImportInput(x.target.value);
-					tryImport(x.target.value);
+				onChange={() => {}}
+				onPaste={(x: React.ClipboardEvent<HTMLTextAreaElement>) => {
+					const data = x.clipboardData.getData("text/html");
+					const parsed = parseCatPage(data);
+					if (!parsed.ok) return;
+					setImportInput("[OK]");
+					tryImport(parsed.data);
 				}}
 				placeholder="Import Cat/Clothing (Copy/Paste)"
 				rows={1}
