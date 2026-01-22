@@ -206,8 +206,6 @@ export default function CatEditorPage() {
 		if (species && color && pattern && eyes && white) {
 			try {
 				const parsed = parseCatBio({ species, color, pattern, white, accent, eyes });
-				console.log("from", { species, color, pattern, white, accent, eyes })
-				console.log("to", parsed)
 				setColorLayer(parsed[0]);
 				setTradeColorLayer(parsed[1]);
 				setWhiteLayer(parsed[2]);
