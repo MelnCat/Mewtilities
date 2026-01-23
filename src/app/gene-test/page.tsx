@@ -267,7 +267,7 @@ const GeneDashboard = ({ cat }: { cat: RawCat }) => {
 			</section>
 			<article>
 				<p>Paste a sandbox trial to gene.</p>
-				<input value="" readOnly />
+				<input defaultValue="" />
 				<h1>Sandbox Inputs:</h1>
 				<div className={styles.sandboxInputs}>
 					<input value={cat.wind === "South" ? 572 : cat.id} readOnly />
