@@ -104,7 +104,13 @@ export const patternNames = {
 	ripple: "Ripple",
 	agouti: "Agouti",
 	karpati: "Karpati",
-	freckle: "Freckle"
+	freckle: "Freckle",
+    brindle: "Brindle",
+    paint: "Paint",
+    splashed: "Splashed",
+    splashpoint: "Splashpoint",
+    merle: "Merle",
+    stardust: "Stardust"
 };
 
 export const colorNames = {
@@ -124,7 +130,7 @@ export const colorNames = {
 	cream: "Cream",
 	almond: "Almond",
 	beige: "Beige",
-	snow: "Snow",
+	snow: "Snow"
 };
 
 export const accentNames = {

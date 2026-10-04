@@ -21,7 +21,7 @@ const colorType = z.enum(["B", "O"]);
 const dilutionType = z.enum(["F", "D"]);
 const density = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]);
 const patternType = z.enum(["Y", "N"]);
-const spottingType = z.enum(["T", "M", "S", "P", "A"]);
+const spottingType = z.enum(["T", "M", "S", "P", "A", "L"]);
 const whiteType = z.enum(["Y", "N"]);
 const whiteNumberType = z.union([
 	z.literal(0),
@@ -283,16 +283,22 @@ export const catPatterns = generateAlleleMap({
 	TS: "broken",
 	TP: "lynxpoint",
 	TA: "ticked",
+	TL: "brindle",
 	MM: "clouded",
 	MS: "rosette",
 	MP: "cloudpoint",
 	MA: "ripple",
+	ML: "paint",
 	SS: "spotted",
 	SP: "mink",
 	SA: "agouti",
+	SL: "splashed",
 	PP: "colorpoint",
 	PA: "karpati",
+	PL: "splashpoint",
 	AA: "freckle",
+	AL: "merle",
+    LL: "stardust"
 } as const);
 
 type AlleleMapValue<T> = T extends Record<string, Record<string, infer U>> & Record<typeof entriesSymbol, string[]> ? U : never;

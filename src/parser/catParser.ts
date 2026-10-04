@@ -154,7 +154,7 @@ export const parseCatPage = (content: string, includePose: boolean = false): Res
 						x.textContent?.match(/(.+?) Level/)?.[1],
 						{
 							level: toNumberOrUndefined(x.textContent?.match(/Level (\d+)/)?.[1]),
-							xp: x.textContent?.includes("Maximum Level")
+							xp: x.textContent?.includes("Max")
 								? 0
 								: toNumberOrUndefined(x.textContent?.match(/(\d+)\/\d+ EXP/)?.[1]),
 						},
